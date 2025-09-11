@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ user, onLogout, onToggleSidebar, sidebarOpen }) => {
+const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, sidebarOpen, sidebarCollapsed }) => {
    return (
       <header className="flex items-center justify-between px-6 h-16 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
          {/* Left Section */}
