@@ -5,8 +5,9 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
       <header className="flex items-center justify-between px-6 h-16 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
          {/* Left Section */}
          <div className="flex items-center gap-4">
+            {/* Mobile Toggle */}
             <button 
-               className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+               className="p-2 rounded-md hover:bg-gray-100 transition-colors lg:hidden"
                onClick={onToggleSidebar}
                aria-label="Toggle sidebar"
             >
@@ -16,6 +17,19 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
                   <span className={`block h-0.5 w-full bg-gray-600 transition-all duration-300 ${sidebarOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
                </div>
             </button>
+
+            {/* Desktop Collapse Toggle */}
+            <button 
+               className="hidden lg:block p-2 rounded-md hover:bg-gray-100 transition-colors"
+               onClick={onToggleSidebarCollapse}
+               aria-label="Collapse sidebar"
+            >
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               </svg>
+            </button>
             <div className="flex flex-col">
                <h1 className="text-xl font-bold text-gray-900">DOST-PMNS</h1>
                <span className="text-xs text-gray-500 font-medium hidden sm:block">Project Management & Notification System</span>
@@ -23,7 +37,7 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
          </div>
 
          {/* Center Section - Search */}
-         <div className="flex-1 max-w-md mx-8 hidden md:block">
+         <div className="flex-1 max-w-       md mx-8 hidden md:block">
             <div className="relative">
                <input 
                   type="text" 
