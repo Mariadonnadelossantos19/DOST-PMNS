@@ -1,7 +1,65 @@
 import React from 'react';
 
-const Sidebar = ({ isOpen, onClose, currentPath }) => {
-   const menuItems = [
+const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant' }) => {
+   // DOST Services
+   const dostServices = [
+      {
+         id: 'setup',
+         label: 'SETUP',
+         description: 'Science Education and TrainingSmall Enterprises Technology Upgrading Program',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/services/setup'
+      },
+      {
+         id: 'gia',
+         label: 'GIA',
+         description: 'Grants-in-Aid Program',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/services/gia'
+      },
+      {
+         id: 'cest',
+         label: 'CEST',
+         description: 'Community Empowerment thru Science & Technology',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+               <path d="M23 21V19C23 18.1645 22.7155 17.3541 22.2094 16.7006C21.7033 16.047 20.9999 15.5909 20.2 15.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/services/cest'
+      },
+      {
+         id: 'sscp',
+         label: 'SSCP',
+         description: 'Smart and Sustainable Communities Program,',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3Z" stroke="currentColor" strokeWidth="2"/>
+               <path d="M8 7H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               <path d="M8 11H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               <path d="M8 15H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+         ),
+         path: '/services/sscp'
+      }
+   ];
+
+   // Management sections
+   const managementSections = [
       {
          id: 'dashboard',
          label: 'Dashboard',
@@ -16,8 +74,21 @@ const Sidebar = ({ isOpen, onClose, currentPath }) => {
          path: '/dashboard'
       },
       {
-         id: 'projects',
-         label: 'Projects',
+         id: 'monitoring',
+         label: 'Monitoring',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 19C9 20.1046 9.89543 21 11 21H13C14.1046 21 15 20.1046 15 19V18H9V19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V15C21 16.1046 20.1046 17 19 17H5C3.89543 17 3 16.1046 3 15V5Z" stroke="currentColor" strokeWidth="2"/>
+               <path d="M8 7H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               <path d="M8 11H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+         ),
+         path: '/monitoring'
+      },
+      {
+         id: 'management',
+         label: 'Management',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                <path d="M2 3H6C6.55228 3 7 3.44772 7 4V20C7 20.5523 6.55228 21 6 21H2C1.44772 21 1 20.5523 1 20V4C1 3.44772 1.44772 3 2 3Z" stroke="currentColor" strokeWidth="2"/>
@@ -25,31 +96,7 @@ const Sidebar = ({ isOpen, onClose, currentPath }) => {
                <path d="M9 15H21C21.5523 15 22 15.4477 22 16V17C22 17.5523 21.5523 18 21 18H9C8.44772 18 8 17.5523 8 17V16C8 15.4477 8.44772 15 9 15Z" stroke="currentColor" strokeWidth="2"/>
             </svg>
          ),
-         path: '/projects'
-      },
-      {
-         id: 'tasks',
-         label: 'Tasks',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-         ),
-         path: '/tasks'
-      },
-      {
-         id: 'team',
-         label: 'Team',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-               <path d="M23 21V19C23 18.1645 22.7155 17.3541 22.2094 16.7006C21.7033 16.047 20.9999 15.5909 20.2 15.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/team'
+         path: '/management'
       },
       {
          id: 'notifications',
@@ -104,7 +151,6 @@ const Sidebar = ({ isOpen, onClose, currentPath }) => {
             fixed top-0 left-0 h-full bg-white border-r border-gray-200 shadow-lg z-50
             transform transition-transform duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-            lg:translate-x-0 lg:static lg:shadow-none
             w-64
          `}>
             <div className="flex flex-col h-full">
@@ -126,31 +172,71 @@ const Sidebar = ({ isOpen, onClose, currentPath }) => {
                </div>
 
                {/* Navigation Menu */}
-               <nav className="flex-1 p-4">
-                  <ul className="space-y-2">
-                     {menuItems.map((item) => {
-                        const isActive = currentPath === item.path;
-                        return (
-                           <li key={item.id}>
-                              <a
-                                 href={item.path}
-                                 className={`
-                                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                                    ${isActive 
-                                       ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
-                                       : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                    }
-                                 `}
-                              >
-                                 <span className={`${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
-                                    {item.icon}
-                                 </span>
-                                 {item.label}
-                              </a>
-                           </li>
-                        );
-                     })}
-                  </ul>
+               <nav className="flex-1 p-4 space-y-6">
+                  {/* DOST Services Section */}
+                  <div>
+                     <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                        DOST Services
+                     </h3>
+                     <ul className="space-y-1">
+                        {dostServices.map((service) => {
+                           const isActive = currentPath === service.path;
+                           return (
+                              <li key={service.id}>
+                                 <a
+                                    href={service.path}
+                                    className={`
+                                       flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group
+                                       ${isActive 
+                                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
+                                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                       }
+                                    `}
+                                 >
+                                    <span className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                                       {service.icon}
+                                    </span>
+                                    <div className="flex-1">
+                                       <div className="font-medium">{service.label}</div>
+                                       <div className="text-xs text-gray-500">{service.description}</div>
+                                    </div>
+                                 </a>
+                              </li>
+                           );
+                        })}
+                     </ul>
+                  </div>
+
+                  {/* Management Section */}
+                  <div>
+                     <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                        Management
+                     </h3>
+                     <ul className="space-y-1">
+                        {managementSections.map((section) => {
+                           const isActive = currentPath === section.path;
+                           return (
+                              <li key={section.id}>
+                                 <a
+                                    href={section.path}
+                                    className={`
+                                       flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                                       ${isActive 
+                                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
+                                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                       }
+                                    `}
+                                 >
+                                    <span className={`${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
+                                       {section.icon}
+                                    </span>
+                                    {section.label}
+                                 </a>
+                              </li>
+                           );
+                        })}
+                     </ul>
+                  </div>
                </nav>
 
                {/* Sidebar Footer */}

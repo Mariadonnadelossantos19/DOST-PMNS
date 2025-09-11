@@ -1,11 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, Button, Badge } from '../UI';
 import ProjectCard from './ProjectCard';
 import TaskList from './TaskList';
+import { UserManagement } from '../UserManagement';
+import SuperAdminDashboard from '../../Pages/superAdmin/pages/SuperAdminDashboard';
+import MarinduqueDashboard from '../../Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
+import OccidentalMindoroDashboard from '../../Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
+import OrientalMindoroDashboard from '../../Pages/PSTO/PSTO_OrientalMindoro/pages/OrientalMindoroDashboard';
+import RomblonDashboard from '../../Pages/PSTO/PSTO_Romblon/pages/RomblonDashboard';
+import PalawanDashboard from '../../Pages/PSTO/PSTO_Palawan/pages/PalawanDashboard';
 
-const ProjectDashboard = ({ projects = [], tasks = [] }) => {
+const ProjectDashboard = ({ projects = [], tasks = [], currentUser }) => {
    const [selectedProject, setSelectedProject] = useState(null);
-   const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks'
+   const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks', 'users'
+
+   // Render province-specific dashboard for PSTO users
+   const renderProvinceDashboard = () => {
+      console.log('renderProvinceDashboard called with:', currentUser);
+      
+      if (currentUser?.role === 'psto' && currentUser?.province) {
+         console.log('Province found:', currentUser.province);
+         switch (currentUser.province) {
+            case 'Marinduque':
+               return <MarinduqueDashboard currentUser={currentUser} />;
+            case 'Occidental Mindoro':
+               return <OccidentalMindoroDashboard currentUser={currentUser} />;
+            case 'Oriental Mindoro':
+               return <OrientalMindoroDashboard currentUser={currentUser} />;
+            case 'Romblon':
+               return <RomblonDashboard currentUser={currentUser} />;
+            case 'Palawan':
+               return <PalawanDashboard currentUser={currentUser} />;
+            default:
+               console.log('Unknown province:', currentUser.province);
+               return <div className="text-center p-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Province Not Assigned</h2>
+                  <p className="text-gray-600">Please contact administrator to assign your province.</p>
+               </div>;
+         }
+      }
+      
+      console.log('No province found or not PSTO user');
+      return <div className="text-center p-8">
+         <h2 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Not Available</h2>
+         <p className="text-gray-600">Province information is missing. Please contact administrator.</p>
+      </div>;
+   };
+
+   // If user is super_admin, show super admin dashboard
+   if (currentUser?.role === 'super_admin') {
+      return <SuperAdminDashboard 
+         projects={projects} 
+         tasks={tasks} 
+         currentUser={currentUser} 
+      />;
+   }
+
+   // If user is PSTO, show province-specific dashboard
+   if (currentUser?.role === 'psto') {
+      console.log('PSTO user detected:', currentUser);
+      console.log('User province:', currentUser?.province);
+      return renderProvinceDashboard();
+   }
 
    // Calculate dashboard statistics
    const stats = {
@@ -237,6 +293,10 @@ const ProjectDashboard = ({ projects = [], tasks = [] }) => {
       </div>
    );
 
+   const renderUsers = () => (
+      <UserManagement currentUser={currentUser} />
+   );
+
    return (
       <div className="space-y-6">
          {/* Navigation Tabs */}
@@ -245,7 +305,8 @@ const ProjectDashboard = ({ projects = [], tasks = [] }) => {
                {[
                   { key: 'overview', label: 'Overview' },
                   { key: 'projects', label: 'Projects' },
-                  { key: 'tasks', label: 'Tasks' }
+                  { key: 'tasks', label: 'Tasks' },
+                  ...(currentUser && currentUser.role === 'super_admin' ? [{ key: 'users', label: 'User Management' }] : [])
                ].map((tab) => (
                   <button
                      key={tab.key}
@@ -266,6 +327,7 @@ const ProjectDashboard = ({ projects = [], tasks = [] }) => {
          {view === 'overview' && renderOverview()}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
+         {view === 'users' && renderUsers()}
       </div>
    );
 };

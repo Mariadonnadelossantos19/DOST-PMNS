@@ -68,8 +68,12 @@ const Header = ({ user, onLogout, onToggleSidebar, sidebarOpen }) => {
                   </div>
                </div>
                <div className="hidden sm:flex flex-col">
-                  <span className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</span>
-                  <span className="text-xs text-gray-500">{user?.role || 'Administrator'}</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                     {user?.name || user?.firstName + ' ' + user?.lastName || 'User'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                     {user?.userId || user?.id || 'No ID'} • {user?.role || 'Administrator'}
+                  </span>
                </div>
                <button 
                   className="p-2 rounded-md hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors" 

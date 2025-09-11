@@ -16,3 +16,14 @@ export * from './ProjectManagement';
 
 // Notification Components
 export * from './Notifications';
+
+// Registration Components
+export { default as Register } from './Registration/register';
+export { default as Login } from './Registration/login';
+export { default as AuthModal } from './Registration/AuthModal';
+
+// User Management Components
+export * from './UserManagement';
+
+// Services Components
+export * from './Services';

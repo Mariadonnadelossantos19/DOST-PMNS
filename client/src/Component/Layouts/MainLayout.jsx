@@ -16,14 +16,6 @@ const MainLayout = ({ children, user, onLogout }) => {
 
    return (
       <div className="min-h-screen bg-gray-50">
-         {/* Header */}
-         <Header 
-            user={user}
-            onLogout={onLogout}
-            onToggleSidebar={toggleSidebar}
-            sidebarOpen={sidebarOpen}
-         />
-
          <div className="flex">
             {/* Sidebar */}
             <Sidebar 
@@ -32,12 +24,25 @@ const MainLayout = ({ children, user, onLogout }) => {
                currentPath={currentPath}
             />
 
-            {/* Main Content */}
-            <main className="flex-1 lg:ml-0">
-               <div className="p-6">
-                  {children}
-               </div>
-            </main>
+            {/* Main Content Area */}
+            <div className={`flex-1 transition-all duration-300 ease-in-out ${
+               sidebarOpen ? 'ml-64' : 'ml-0'
+            }`}>
+               {/* Header */}
+               <Header 
+                  user={user}
+                  onLogout={onLogout}
+                  onToggleSidebar={toggleSidebar}
+                  sidebarOpen={sidebarOpen}
+               />
+
+               {/* Main Content */}
+               <main>
+                  <div className="p-6">
+                     {children}
+                  </div>
+               </main>
+            </div>
          </div>
       </div>
    );

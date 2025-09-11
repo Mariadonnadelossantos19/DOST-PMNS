@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Register } from './Component';
 import { MainLayout, ProjectDashboard, LandingPage, NotificationProvider, useNotifications } from './Component';
+import { ToastProvider } from './Component/UI';
 import './App.css';
 
 // Sample data for demonstration
@@ -120,16 +122,83 @@ const sampleTasks = [
 
 const sampleUser = {
    name: 'John Administrator',
-   role: 'Project Manager',
+   role: 'super_admin',
    avatar: null
 };
 
-function AppContent() {
-   const { showSuccess, showError, showInfo } = useNotifications();
+function AppContent({ onLogout }) {
+   const { showSuccess, showInfo } = useNotifications();
+
+   // Helper function to extract province from PSTO userId
+   const extractProvinceFromUserId = (userId) => {
+      if (userId && userId.startsWith('PSTO_')) {
+         const province = userId.replace('PSTO_', '');
+         // Convert to proper case for matching
+         switch (province) {
+            case 'Marinduque':
+               return 'Marinduque';
+            case 'OccidentalMindoro':
+               return 'Occidental Mindoro';
+            case 'OrientalMindoro':
+               return 'Oriental Mindoro';
+            case 'Romblon':
+               return 'Romblon';
+            case 'Palawan':
+               return 'Palawan';
+            default:
+               return province;
+         }
+      }
+      return undefined;
+   };
+
+   // Get user data from localStorage or use sample user as fallback
+   const getUserData = () => {
+      try {
+         const storedUserData = localStorage.getItem('userData');
+         console.log('Stored user data from localStorage:', storedUserData);
+         
+         if (storedUserData) {
+            const parsedData = JSON.parse(storedUserData);
+            console.log('Parsed user data:', parsedData);
+            
+            // Extract user data from the response object
+            const userData = parsedData.user || parsedData;
+            console.log('Extracted user data:', userData);
+            
+            // Transform user data to match expected format
+            const transformedUser = {
+               name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User',
+               role: userData.role || 'user',
+               userId: userData.userId || userData.id || 'No ID',
+               firstName: userData.firstName,
+               lastName: userData.lastName,
+               email: userData.email,
+               province: userData.province || (userData.role === 'psto' ? extractProvinceFromUserId(userData.userId) : undefined),
+               department: userData.department,
+               position: userData.position,
+               avatar: userData.avatar
+            };
+            console.log('Transformed user data:', transformedUser);
+            return transformedUser;
+         }
+      } catch (error) {
+         console.error('Error parsing user data from localStorage:', error);
+      }
+      
+      // Fallback to sample user if no data found
+      console.log('No user data found, using sample user');
+      return sampleUser;
+   };
+
+   const currentUser = getUserData();
+   
+   // Debug: Log the current user data
+   console.log('Current user data:', currentUser);
 
    const handleLogout = () => {
       showInfo('Logging out...');
-      // Add logout logic here
+      onLogout();
    };
 
    const handleProjectUpdate = (projectId, updates) => {
@@ -153,10 +222,11 @@ function AppContent() {
    };
 
    return (
-      <MainLayout user={sampleUser} onLogout={handleLogout}>
+      <MainLayout user={currentUser} onLogout={handleLogout}>
          <ProjectDashboard
             projects={sampleProjects}
             tasks={sampleTasks}
+            currentUser={currentUser}
             onProjectUpdate={handleProjectUpdate}
             onTaskUpdate={handleTaskUpdate}
             onTaskCreate={handleTaskCreate}
@@ -167,17 +237,40 @@ function AppContent() {
 }
 
 function App() {
-   const [showDashboard, setShowDashboard] = useState(false);
+   const [showDashboard, setShowDashboard] = useState(() => {
+      // Check if user is logged in from localStorage
+      return localStorage.getItem('isLoggedIn') === 'true';
+   });
+
+   const handleLoginSuccess = (userData) => {
+      // Save login state to localStorage
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userData', JSON.stringify(userData));
+      setShowDashboard(true);
+   };
+
+   const handleLogout = () => {
+      // Clear login state from localStorage
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userData');
+      setShowDashboard(false);
+   };
 
    if (showDashboard) {
       return (
          <NotificationProvider>
-            <AppContent />
+            <ToastProvider>
+               <AppContent onLogout={handleLogout} />
+            </ToastProvider>
          </NotificationProvider>
       );
    }
 
-   return <LandingPage />;
+   return (
+      <ToastProvider>
+         <LandingPage onLoginSuccess={handleLoginSuccess} />
+      </ToastProvider>
+   );
 }
 
 export default App;

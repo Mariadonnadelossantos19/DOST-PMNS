@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../UI';
+import AuthModal from '../Registration/AuthModal';
 import heroImage from '../../assets/hero-img.png';
 
-const LandingPage = () => {
+const LandingPage = ({ onLoginSuccess }) => {
    const [isScrolled, setIsScrolled] = useState(false);
-   const [activeSection, setActiveSection] = useState('home');
+   const [activeSection] = useState('home');
    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const [showAuthModal, setShowAuthModal] = useState(false);
 
    useEffect(() => {
       const handleScroll = () => {
@@ -15,6 +17,14 @@ const LandingPage = () => {
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
    }, []);
+
+   const handleLoginClick = () => {
+      setShowAuthModal(true);
+   };
+
+   const handleAuthSuccess = (data) => {
+      onLoginSuccess?.(data);
+   };
 
    return (
       <div className="min-h-screen bg-white">
@@ -70,6 +80,7 @@ const LandingPage = () => {
                      <Button 
                         variant="outline" 
                         size="sm"
+                        onClick={handleLoginClick}
                         className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
                      >
                         Login
@@ -77,6 +88,7 @@ const LandingPage = () => {
                      <Button 
                         variant="primary" 
                         size="sm"
+                        onClick={handleLoginClick}
                         className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                      >
                         Get Started
@@ -124,6 +136,7 @@ const LandingPage = () => {
                      <Button 
                         variant="outline" 
                         size="sm" 
+                        onClick={handleLoginClick}
                         className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
                      >
                         Login
@@ -131,6 +144,7 @@ const LandingPage = () => {
                      <Button 
                         variant="primary" 
                         size="sm" 
+                        onClick={handleLoginClick}
                         className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                      >
                         Get Started
@@ -174,6 +188,7 @@ const LandingPage = () => {
                         <Button 
                            variant="secondary" 
                            size="lg" 
+                           onClick={handleLoginClick}
                            className="bg-white text-blue-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group"
                         >
                            <span className="mr-2">Get Started</span>
@@ -184,6 +199,7 @@ const LandingPage = () => {
                         <Button 
                            variant="outline" 
                            size="lg" 
+                           onClick={handleLoginClick}
                            className="border-white/30 text-white hover:bg-white hover:text-blue-600 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group"
                         >
                            <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
@@ -656,6 +672,14 @@ const LandingPage = () => {
                </div>
             </div>
          </footer>
+
+         {/* Authentication Modal */}
+         <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onLoginSuccess={handleAuthSuccess}
+            onRegisterSuccess={handleAuthSuccess}
+         />
       </div>
    );
 };
