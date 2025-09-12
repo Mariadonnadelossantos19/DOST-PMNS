@@ -4,3 +4,4 @@ export { default as MiniGames, MemoryCardGame, TypingSpeedTest, NumberPuzzle } f
 export { default as MiniGamesModal } from './MiniGamesModal';
 export { default as FloatingMiniGamesButton } from './FloatingMiniGamesButton';
 export { default as InteractiveDashboard } from './InteractiveDashboard';
+export { default as RealTimeStats } from './RealTimeStats';

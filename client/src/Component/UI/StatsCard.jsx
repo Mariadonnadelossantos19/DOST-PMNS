@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDarkMode } from '../Context';
 
 const StatsCard = ({ 
    title, 
@@ -9,6 +10,8 @@ const StatsCard = ({
    subtitle = null,
    className = '' 
 }) => {
+   const { isDarkMode } = useDarkMode();
+   
    const colorClasses = {
       blue: 'bg-blue-500',
       green: 'bg-green-500',
@@ -21,13 +24,17 @@ const StatsCard = ({
    };
 
    const trendClasses = {
-      up: 'text-green-600',
-      down: 'text-red-600',
-      neutral: 'text-gray-600'
+      up: isDarkMode ? 'text-green-400' : 'text-green-600',
+      down: isDarkMode ? 'text-red-400' : 'text-red-600',
+      neutral: isDarkMode ? 'text-gray-400' : 'text-gray-600'
    };
 
    return (
-      <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200 ${className}`}>
+      <div className={`rounded-xl shadow-sm border p-6 hover:shadow-md transition-all duration-200 ${
+         isDarkMode 
+            ? 'bg-gray-800 border-gray-700' 
+            : 'bg-white border-gray-100'
+      } ${className}`}>
          <div className="flex items-center justify-between">
             <div className="flex items-center">
                <div className={`w-12 h-12 ${colorClasses[color]} rounded-lg flex items-center justify-center shadow-sm`}>
@@ -36,10 +43,16 @@ const StatsCard = ({
                   </span>
                </div>
                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">{title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+                  <p className={`text-sm font-medium transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{title}</p>
+                  <p className={`text-2xl font-bold mt-1 transition-colors duration-300 ${
+                     isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{value}</p>
                   {subtitle && (
-                     <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+                     <p className={`text-xs mt-1 transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                     }`}>{subtitle}</p>
                   )}
                </div>
             </div>
@@ -53,7 +66,9 @@ const StatsCard = ({
                         {trend.value}
                      </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{trend.label}</p>
+                  <p className={`text-xs mt-1 transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>{trend.label}</p>
                </div>
             )}
          </div>

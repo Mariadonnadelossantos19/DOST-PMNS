@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { useDarkMode } from '../Context';
 
 const MainLayout = ({ children, user, onLogout }) => {
    const [sidebarOpen, setSidebarOpen] = useState(false);
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
    const [currentPath, setCurrentPath] = useState('/dashboard');
+   const { isDarkMode } = useDarkMode();
 
    const toggleSidebar = () => {
       setSidebarOpen(!sidebarOpen);
@@ -20,7 +22,9 @@ const MainLayout = ({ children, user, onLogout }) => {
    };
 
    return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={`min-h-screen transition-colors duration-300 ${
+         isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
          {/* Header */}
          <Header 
             user={user}

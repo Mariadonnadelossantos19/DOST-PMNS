@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDarkMode } from '../Context';
 
 const Alert = ({ 
    children, 
@@ -9,30 +10,40 @@ const Alert = ({
    className = '',
    ...props 
 }) => {
+   const { isDarkMode } = useDarkMode();
+   
    const variants = {
       info: {
-         container: 'bg-blue-50 border-blue-200',
+         container: isDarkMode 
+            ? 'bg-blue-900 border-blue-700' 
+            : 'bg-blue-50 border-blue-200',
          icon: 'text-blue-400',
-         title: 'text-blue-800',
-         content: 'text-blue-700'
+         title: isDarkMode ? 'text-blue-200' : 'text-blue-800',
+         content: isDarkMode ? 'text-blue-300' : 'text-blue-700'
       },
       success: {
-         container: 'bg-green-50 border-green-200',
+         container: isDarkMode 
+            ? 'bg-green-900 border-green-700' 
+            : 'bg-green-50 border-green-200',
          icon: 'text-green-400',
-         title: 'text-green-800',
-         content: 'text-green-700'
+         title: isDarkMode ? 'text-green-200' : 'text-green-800',
+         content: isDarkMode ? 'text-green-300' : 'text-green-700'
       },
       warning: {
-         container: 'bg-yellow-50 border-yellow-200',
+         container: isDarkMode 
+            ? 'bg-yellow-900 border-yellow-700' 
+            : 'bg-yellow-50 border-yellow-200',
          icon: 'text-yellow-400',
-         title: 'text-yellow-800',
-         content: 'text-yellow-700'
+         title: isDarkMode ? 'text-yellow-200' : 'text-yellow-800',
+         content: isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
       },
       error: {
-         container: 'bg-red-50 border-red-200',
+         container: isDarkMode 
+            ? 'bg-red-900 border-red-700' 
+            : 'bg-red-50 border-red-200',
          icon: 'text-red-400',
-         title: 'text-red-800',
-         content: 'text-red-700'
+         title: isDarkMode ? 'text-red-200' : 'text-red-800',
+         content: isDarkMode ? 'text-red-300' : 'text-red-700'
       }
    };
 
@@ -60,7 +71,7 @@ const Alert = ({
    };
 
    const alertClasses = `
-      border rounded-lg p-4
+      border rounded-lg p-4 transition-colors duration-300
       ${variants[variant].container}
       ${className}
    `;

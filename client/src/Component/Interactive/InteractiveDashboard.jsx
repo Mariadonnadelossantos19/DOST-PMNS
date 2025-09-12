@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ProgressAnimation, { CircularProgress, AnimatedCounter } from './ProgressAnimation';
 import AchievementSystem from './AchievementSystem';
+import RealTimeStats from './RealTimeStats';
 
-const InteractiveDashboard = ({ userStats = {}, onAchievementUnlocked }) => {
+const InteractiveDashboard = ({ userStats = {}, onAchievementUnlocked, userRole, userProvince }) => {
    const [currentTime, setCurrentTime] = useState(new Date());
    const [motivationalMessage, setMotivationalMessage] = useState('');
    const [showConfetti, setShowConfetti] = useState(false);
@@ -171,6 +172,12 @@ const InteractiveDashboard = ({ userStats = {}, onAchievementUnlocked }) => {
                </div>
             </div>
          </div>
+
+         {/* Real-Time Statistics */}
+         <RealTimeStats 
+            userRole={userRole} 
+            userProvince={userProvince} 
+         />
 
          {/* Achievement System */}
          <AchievementSystem

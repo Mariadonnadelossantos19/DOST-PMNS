@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useDarkMode } from '../Context';
 
 const Modal = ({ 
    isOpen, 
@@ -10,6 +11,7 @@ const Modal = ({
    showCloseButton = true,
    className = ''
 }) => {
+   const { isDarkMode } = useDarkMode();
    // Handle escape key
    useEffect(() => {
       const handleEscape = (e) => {
@@ -56,22 +58,32 @@ const Modal = ({
          {/* Modal */}
          <div className="flex min-h-full items-center justify-center p-4">
             <div className={`
-               relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]}
+               relative rounded-lg shadow-xl w-full transition-colors duration-300
+               ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
+               ${sizeClasses[size]}
                transform transition-all duration-300
                ${className}
             `}>
                {/* Header */}
                {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <div className={`flex items-center justify-between p-6 border-b transition-colors duration-300 ${
+                     isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                  }`}>
                      {title && (
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className={`text-lg font-semibold transition-colors duration-300 ${
+                           isDarkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
                            {title}
                         </h3>
                      )}
                      {showCloseButton && (
                         <button
                            onClick={onClose}
-                           className="text-gray-400 hover:text-gray-600 transition-colors"
+                           className={`transition-colors duration-300 ${
+                              isDarkMode 
+                                 ? 'text-gray-400 hover:text-gray-200' 
+                                 : 'text-gray-400 hover:text-gray-600'
+                           }`}
                         >
                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -92,17 +104,27 @@ const Modal = ({
 };
 
 // Modal sub-components
-const ModalHeader = ({ children, className = '', ...props }) => (
-   <div className={`border-b border-gray-200 pb-4 mb-4 ${className}`} {...props}>
-      {children}
-   </div>
-);
+const ModalHeader = ({ children, className = '', ...props }) => {
+   const { isDarkMode } = useDarkMode();
+   return (
+      <div className={`border-b pb-4 mb-4 transition-colors duration-300 ${
+         isDarkMode ? 'border-gray-700' : 'border-gray-200'
+      } ${className}`} {...props}>
+         {children}
+      </div>
+   );
+};
 
-const ModalTitle = ({ children, className = '', ...props }) => (
-   <h3 className={`text-lg font-semibold text-gray-900 ${className}`} {...props}>
-      {children}
-   </h3>
-);
+const ModalTitle = ({ children, className = '', ...props }) => {
+   const { isDarkMode } = useDarkMode();
+   return (
+      <h3 className={`text-lg font-semibold transition-colors duration-300 ${
+         isDarkMode ? 'text-white' : 'text-gray-900'
+      } ${className}`} {...props}>
+         {children}
+      </h3>
+   );
+};
 
 const ModalContent = ({ children, className = '', ...props }) => (
    <div className={className} {...props}>
@@ -110,11 +132,16 @@ const ModalContent = ({ children, className = '', ...props }) => (
    </div>
 );
 
-const ModalFooter = ({ children, className = '', ...props }) => (
-   <div className={`border-t border-gray-200 pt-4 mt-4 flex justify-end gap-3 ${className}`} {...props}>
-      {children}
-   </div>
-);
+const ModalFooter = ({ children, className = '', ...props }) => {
+   const { isDarkMode } = useDarkMode();
+   return (
+      <div className={`border-t pt-4 mt-4 flex justify-end gap-3 transition-colors duration-300 ${
+         isDarkMode ? 'border-gray-700' : 'border-gray-200'
+      } ${className}`} {...props}>
+         {children}
+      </div>
+   );
+};
 
 Modal.Header = ModalHeader;
 Modal.Title = ModalTitle;

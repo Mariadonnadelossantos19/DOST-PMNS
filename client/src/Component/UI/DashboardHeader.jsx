@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDarkMode } from '../Context';
 
 const DashboardHeader = ({ 
    title, 
@@ -7,6 +8,8 @@ const DashboardHeader = ({
    className = '',
    children 
 }) => {
+   const { isDarkMode } = useDarkMode();
+   
    const colorClasses = {
       blue: 'from-blue-600 to-blue-800',
       green: 'from-green-600 to-green-800',
@@ -20,7 +23,7 @@ const DashboardHeader = ({
    };
 
    return (
-      <div className={`bg-gradient-to-r ${colorClasses[color]} rounded-xl p-6 text-white shadow-lg ${className}`}>
+      <div className={`bg-gradient-to-r ${colorClasses[color]} rounded-xl p-6 text-white shadow-lg transition-all duration-300 ${className}`}>
          <div className="flex items-center justify-between">
             <div>
                <h1 className="text-3xl font-bold">{title}</h1>

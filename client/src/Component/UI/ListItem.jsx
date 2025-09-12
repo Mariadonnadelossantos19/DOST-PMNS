@@ -1,5 +1,6 @@
 import React from 'react';
 import Badge from './Badge';
+import { useDarkMode } from '../Context';
 
 const ListItem = ({ 
    title, 
@@ -11,7 +12,13 @@ const ListItem = ({
    className = '',
    onClick = null
 }) => {
-   const baseClasses = "flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200";
+   const { isDarkMode } = useDarkMode();
+   
+   const baseClasses = `flex items-center justify-between p-4 rounded-lg transition-colors duration-200 ${
+      isDarkMode 
+         ? 'bg-gray-700 hover:bg-gray-600' 
+         : 'bg-gray-50 hover:bg-gray-100'
+   }`;
    const clickableClasses = onClick ? "cursor-pointer" : "";
    
    return (
@@ -22,13 +29,19 @@ const ListItem = ({
          <div className="flex items-center flex-1">
             {icon && (
                <div className="flex-shrink-0 mr-3">
-                  <span className="text-gray-400 text-lg">{icon}</span>
+                  <span className={`text-lg transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`}>{icon}</span>
                </div>
             )}
             <div className="flex-1 min-w-0">
-               <p className="font-medium text-gray-900 truncate">{title}</p>
+               <p className={`font-medium truncate transition-colors duration-300 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+               }`}>{title}</p>
                {subtitle && (
-                  <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+                  <p className={`text-sm mt-1 transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>{subtitle}</p>
                )}
             </div>
          </div>

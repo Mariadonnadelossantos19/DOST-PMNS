@@ -3,6 +3,7 @@ import { Register } from './Component';
 import { MainLayout, ProjectDashboard, LandingPage, NotificationProvider, useNotifications } from './Component';
 import { ToastProvider } from './Component/UI';
 import { FloatingMiniGamesButton } from './Component/Interactive';
+import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import './App.css';
 
@@ -271,20 +272,24 @@ function App() {
 
    if (showDashboard) {
       return (
-         <NotificationProvider>
-            <ToastProvider>
-               <AppContent onLogout={handleLogout} />
-               <FloatingMiniGamesButton />
-            </ToastProvider>
-         </NotificationProvider>
+         <DarkModeProvider>
+            <NotificationProvider>
+               <ToastProvider>
+                  <AppContent onLogout={handleLogout} />
+                  <FloatingMiniGamesButton />
+               </ToastProvider>
+            </NotificationProvider>
+         </DarkModeProvider>
       );
    }
 
    return (
-      <ToastProvider>
-         <LandingPage onLoginSuccess={handleLoginSuccess} />
-         <FloatingMiniGamesButton />
-      </ToastProvider>
+      <DarkModeProvider>
+         <ToastProvider>
+            <LandingPage onLoginSuccess={handleLoginSuccess} />
+            <FloatingMiniGamesButton />
+         </ToastProvider>
+      </DarkModeProvider>
    );
 }
 

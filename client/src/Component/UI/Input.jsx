@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { useDarkMode } from '../Context';
 
 const Input = forwardRef(({ 
    label,
@@ -10,12 +11,20 @@ const Input = forwardRef(({
    containerClassName = '',
    ...props 
 }, ref) => {
+   const { isDarkMode } = useDarkMode();
+   
    const inputClasses = `
-      block w-full px-3 py-2 border rounded-lg text-sm
-      focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors
+      block w-full px-3 py-2 border rounded-lg text-sm transition-colors duration-300
+      focus:outline-none focus:ring-2 focus:ring-offset-0
+      ${isDarkMode 
+         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+      }
       ${error 
          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+         : isDarkMode
+            ? 'focus:border-blue-400 focus:ring-blue-300'
+            : 'focus:border-blue-500 focus:ring-blue-200'
       }
       ${leftIcon ? 'pl-10' : ''}
       ${rightIcon ? 'pr-10' : ''}
@@ -25,7 +34,9 @@ const Input = forwardRef(({
    return (
       <div className={containerClassName}>
          {label && (
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+               isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
                {label}
                {props.required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -34,7 +45,9 @@ const Input = forwardRef(({
          <div className="relative">
             {leftIcon && (
                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400">
+                  <span className={`transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`}>
                      {leftIcon}
                   </span>
                </div>
@@ -48,7 +61,9 @@ const Input = forwardRef(({
             
             {rightIcon && (
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400">
+                  <span className={`transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`}>
                      {rightIcon}
                   </span>
                </div>
@@ -62,7 +77,9 @@ const Input = forwardRef(({
          )}
          
          {helperText && !error && (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className={`mt-1 text-sm transition-colors duration-300 ${
+               isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>
                {helperText}
             </p>
          )}
