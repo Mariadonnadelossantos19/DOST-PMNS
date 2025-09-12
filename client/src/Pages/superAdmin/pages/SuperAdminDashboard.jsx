@@ -3,10 +3,10 @@ import { Card, Button, Badge } from '../../../Component/UI';
 import ProjectCard from '../../../Component/ProjectManagement/ProjectCard';
 import TaskList from '../../../Component/ProjectManagement/TaskList';
 import { UserManagement } from '../../../Component/UserManagement';
+import { InteractiveDashboard } from '../../../Component/Interactive';
 
 const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
-   const [selectedProject, setSelectedProject] = useState(null);
-   const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks', 'users'
+   const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks', 'users', 'interactive'
 
    // Calculate dashboard statistics
    const stats = {
@@ -29,6 +29,21 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
       .filter(t => t.dueDate && t.status !== 'completed')
       .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
       .slice(0, 5);
+
+   // Interactive user stats for Super Admin
+   const userStats = {
+      totalEnrollments: stats.totalProjects + stats.totalTasks,
+      approvedApplications: stats.completedProjects,
+      avgProcessingTime: 12,
+      todayProcessed: stats.activeProjects,
+      accuracyRate: 96,
+      communitiesHelped: stats.totalProjects,
+      timeSaved: stats.completedTasks * 2,
+      completedTna: stats.completedProjects,
+      perfectStreak: stats.completedProjects,
+      helpfulActions: stats.totalTasks,
+      dailyProcessed: stats.activeProjects
+   };
 
    const renderOverview = () => (
       <div className="space-y-6">
@@ -142,7 +157,7 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
                <ProjectCard
                   key={project.id}
                   project={project}
-                  onSelect={() => setSelectedProject(project)}
+                  onSelect={() => console.log('Project selected:', project.id)}
                   onUpdate={(updates) => {
                      console.log('Project update:', project.id, updates);
                   }}
@@ -185,6 +200,7 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
             <nav className="-mb-px flex space-x-8">
                {[
                   { key: 'overview', label: 'Overview' },
+                  { key: 'interactive', label: 'Interactive' },
                   { key: 'projects', label: 'Projects' },
                   { key: 'tasks', label: 'Tasks' },
                   ...(currentUser && currentUser.role === 'super_admin' ? [{ key: 'users', label: 'User Management' }] : [])
@@ -206,6 +222,7 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
 
          {/* Content */}
          {view === 'overview' && renderOverview()}
+         {view === 'interactive' && <InteractiveDashboard userStats={userStats} />}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
          {view === 'users' && renderUsers()}

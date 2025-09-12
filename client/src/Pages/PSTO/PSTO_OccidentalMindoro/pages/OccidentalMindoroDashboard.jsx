@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
 import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
+import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const OccidentalMindoroDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
@@ -60,6 +61,21 @@ const OccidentalMindoroDashboard = ({ currentUser }) => {
       totalTasks: occidentalMindoroTasks.length,
       completedTasks: occidentalMindoroTasks.filter(t => t.status === 'completed').length,
       totalBeneficiaries: occidentalMindoroProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0)
+   };
+
+   // Interactive user stats for Occidental Mindoro PSTO
+   const userStats = {
+      totalEnrollments: stats.totalProjects + stats.totalTasks,
+      approvedApplications: stats.completedProjects,
+      avgProcessingTime: 19,
+      todayProcessed: stats.activeProjects,
+      accuracyRate: 87,
+      communitiesHelped: stats.totalBeneficiaries,
+      timeSaved: stats.completedTasks * 2.1,
+      completedTna: stats.completedProjects,
+      perfectStreak: stats.completedProjects,
+      helpfulActions: stats.totalTasks,
+      dailyProcessed: stats.activeProjects
    };
 
    const renderOverview = () => (
@@ -248,6 +264,7 @@ const OccidentalMindoroDashboard = ({ currentUser }) => {
             <nav className="-mb-px flex space-x-8">
                {[
                   { key: 'overview', label: 'Overview' },
+                  { key: 'interactive', label: 'Interactive' },
                   { key: 'projects', label: 'Projects' },
                   { key: 'tasks', label: 'Tasks' },
                   { key: 'enrollment', label: 'Enrollment' }
@@ -269,6 +286,7 @@ const OccidentalMindoroDashboard = ({ currentUser }) => {
 
          {/* Content */}
          {view === 'overview' && renderOverview()}
+         {view === 'interactive' && <InteractiveDashboard userStats={userStats} />}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
          {view === 'enrollment' && <EnrollmentSystem province="Occidental Mindoro" />}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
 import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
+import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const PalawanDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
@@ -60,6 +61,21 @@ const PalawanDashboard = ({ currentUser }) => {
       totalTasks: palawanTasks.length,
       completedTasks: palawanTasks.filter(t => t.status === 'completed').length,
       totalBeneficiaries: palawanProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0)
+   };
+
+   // Interactive user stats for Palawan PSTO
+   const userStats = {
+      totalEnrollments: stats.totalProjects + stats.totalTasks,
+      approvedApplications: stats.completedProjects,
+      avgProcessingTime: 14,
+      todayProcessed: stats.activeProjects,
+      accuracyRate: 91,
+      communitiesHelped: stats.totalBeneficiaries,
+      timeSaved: stats.completedTasks * 2.8,
+      completedTna: stats.completedProjects,
+      perfectStreak: stats.completedProjects,
+      helpfulActions: stats.totalTasks,
+      dailyProcessed: stats.activeProjects
    };
 
    const renderOverview = () => (
@@ -248,6 +264,7 @@ const PalawanDashboard = ({ currentUser }) => {
             <nav className="-mb-px flex space-x-8">
                {[
                   { key: 'overview', label: 'Overview' },
+                  { key: 'interactive', label: 'Interactive' },
                   { key: 'projects', label: 'Projects' },
                   { key: 'tasks', label: 'Tasks' },
                   { key: 'enrollment', label: 'Enrollment' }
@@ -269,6 +286,7 @@ const PalawanDashboard = ({ currentUser }) => {
 
          {/* Content */}
          {view === 'overview' && renderOverview()}
+         {view === 'interactive' && <InteractiveDashboard userStats={userStats} />}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
          {view === 'enrollment' && <EnrollmentSystem province="Palawan" />}

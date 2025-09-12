@@ -74,6 +74,7 @@ const TnaEnrollmentForm = ({
             emailAddress: formData.emailAddress
          }));
 
+         // Add file uploads if they exist
          if (formData.letterOfIntent) {
             submitData.append('letterOfIntent', formData.letterOfIntent);
          }

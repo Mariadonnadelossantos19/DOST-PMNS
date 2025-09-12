@@ -1,8 +1,24 @@
 import React, { useState } from 'react';
 import { TnaReviewPanel } from '../../Component/EnrollmentSystem';
+import { InteractiveDashboard } from '../../Component/Interactive';
 
 const DostMimaropaDashboard = () => {
    const [activeTab, setActiveTab] = useState('tna-review');
+   
+   // Mock user stats for interactive features
+   const userStats = {
+      totalEnrollments: 45,
+      approvedApplications: 12,
+      avgProcessingTime: 15,
+      todayProcessed: 8,
+      accuracyRate: 94,
+      communitiesHelped: 23,
+      timeSaved: 67,
+      completedTna: 7,
+      perfectStreak: 15,
+      helpfulActions: 3,
+      dailyProcessed: 8
+   };
 
    return (
       <div className="min-h-screen bg-white">
@@ -16,6 +32,16 @@ const DostMimaropaDashboard = () => {
             {/* Compact Tab Navigation */}
             <div className="mb-4">
                <div className="flex space-x-1 border-b border-gray-200">
+                  <button
+                     onClick={() => setActiveTab('dashboard')}
+                     className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
+                        activeTab === 'dashboard'
+                           ? 'border-blue-500 text-blue-600'
+                           : 'border-transparent text-gray-500 hover:text-gray-700'
+                     }`}
+                  >
+                     Dashboard
+                  </button>
                   <button
                      onClick={() => setActiveTab('tna-review')}
                      className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
@@ -34,7 +60,7 @@ const DostMimaropaDashboard = () => {
                            : 'border-transparent text-gray-500 hover:text-gray-700'
                      }`}
                   >
-                     Enrollments
+                     📊 Enrollments
                   </button>
                   <button
                      onClick={() => setActiveTab('reports')}
@@ -44,13 +70,14 @@ const DostMimaropaDashboard = () => {
                            : 'border-transparent text-gray-500 hover:text-gray-700'
                      }`}
                   >
-                     Reports
+                     📈 Reports
                   </button>
                </div>
             </div>
 
             {/* Tab Content */}
             <div>
+               {activeTab === 'dashboard' && <InteractiveDashboard userStats={userStats} />}
                {activeTab === 'tna-review' && <TnaReviewPanel />}
                
                {activeTab === 'enrollments' && (

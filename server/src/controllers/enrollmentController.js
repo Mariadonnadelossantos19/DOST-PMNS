@@ -137,19 +137,8 @@ const createEnrollment = async (req, res) => {
          });
       }
       
-      // Check if customer already enrolled for the same service
-      const existingEnrollment = await Enrollment.findOne({
-         'customer.email': customer.email,
-         service: service,
-         status: { $in: ['draft', 'submitted', 'under_review', 'approved', 'in_progress'] }
-      });
-      
-      if (existingEnrollment) {
-         return res.status(400).json({
-            success: false,
-            message: 'Customer is already enrolled for this service'
-         });
-      }
+      // PSTO can enroll unlimited customers without restrictions
+      // No validation needed - allow all enrollments
       
       // Generate enrollment ID
       const count = await Enrollment.countDocuments();
@@ -346,26 +335,74 @@ const submitTnaEnrollment = async (req, res) => {
    try {
       const { id } = req.params;
       const { tnaInfo } = req.body;
+      const files = req.files;
+      
+      console.log('Submit TNA enrollment request:', { id, tnaInfo, files });
       
       const enrollment = await Enrollment.findById(id);
       if (!enrollment) {
+         console.log('Enrollment not found for ID:', id);
          return res.status(404).json({
             success: false,
             message: 'Enrollment not found'
          });
       }
       
+      // Parse TNA info if it's a string (from form data)
+      let parsedTnaInfo = tnaInfo;
+      if (typeof tnaInfo === 'string') {
+         try {
+            parsedTnaInfo = JSON.parse(tnaInfo);
+         } catch (e) {
+            console.error('Error parsing TNA info:', e);
+            return res.status(400).json({
+               success: false,
+               message: 'Invalid TNA information format'
+            });
+         }
+      }
+      
       // Validate TNA info is complete
-      if (!tnaInfo || !tnaInfo.affiliation || !tnaInfo.contactPerson || !tnaInfo.position || 
-          !tnaInfo.officeAddress || !tnaInfo.contactNumber || !tnaInfo.emailAddress) {
+      if (!parsedTnaInfo || !parsedTnaInfo.affiliation || !parsedTnaInfo.contactPerson || !parsedTnaInfo.position || 
+          !parsedTnaInfo.officeAddress || !parsedTnaInfo.contactNumber || !parsedTnaInfo.emailAddress) {
          return res.status(400).json({
             success: false,
             message: 'All TNA information fields are required'
          });
       }
       
+      // Handle file uploads
+      if (files) {
+         if (files.letterOfIntent && files.letterOfIntent[0]) {
+            parsedTnaInfo.letterOfIntent = {
+               filename: files.letterOfIntent[0].filename,
+               originalName: files.letterOfIntent[0].originalname,
+               path: files.letterOfIntent[0].path,
+               uploadedAt: new Date()
+            };
+         }
+         
+         if (files.dostTnaForm && files.dostTnaForm[0]) {
+            parsedTnaInfo.dostTnaForm = {
+               filename: files.dostTnaForm[0].filename,
+               originalName: files.dostTnaForm[0].originalname,
+               path: files.dostTnaForm[0].path,
+               uploadedAt: new Date()
+            };
+         }
+         
+         if (files.enterpriseProfile && files.enterpriseProfile[0]) {
+            parsedTnaInfo.enterpriseProfile = {
+               filename: files.enterpriseProfile[0].filename,
+               originalName: files.enterpriseProfile[0].originalname,
+               path: files.enterpriseProfile[0].path,
+               uploadedAt: new Date()
+            };
+         }
+      }
+      
       // Update enrollment with TNA info and submit
-      enrollment.tnaInfo = tnaInfo;
+      enrollment.tnaInfo = parsedTnaInfo;
       enrollment.status = 'submitted';
       enrollment.tnaStatus = 'under_review';
       enrollment.submittedAt = new Date();
@@ -380,9 +417,15 @@ const submitTnaEnrollment = async (req, res) => {
       });
    } catch (error) {
       console.error('Submit TNA enrollment error:', error);
+      console.error('Error details:', {
+         message: error.message,
+         stack: error.stack,
+         name: error.name
+      });
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
       });
    }
 };

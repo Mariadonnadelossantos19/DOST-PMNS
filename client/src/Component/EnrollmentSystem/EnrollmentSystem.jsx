@@ -215,14 +215,7 @@ const EnrollmentSystem = ({ province, onEnroll }) => {
    };
 
    const handleServiceCardClick = (serviceKey) => {
-      if (enrollments.some(enrollment => 
-         enrollment.service === serviceKey && 
-         enrollment.status !== 'cancelled' && 
-         enrollment.tnaStatus !== 'rejected'
-      )) {
-         alert('Customer is already enrolled for this service or has a pending enrollment');
-         return;
-      }
+      // PSTO can enroll unlimited customers without restrictions
       setSelectedService(serviceKey);
       setShowEnrollmentModal(true);
    };
