@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Register } from './Component';
 import { MainLayout, ProjectDashboard, LandingPage, NotificationProvider, useNotifications } from './Component';
 import { ToastProvider } from './Component/UI';
+import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import './App.css';
 
 // Sample data for demonstration
@@ -122,7 +123,7 @@ const sampleTasks = [
 
 const sampleUser = {
    name: 'John Administrator',
-   role: 'super_admin',
+   role: 'dost_mimaropa', // Changed to test DOST MIMAROPA dashboard
    avatar: null
 };
 
@@ -221,17 +222,28 @@ function AppContent({ onLogout }) {
       console.log('Task deleted:', taskId);
    };
 
+   // Render different dashboards based on user role
+   const renderDashboard = () => {
+      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
+         return <DostMimaropaDashboard />;
+      } else {
+         return (
+            <ProjectDashboard
+               projects={sampleProjects}
+               tasks={sampleTasks}
+               currentUser={currentUser}
+               onProjectUpdate={handleProjectUpdate}
+               onTaskUpdate={handleTaskUpdate}
+               onTaskCreate={handleTaskCreate}
+               onTaskDelete={handleTaskDelete}
+            />
+         );
+      }
+   };
+
    return (
       <MainLayout user={currentUser} onLogout={handleLogout}>
-         <ProjectDashboard
-            projects={sampleProjects}
-            tasks={sampleTasks}
-            currentUser={currentUser}
-            onProjectUpdate={handleProjectUpdate}
-            onTaskUpdate={handleTaskUpdate}
-            onTaskCreate={handleTaskCreate}
-            onTaskDelete={handleTaskDelete}
-         />
+         {renderDashboard()}
       </MainLayout>
    );
 }

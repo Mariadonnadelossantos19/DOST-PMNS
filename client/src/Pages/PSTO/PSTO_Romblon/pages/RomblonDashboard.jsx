@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
+import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
 
 const RomblonDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
@@ -248,7 +249,8 @@ const RomblonDashboard = ({ currentUser }) => {
                {[
                   { key: 'overview', label: 'Overview' },
                   { key: 'projects', label: 'Projects' },
-                  { key: 'tasks', label: 'Tasks' }
+                  { key: 'tasks', label: 'Tasks' },
+                  { key: 'enrollment', label: 'Enrollment' }
                ].map((tab) => (
                   <button
                      key={tab.key}
@@ -269,6 +271,7 @@ const RomblonDashboard = ({ currentUser }) => {
          {view === 'overview' && renderOverview()}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
+         {view === 'enrollment' && <EnrollmentSystem province="Romblon" />}
       </div>
    );
 };

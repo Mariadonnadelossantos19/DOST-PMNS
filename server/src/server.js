@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -62,6 +64,7 @@ const startServer = async () => {
          console.log(`🚀 Server running on port ${PORT}`);
          console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
          console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
+         console.log(`📝 Enrollments API: http://localhost:${PORT}/api/enrollments`);
       });
    } catch (error) {
       console.error('❌ Failed to start server:', error.message);

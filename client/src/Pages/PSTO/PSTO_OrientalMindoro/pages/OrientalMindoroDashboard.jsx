@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
+import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
 
 const OrientalMindoroDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
@@ -248,7 +249,8 @@ const OrientalMindoroDashboard = ({ currentUser }) => {
                {[
                   { key: 'overview', label: 'Overview' },
                   { key: 'projects', label: 'Projects' },
-                  { key: 'tasks', label: 'Tasks' }
+                  { key: 'tasks', label: 'Tasks' },
+                  { key: 'enrollment', label: 'Enrollment' }
                ].map((tab) => (
                   <button
                      key={tab.key}
@@ -269,6 +271,7 @@ const OrientalMindoroDashboard = ({ currentUser }) => {
          {view === 'overview' && renderOverview()}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
+         {view === 'enrollment' && <EnrollmentSystem province="Oriental Mindoro" />}
       </div>
    );
 };

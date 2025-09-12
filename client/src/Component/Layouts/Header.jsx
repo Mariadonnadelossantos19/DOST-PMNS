@@ -10,7 +10,7 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
                className="p-2 rounded-md hover:bg-gray-100 transition-colors lg:hidden"
                onClick={onToggleSidebar}
                aria-label="Toggle sidebar"
-            >
+            >  
                <div className="w-5 h-4 flex flex-col justify-between">
                   <span className={`block h-0.5 w-full bg-gray-600 transition-all duration-300 ${sidebarOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
                   <span className={`block h-0.5 w-full bg-gray-600 transition-all duration-300 ${sidebarOpen ? 'opacity-0' : ''}`}></span>

@@ -1,12 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false }) => {
-   // DOST Services
+   const [stats, setStats] = useState({
+      totalApplications: 0,
+      pendingApplications: 0,
+      approvedApplications: 0,
+      rejectedApplications: 0
+   });
+
+   // Load statistics
+   useEffect(() => {
+      if (userRole === 'dost_mimaropa' || userRole === 'super_admin') {
+         loadStatistics();
+      }
+   }, [userRole]);
+
+   const loadStatistics = async () => {
+      try {
+         const response = await axios.get('http://localhost:4000/api/enrollments/stats');
+         if (response.data.success) {
+            setStats({
+               totalApplications: response.data.stats.totalEnrollments || 0,
+               pendingApplications: response.data.stats.enrolled || 0,
+               approvedApplications: response.data.stats.completed || 0,
+               rejectedApplications: response.data.stats.cancelled || 0
+            });
+         }
+      } catch (error) {
+         console.error('Error loading statistics:', error);
+      }
+   };
+
+   // DOST Services with enhanced data
    const dostServices = [
       {
          id: 'setup',
          label: 'SETUP',
-         description: 'Science Education and TrainingSmall Enterprises Technology Upgrading Program',
+         description: 'Science Education and Training Small Enterprises Technology Upgrading Program',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -14,7 +45,9 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/services/setup'
+         path: '/services/setup',
+         color: 'blue',
+         count: 0
       },
       {
          id: 'gia',
@@ -26,7 +59,9 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/services/gia'
+         path: '/services/gia',
+         color: 'green',
+         count: 0
       },
       {
          id: 'cest',
@@ -40,21 +75,23 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/services/cest'
+         path: '/services/cest',
+         color: 'purple',
+         count: 0
       },
       {
          id: 'sscp',
          label: 'SSCP',
-         description: 'Smart and Sustainable Communities Program,',
+         description: 'Smart and Sustainable Communities Program',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3Z" stroke="currentColor" strokeWidth="2"/>
-               <path d="M8 7H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-               <path d="M8 11H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-               <path d="M8 15H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 22V12H15V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/services/sscp'
+         path: '/services/sscp',
+         color: 'orange',
+         count: 0
       }
    ];
 
@@ -183,38 +220,95 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                            DOST Services
                         </h3>
                      )}
-                     <ul className="space-y-1">
+                     <div className="space-y-2">
                         {dostServices.map((service) => {
                            const isActive = currentPath === service.path;
+                           const colorClasses = {
+                              blue: 'bg-blue-50 border-blue-200 text-blue-700',
+                              green: 'bg-green-50 border-green-200 text-green-700',
+                              purple: 'bg-purple-50 border-purple-200 text-purple-700',
+                              orange: 'bg-orange-50 border-orange-200 text-orange-700'
+                           };
+                           const iconColorClasses = {
+                              blue: 'text-blue-600',
+                              green: 'text-green-600',
+                              purple: 'text-purple-600',
+                              orange: 'text-orange-600'
+                           };
+                           
                            return (
-                              <li key={service.id}>
+                              <div key={service.id} className={`border rounded-lg p-3 transition-all duration-200 hover:shadow-sm ${isActive ? colorClasses[service.color] : 'bg-white border-gray-200 hover:border-gray-300'}`}>
                                  <a
                                     href={service.path}
-                                    className={`
-                                       flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group
-                                       ${isActive 
-                                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
-                                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                       }
-                                       ${isCollapsed ? 'justify-center' : ''}
-                                    `}
+                                    className={`flex items-start gap-3 group ${isCollapsed ? 'justify-center' : ''}`}
                                     title={isCollapsed ? service.label : ''}
                                  >
-                                    <span className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
-                                       {service.icon}
-                                    </span>
+                                    <div className={`p-2 rounded-lg ${isActive ? 'bg-white' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                                       <span className={`${isActive ? iconColorClasses[service.color] : 'text-gray-500 group-hover:text-gray-700'}`}>
+                                          {service.icon}
+                                       </span>
+                                    </div>
                                     {!isCollapsed && (
-                                       <div className="flex-1">
-                                          <div className="font-medium">{service.label}</div>
-                                          <div className="text-xs text-gray-500">{service.description}</div>
+                                       <div className="flex-1 min-w-0">
+                                          <div className="flex items-center justify-between mb-1">
+                                             <h4 className="font-semibold text-sm">{service.label}</h4>
+                                             {service.count > 0 && (
+                                                <span className={`text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white' : 'bg-gray-100'} font-medium`}>
+                                                   {service.count}
+                                                </span>
+                                             )}
+                                          </div>
+                                          <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                                             {service.description}
+                                          </p>
                                        </div>
                                     )}
                                  </a>
-                              </li>
+                              </div>
                            );
                         })}
-                     </ul>
+                     </div>
                   </div>
+
+                  {/* Quick Stats Section for DOST MIMAROPA */}
+                  {(userRole === 'dost_mimaropa' || userRole === 'super_admin') && (
+                     <div>
+                        {!isCollapsed && (
+                           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                              Quick Stats
+                           </h3>
+                        )}
+                        <div className="space-y-2">
+                           <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-xs font-medium text-blue-700">Total Applications</span>
+                                 </div>
+                                 <span className="text-sm font-bold text-blue-800">{stats.totalApplications}</span>
+                              </div>
+                           </div>
+                           <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                    <span className="text-xs font-medium text-yellow-700">Pending Review</span>
+                                 </div>
+                                 <span className="text-sm font-bold text-yellow-800">{stats.pendingApplications}</span>
+                              </div>
+                           </div>
+                           <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-xs font-medium text-green-700">Approved</span>
+                                 </div>
+                                 <span className="text-sm font-bold text-green-800">{stats.approvedApplications}</span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  )}
 
                   {/* Management Section */}
                   <div>
