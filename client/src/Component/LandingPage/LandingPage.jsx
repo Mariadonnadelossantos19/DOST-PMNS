@@ -712,7 +712,9 @@ const LandingPage = ({ onLoginSuccess }) => {
                               </svg>
                            </div>
                            <div>
-                              <p className="text-gray-600">
+                              <p className={`transition-colors duration-300 ${
+                                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                              }`}>
                                  <strong>Location:</strong> 4/F DOST-PTRI Building, Gen. Santos Avenue, Bicutan, Taguig City
                               </p>
                            </div>
@@ -725,7 +727,9 @@ const LandingPage = ({ onLoginSuccess }) => {
                               </svg>
                            </div>
                            <div>
-                              <p className="text-gray-600">
+                              <p className={`transition-colors duration-300 ${
+                                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                              }`}>
                                  <strong>Website:</strong> https://region4b.dost.gov.ph
                               </p>
                            </div>
@@ -738,7 +742,9 @@ const LandingPage = ({ onLoginSuccess }) => {
                               </svg>
                            </div>
                            <div>
-                              <p className="text-gray-600">
+                              <p className={`transition-colors duration-300 ${
+                                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                              }`}>
                                  <strong>Email:</strong> official@mimaropa.dost.gov.ph
                               </p>
                            </div>
@@ -751,7 +757,9 @@ const LandingPage = ({ onLoginSuccess }) => {
                               </svg>
                            </div>
                            <div>
-                              <p className="text-gray-600">
+                              <p className={`transition-colors duration-300 ${
+                                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                              }`}>
                                  <strong>Call:</strong> (02) 837-2071 loc 2092 or 2093
                               </p>
                            </div>
@@ -777,23 +785,47 @@ const LandingPage = ({ onLoginSuccess }) => {
                   <div>
                      <form className="space-y-6">
                         <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                           <input type="text" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                           <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                           }`}>Your Name</label>
+                           <input type="text" className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300 ${
+                              isDarkMode 
+                                 ? 'bg-gray-800 border-gray-600 text-white' 
+                                 : 'bg-white border-gray-300 text-gray-900'
+                           }`} />
                         </div>
                         
                         <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">Your Email</label>
-                           <input type="email" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                           <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                           }`}>Your Email</label>
+                           <input type="email" className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300 ${
+                              isDarkMode 
+                                 ? 'bg-gray-800 border-gray-600 text-white' 
+                                 : 'bg-white border-gray-300 text-gray-900'
+                           }`} />
                         </div>
                         
                         <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                           <input type="text" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                           <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                           }`}>Subject</label>
+                           <input type="text" className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300 ${
+                              isDarkMode 
+                                 ? 'bg-gray-800 border-gray-600 text-white' 
+                                 : 'bg-white border-gray-300 text-gray-900'
+                           }`} />
                         </div>
                         
                         <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                           <textarea rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                           <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                           }`}>Message</label>
+                           <textarea rows={4} className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300 ${
+                              isDarkMode 
+                                 ? 'bg-gray-800 border-gray-600 text-white' 
+                                 : 'bg-white border-gray-300 text-gray-900'
+                           }`}></textarea>
                         </div>
                         
                         <Button variant="primary" size="lg" className="w-full">
