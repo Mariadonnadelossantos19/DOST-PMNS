@@ -434,9 +434,33 @@ const submitTnaEnrollment = async (req, res) => {
 const reviewTnaEnrollment = async (req, res) => {
    try {
       const { id } = req.params;
-      const { action, reviewNotes, reviewedBy } = req.body; // action: 'approve' or 'reject'
+      const { action, reviewNotes } = req.body;
       
-      const enrollment = await Enrollment.findById(id);
+      console.log('Review TNA enrollment request:', { id, action, reviewNotes });
+      
+      // Simple validation
+      if (!action || !['approve', 'reject'].includes(action)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid action. Must be "approve" or "reject"'
+         });
+      }
+      
+      // Find and update enrollment in one operation
+      const updateData = {
+         tnaStatus: action === 'approve' ? 'approved' : 'rejected',
+         status: action === 'approve' ? 'approved' : 'rejected',
+         reviewNotes: reviewNotes || '',
+         reviewedBy: 'DOST MIMAROPA',
+         reviewedAt: new Date()
+      };
+      
+      const enrollment = await Enrollment.findByIdAndUpdate(
+         id,
+         updateData,
+         { new: true }
+      );
+      
       if (!enrollment) {
          return res.status(404).json({
             success: false,
@@ -444,47 +468,20 @@ const reviewTnaEnrollment = async (req, res) => {
          });
       }
       
-      if (enrollment.tnaStatus !== 'under_review') {
-         return res.status(400).json({
-            success: false,
-            message: 'Enrollment is not under review'
-         });
-      }
-      
-      // Update enrollment based on review action
-      if (action === 'approve') {
-         enrollment.tnaStatus = 'approved';
-         enrollment.status = 'approved';
-         enrollment.reviewNotes = reviewNotes || '';
-         enrollment.reviewedBy = reviewedBy;
-         enrollment.reviewedAt = new Date();
-      } else if (action === 'reject') {
-         enrollment.tnaStatus = 'rejected';
-         enrollment.status = 'rejected';
-         enrollment.reviewNotes = reviewNotes || '';
-         enrollment.reviewedBy = reviewedBy;
-         enrollment.reviewedAt = new Date();
-      } else {
-         return res.status(400).json({
-            success: false,
-            message: 'Invalid action. Must be "approve" or "reject"'
-         });
-      }
-      
-      await enrollment.save();
-      await enrollment.populate('enrolledBy', 'firstName lastName email role');
-      await enrollment.populate('reviewedBy', 'firstName lastName email role');
+      console.log('Enrollment updated successfully:', enrollment._id);
       
       res.json({
          success: true,
          message: `TNA enrollment ${action}d successfully`,
          enrollment: enrollment
       });
+      
    } catch (error) {
       console.error('Review TNA enrollment error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Failed to review enrollment',
+         error: error.message
       });
    }
 };

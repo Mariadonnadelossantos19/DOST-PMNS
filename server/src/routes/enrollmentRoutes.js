@@ -20,6 +20,12 @@ router.get('/test', (req, res) => {
    res.json({ success: true, message: 'Enrollment API is working' });
 });
 
+// Test review endpoint
+router.post('/test-review', (req, res) => {
+   console.log('Test review request:', req.body);
+   res.json({ success: true, message: 'Test review endpoint working', data: req.body });
+});
+
 // Enrollment management routes
 router.get('/', getAllEnrollments);
 router.get('/stats', getEnrollmentStats);

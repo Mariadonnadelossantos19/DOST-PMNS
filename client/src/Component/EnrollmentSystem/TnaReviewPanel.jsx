@@ -47,16 +47,26 @@ const TnaReviewPanel = () => {
 
       try {
          setLoading(true);
+         setError(null); // Clear previous errors
+         
+         console.log('Submitting review:', {
+            enrollmentId: selectedEnrollment._id,
+            action: reviewAction,
+            reviewNotes: reviewNotes
+         });
+         
          const response = await axios.post(
             `${API_BASE_URL}/enrollments/${selectedEnrollment._id}/review-tna`,
             {
                action: reviewAction,
-               reviewNotes: reviewNotes,
-               reviewedBy: 'DOST MIMAROPA' // This should come from auth context
+               reviewNotes: reviewNotes
             }
          );
 
+         console.log('Review response:', response.data);
+
          if (response.data.success) {
+            alert(`Application ${reviewAction}d successfully!`);
             setShowReviewModal(false);
             setSelectedEnrollment(null);
             setReviewAction('');
@@ -67,7 +77,9 @@ const TnaReviewPanel = () => {
          }
       } catch (error) {
          console.error('Error submitting review:', error);
-         setError(error.response?.data?.message || error.message || 'Failed to submit review');
+         const errorMessage = error.response?.data?.message || error.message || 'Failed to submit review';
+         setError(errorMessage);
+         alert(`Error: ${errorMessage}`);
       } finally {
          setLoading(false);
       }
