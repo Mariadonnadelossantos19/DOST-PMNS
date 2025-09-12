@@ -21,59 +21,19 @@ const DocumentViewer = ({ document, documentType, documentName }) => {
 
    const handleView = () => {
       const fileUrl = `http://localhost:4000/uploads/${document.filename}`;
-      const fileExtension = document.originalName.split('.').pop().toLowerCase();
-      
-      // For PDFs, open directly in new tab
-      if (fileExtension === 'pdf') {
-         window.open(fileUrl, '_blank');
-         return;
-      }
-      
-      // For images, open directly in new tab
-      if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-         window.open(fileUrl, '_blank');
-         return;
-      }
-      
-      // For other files, try iframe approach
-      const newWindow = window.open('', '_blank', 'width=800,height=700,scrollbars=yes,resizable=yes');
-      newWindow.document.write(`
-         <html>
-            <head>
-               <title>${documentName} - ${document.originalName}</title>
-               <style>
-                  body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-                  .header { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-                  .iframe-container { border: 1px solid #ccc; border-radius: 5px; overflow: hidden; }
-                  iframe { width: 100%; height: 600px; border: none; }
-                  .error { color: #dc3545; padding: 20px; text-align: center; }
-               </style>
-            </head>
-            <body>
-               <div class="header">
-                  <h3>${documentName}</h3>
-                  <p><strong>File:</strong> ${document.originalName}</p>
-                  <p><strong>Uploaded:</strong> ${new Date(document.uploadedAt).toLocaleDateString()}</p>
-               </div>
-               <div class="iframe-container">
-                  <iframe 
-                     src="${fileUrl}" 
-                     onerror="this.parentNode.innerHTML='<div class=\\"error\\">Unable to display this file type. Please download to view.</div>'"
-                  ></iframe>
-               </div>
-            </body>
-         </html>
-      `);
+      console.log('Viewing file:', fileUrl);
+      window.open(fileUrl, '_blank');
    };
 
    const handleDownload = () => {
-      const link = document.createElement('a');
-      link.href = `http://localhost:4000/uploads/${document.filename}`;
-      link.download = document.originalName;
-      link.click();
+      const fileUrl = `http://localhost:4000/uploads/${document.filename}`;
+      console.log('Downloading file:', fileUrl);
+      
+      // Simple approach: just open the file URL
+      window.open(fileUrl, '_blank');
    };
 
-   const getIconColor = () => {
+   const getIconColor = () => { 
       switch (documentType) {
          case 'letterOfIntent': return 'bg-red-100 text-red-600';
          case 'dostTnaForm': return 'bg-green-100 text-green-600';

@@ -15,8 +15,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
-app.use('/uploads', express.static('uploads'));
+// Serve uploaded files with proper headers for viewing
+app.use('/uploads', (req, res, next) => {
+   // Set headers to allow viewing instead of downloading
+   res.setHeader('Content-Disposition', 'inline');
+   res.setHeader('X-Content-Type-Options', 'nosniff');
+   next();
+}, express.static('uploads'));
 
 // Use routes
 app.use('/api/auth', authRoutes);
