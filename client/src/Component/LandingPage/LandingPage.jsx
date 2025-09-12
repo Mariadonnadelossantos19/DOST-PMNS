@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../UI';
 import AuthModal from '../Registration/AuthModal';
+import { useDarkMode } from '../Context';
 import heroImage from '../../assets/hero-img.png';
 
 const LandingPage = ({ onLoginSuccess }) => {
+   const { isDarkMode, toggleDarkMode } = useDarkMode();
    const [isScrolled, setIsScrolled] = useState(false);
    const [activeSection] = useState('home');
    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,12 +29,18 @@ const LandingPage = ({ onLoginSuccess }) => {
    };
 
    return (
-      <div className="min-h-screen bg-white">
+      <div className={`min-h-screen transition-colors duration-300 ${
+         isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
          {/* Header */}
          <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
             isScrolled 
-               ? 'bg-white/98 backdrop-blur-lg shadow-xl border-b border-gray-200/50' 
-               : 'bg-white/95 backdrop-blur-md border-b border-gray-200/30'
+               ? isDarkMode 
+                  ? 'bg-gray-900/98 backdrop-blur-lg shadow-xl border-b border-gray-700/50' 
+                  : 'bg-white/98 backdrop-blur-lg shadow-xl border-b border-gray-200/50'
+               : isDarkMode 
+                  ? 'bg-gray-900/95 backdrop-blur-md border-b border-gray-700/30' 
+                  : 'bg-white/95 backdrop-blur-md border-b border-gray-200/30'
          }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="flex justify-between items-center h-16">
@@ -46,7 +54,9 @@ const LandingPage = ({ onLoginSuccess }) => {
                         <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-blue-900 transition-all duration-300">
                            DOST-PMNS
                         </h1>
-                        <div className="text-xs text-gray-500 font-medium">Project Management System</div>
+                        <div className={`text-xs font-medium transition-colors duration-300 ${
+                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Project Management System</div>
                      </div>
                   </div>
                   
@@ -62,8 +72,12 @@ const LandingPage = ({ onLoginSuccess }) => {
                            href={item.href} 
                            className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group ${
                               activeSection === item.href.replace('#', '') 
-                                 ? 'text-blue-600 bg-blue-50' 
-                                 : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+                                 ? isDarkMode 
+                                    ? 'text-blue-400 bg-blue-900/50' 
+                                    : 'text-blue-600 bg-blue-50'
+                                 : isDarkMode 
+                                    ? 'text-gray-300 hover:text-blue-400 hover:bg-gray-800' 
+                                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
                            }`}
                         >
                            {item.label}
@@ -77,11 +91,36 @@ const LandingPage = ({ onLoginSuccess }) => {
                   </nav>
                   
                   <div className="hidden md:flex items-center space-x-3">
+                     {/* Dark Mode Toggle */}
+                     <button
+                        onClick={toggleDarkMode}
+                        className={`p-2 rounded-lg transition-colors duration-300 ${
+                           isDarkMode 
+                              ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                     >
+                        {isDarkMode ? (
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                           </svg>
+                        ) : (
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                           </svg>
+                        )}
+                     </button>
+
                      <Button 
                         variant="outline" 
                         size="sm"
                         onClick={handleLoginClick}
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
+                        className={`transition-all duration-300 ${
+                           isDarkMode 
+                              ? 'border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500' 
+                              : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                        }`}
                      >
                         Login
                      </Button>
@@ -115,7 +154,11 @@ const LandingPage = ({ onLoginSuccess }) => {
             <div className={`md:hidden transition-all duration-300 overflow-hidden ${
                mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
-               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/98 backdrop-blur-lg border-t border-gray-200/50 shadow-lg">
+               <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 backdrop-blur-lg shadow-lg transition-colors duration-300 ${
+                  isDarkMode 
+                     ? 'bg-gray-900/98 border-t border-gray-700/50' 
+                     : 'bg-white/98 border-t border-gray-200/50'
+               }`}>
                   {[
                      { href: '#home', label: 'Home', icon: '🏠' },
                      { href: '#about', label: 'About', icon: 'ℹ️' },
@@ -125,7 +168,11 @@ const LandingPage = ({ onLoginSuccess }) => {
                      <a 
                         key={item.href}
                         href={item.href} 
-                        className="flex items-center text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 text-base font-medium rounded-lg transition-all duration-300 group"
+                        className={`flex items-center block px-3 py-3 text-base font-medium rounded-lg transition-all duration-300 group ${
+                           isDarkMode 
+                              ? 'text-gray-300 hover:text-blue-400 hover:bg-gray-800' 
+                              : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+                        }`}
                         onClick={() => setMobileMenuOpen(false)}
                      >
                         <span className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
@@ -137,7 +184,11 @@ const LandingPage = ({ onLoginSuccess }) => {
                         variant="outline" 
                         size="sm" 
                         onClick={handleLoginClick}
-                        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className={`w-full transition-all duration-300 ${
+                           isDarkMode 
+                              ? 'border-gray-600 text-gray-300 hover:bg-gray-800' 
+                              : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
                      >
                         Login
                      </Button>
@@ -252,117 +303,197 @@ const LandingPage = ({ onLoginSuccess }) => {
          </section>
 
          {/* About Section */}
-         <section id="about" className="py-24 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
+         <section className={`py-24 relative overflow-hidden transition-colors duration-300 ${
+            isDarkMode 
+               ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
+               : 'bg-gradient-to-br from-gray-50 to-blue-50'
+         }`}>
             {/* Background Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full opacity-20 -translate-y-48 translate-x-48"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-200 rounded-full opacity-20 translate-y-40 -translate-x-40"></div>
+            <div className={`absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 -translate-y-48 translate-x-48 transition-colors duration-300 ${
+               isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
+            }`}></div>
+            <div className={`absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-20 translate-y-40 -translate-x-40 transition-colors duration-300 ${
+               isDarkMode ? 'bg-blue-800' : 'bg-blue-200'
+            }`}></div>
             
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="text-center mb-20">
-                  <div className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full mb-6">
-                     <span className="text-blue-600 font-semibold text-sm">About Our System</span>
+                  <div className={`inline-flex items-center px-4 py-2 rounded-full mb-6 transition-colors duration-300 ${
+                     isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
+                  }`}>
+                     <span className={`font-semibold text-sm transition-colors duration-300 ${
+                        isDarkMode ? 'text-blue-300' : 'text-blue-600'
+                     }`}>About Our System</span>
                   </div>
-                  <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  <h2 className={`text-4xl md:text-5xl font-bold mb-6 transition-colors duration-300 ${
+                     isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
                      ABOUT <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">PMNS</span>
                   </h2>
                   <div className="w-32 h-1 bg-gradient-to-r from-blue-600 to-blue-800 mx-auto rounded-full"></div>
                </div>
                
                <div className="max-w-4xl mx-auto text-center mb-16">
-                  <p className="text-xl text-gray-600 leading-relaxed">
+                  <p className={`text-xl leading-relaxed transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
                      Facilitate project planning, notification, and scheduling by providing a centralized system for tracking tasks and deadlines and improve project outcomes by ensuring that all tasks are completed on time and to the required standard.
                   </p>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                   <div className="space-y-6">
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Task management and reminder</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Task management and reminder</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Deadline tracking</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Deadline tracking</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Priority settings</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Priority settings</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Reporting and analytics</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Reporting and analytics</h3>
                         </div>
                      </div>
                   </div>
                   
                   <div className="space-y-6">
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Contact management</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Contact management</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">SMS and email broadcasting</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>SMS and email broadcasting</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Scheduling</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Scheduling</h3>
                         </div>
                      </div>
                      
-                     <div className="group flex items-start p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+                     <div className={`group flex items-start p-4 rounded-xl transition-all duration-300 ${
+                        isDarkMode 
+                           ? 'hover:bg-gray-800 hover:shadow-lg' 
+                           : 'hover:bg-white hover:shadow-lg'
+                     }`}>
                         <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-4 mt-1 shadow-lg group-hover:scale-110 transition-transform">
                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         </div>
                         <div>
-                           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Automated alerts and notification</h3>
+                           <h3 className={`font-semibold mb-1 transition-colors ${
+                              isDarkMode 
+                                 ? 'text-white group-hover:text-blue-400' 
+                                 : 'text-gray-900 group-hover:text-blue-600'
+                           }`}>Automated alerts and notification</h3>
                         </div>
                      </div>
                   </div>
@@ -384,7 +515,9 @@ const LandingPage = ({ onLoginSuccess }) => {
          </section>
 
          {/* Project Statistics Section */}
-         <section className="py-20 bg-white">
+         <section className={`py-20 transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-900' : 'bg-white'
+         }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="order-2 lg:order-1">
@@ -431,26 +564,46 @@ const LandingPage = ({ onLoginSuccess }) => {
                   </div>
                   
                   <div className="order-1 lg:order-2">
-                     <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                     <h2 className={`text-4xl md:text-5xl font-bold mb-4 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>
                         Project
                      </h2>
-                     <p className="text-xl text-gray-600 mb-8">Total projects per program.</p>
+                     <p className={`text-xl mb-8 transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                     }`}>Total projects per program.</p>
                      
                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                           <span className="font-semibold text-gray-900">GIA</span>
+                        <div className={`flex items-center justify-between p-4 rounded-lg transition-colors duration-300 ${
+                           isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+                        }`}>
+                           <span className={`font-semibold transition-colors duration-300 ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                           }`}>GIA</span>
                            <span className="text-2xl font-bold text-blue-600">12</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                           <span className="font-semibold text-gray-900">CEST</span>
+                        <div className={`flex items-center justify-between p-4 rounded-lg transition-colors duration-300 ${
+                           isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+                        }`}>
+                           <span className={`font-semibold transition-colors duration-300 ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                           }`}>CEST</span>
                            <span className="text-2xl font-bold text-green-600">10</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                           <span className="font-semibold text-gray-900">SETUP</span>
+                        <div className={`flex items-center justify-between p-4 rounded-lg transition-colors duration-300 ${
+                           isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+                        }`}>
+                           <span className={`font-semibold transition-colors duration-300 ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                           }`}>SETUP</span>
                            <span className="text-2xl font-bold text-purple-600">107</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                           <span className="font-semibold text-gray-900">SSCP</span>
+                        <div className={`flex items-center justify-between p-4 rounded-lg transition-colors duration-300 ${
+                           isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+                        }`}>
+                           <span className={`font-semibold transition-colors duration-300 ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                           }`}>SSCP</span>
                            <span className="text-2xl font-bold text-orange-600">4</span>
                         </div>
                      </div>
@@ -460,63 +613,95 @@ const LandingPage = ({ onLoginSuccess }) => {
          </section>
 
          {/* Services Section */}
-         <section id="services" className="py-20 bg-gray-50">
+         <section className={`py-20 transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+         }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="text-center mb-16">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">SERVICES</h2>
+                  <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
+                     isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>SERVICES</h2>
                   <div className="w-24 h-1 bg-blue-600 mx-auto"></div>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                  <div className={`rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 ${
+                     isDarkMode ? 'bg-gray-800' : 'bg-white'
+                  }`}>
                      <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                      </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-2">GIA</h3>
-                     <p className="text-gray-600">Grant-In-Aid.</p>
+                     <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>GIA</h3>
+                     <p className={`transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                     }`}>Grant-In-Aid.</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                  <div className={`rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 ${
+                     isDarkMode ? 'bg-gray-800' : 'bg-white'
+                  }`}>
                      <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                      </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-2">CEST</h3>
-                     <p className="text-gray-600">Community Empowerment thru Science and Technology.</p>
+                     <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>CEST</h3>
+                     <p className={`transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                     }`}>Community Empowerment thru Science and Technology.</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                  <div className={`rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 ${
+                     isDarkMode ? 'bg-gray-800' : 'bg-white'
+                  }`}>
                      <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                         </svg>
                      </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-2">SETUP</h3>
-                     <p className="text-gray-600">Small Enterprise Technology Upgrading Program.</p>
+                     <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>SETUP</h3>
+                     <p className={`transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                     }`}>Small Enterprise Technology Upgrading Program.</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                  <div className={`rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 ${
+                     isDarkMode ? 'bg-gray-800' : 'bg-white'
+                  }`}>
                      <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                      </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-2">SSCP</h3>
-                     <p className="text-gray-600">Smart and Sustainable Communities Program.</p>
+                     <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>SSCP</h3>
+                     <p className={`transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                     }`}>Smart and Sustainable Communities Program.</p>
                   </div>
                </div>
             </div>
          </section>
 
          {/* Contact Section */}
-         <section id="contact" className="py-20 bg-white">
+         <section className={`py-20 transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-900' : 'bg-white'
+         }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                   <div>
-                     <h2 className="text-3xl font-bold text-gray-900 mb-8">Contact Us</h2>
+                     <h2 className={`text-3xl font-bold mb-8 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>Contact Us</h2>
                      
                      <div className="space-y-6">
                         <div className="flex items-start">
