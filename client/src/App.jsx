@@ -243,12 +243,17 @@ function AppContent({ onLogout }) {
       } else if (currentUser.role === 'proponent') {
          return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
       } else if (currentUser.role === 'psto') {
-         // PSTO Dashboard - to be implemented with new flow
+         // PSTO Dashboard - use ProjectDashboard for province-specific routing
          return (
-            <div className="p-6">
-               <h1 className="text-2xl font-bold text-gray-900 mb-4">PSTO Dashboard</h1>
-               <p className="text-gray-600">PSTO functionality will be implemented with the new flow.</p>
-            </div>
+            <ProjectDashboard
+               projects={sampleProjects}
+               tasks={sampleTasks}
+               currentUser={currentUser}
+               onProjectUpdate={handleProjectUpdate}
+               onTaskUpdate={handleTaskUpdate}
+               onTaskCreate={handleTaskCreate}
+               onTaskDelete={handleTaskDelete}
+            />
          );
       } else {
          return (

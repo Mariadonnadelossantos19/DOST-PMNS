@@ -1,9 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
 import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const OrientalMindoroDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
+   const [proponents, setProponents] = useState([]);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
+
+   // Fetch proponents for this PSTO
+   const fetchProponents = async () => {
+      try {
+         setLoading(true);
+         setError(null);
+         
+         const response = await fetch(`http://localhost:4000/api/users/psto/Oriental Mindoro/proponents`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+         
+         if (response.ok) {
+            const data = await response.json();
+            setProponents(data.data || []);
+         } else {
+            setError('Failed to load proponents');
+         }
+      } catch (err) {
+         setError('Error loading proponents');
+         console.error('Fetch proponents error:', err);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   useEffect(() => {
+      fetchProponents();
+   }, []);
 
    // Oriental Mindoro-specific data
    const orientalMindoroProjects = [
@@ -59,7 +92,9 @@ const OrientalMindoroDashboard = ({ currentUser }) => {
       completedProjects: orientalMindoroProjects.filter(p => p.status === 'completed').length,
       totalTasks: orientalMindoroTasks.length,
       completedTasks: orientalMindoroTasks.filter(t => t.status === 'completed').length,
-      totalBeneficiaries: orientalMindoroProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0)
+      totalBeneficiaries: orientalMindoroProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0),
+      totalProponents: proponents.length,
+      activeProponents: proponents.filter(p => p.status === 'active').length
    };
 
    // Interactive user stats for Oriental Mindoro PSTO
@@ -133,6 +168,20 @@ const OrientalMindoroDashboard = ({ currentUser }) => {
                   <div className="ml-4">
                      <p className="text-sm font-medium text-gray-500">Beneficiaries</p>
                      <p className="text-2xl font-semibold text-gray-900">{stats.totalBeneficiaries}</p>
+                  </div>
+               </div>
+            </Card>
+
+            <Card className="p-6">
+               <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                     <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                        <span className="text-white font-bold">🏢</span>
+                     </div>
+                  </div>
+                  <div className="ml-4">
+                     <p className="text-sm font-medium text-gray-500">Proponents</p>
+                     <p className="text-2xl font-semibold text-gray-900">{stats.totalProponents}</p>
                   </div>
                </div>
             </Card>

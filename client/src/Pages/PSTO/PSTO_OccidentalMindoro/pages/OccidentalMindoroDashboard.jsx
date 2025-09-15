@@ -1,9 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
 import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const OccidentalMindoroDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
+   const [proponents, setProponents] = useState([]);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
+
+   // Fetch proponents for this PSTO
+   const fetchProponents = async () => {
+      try {
+         setLoading(true);
+         setError(null);
+         
+         const response = await fetch(`http://localhost:4000/api/users/psto/Occidental Mindoro/proponents`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+         
+         if (response.ok) {
+            const data = await response.json();
+            setProponents(data.data || []);
+         } else {
+            setError('Failed to load proponents');
+         }
+      } catch (err) {
+         setError('Error loading proponents');
+         console.error('Fetch proponents error:', err);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   useEffect(() => {
+      fetchProponents();
+   }, []);
 
    // Occidental Mindoro-specific data
    const occidentalMindoroProjects = [
@@ -59,7 +92,9 @@ const OccidentalMindoroDashboard = ({ currentUser }) => {
       completedProjects: occidentalMindoroProjects.filter(p => p.status === 'completed').length,
       totalTasks: occidentalMindoroTasks.length,
       completedTasks: occidentalMindoroTasks.filter(t => t.status === 'completed').length,
-      totalBeneficiaries: occidentalMindoroProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0)
+      totalBeneficiaries: occidentalMindoroProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0),
+      totalProponents: proponents.length,
+      activeProponents: proponents.filter(p => p.status === 'active').length
    };
 
    // Interactive user stats for Occidental Mindoro PSTO
