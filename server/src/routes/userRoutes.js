@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, createUser, deleteUser, getUserById, updateUser, toggleUserStatus, activateUser, deactivateUser } = require('../controllers/userController');
+const { getAllUsers, getProponentsByPSTO, createUser, deleteUser, getUserById, updateUser, toggleUserStatus, activateUser, deactivateUser } = require('../controllers/userController');
 
 // User management routes
 router.get('/', getAllUsers);
+router.get('/psto/:province/proponents', getProponentsByPSTO);
 router.post('/create', createUser);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);

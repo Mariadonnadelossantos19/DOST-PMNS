@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
    },
    role: {
       type: String,
-      enum: ['psto', 'dost_mimaropa', 'super_admin'],
+      enum: ['psto', 'dost_mimaropa', 'super_admin', 'proponent'],
       required: true,
       default: 'psto'
    },
@@ -49,10 +49,40 @@ const userSchema = new mongoose.Schema({
    province: {
       type: String,
       required: function() {
-         return this.role === 'psto';
+         return this.role === 'psto' || this.role === 'proponent';
       },
       enum: ['Marinduque', 'Occidental Mindoro', 'Oriental Mindoro', 'Romblon', 'Palawan', 'MIMAROPA'],
       trim: true
+   },
+   // Proponent-specific fields
+   proponentInfo: {
+      phone: {
+         type: String,
+         trim: true
+      },
+      address: {
+         type: String,
+         trim: true
+      },
+      businessName: {
+         type: String,
+         trim: true
+      },
+      businessType: {
+         type: String,
+         trim: true
+      },
+      organizationType: {
+         type: String,
+         enum: ['Individual', 'SME', 'Corporation', 'Cooperative', 'Association'],
+         trim: true
+      }
+   },
+   // Auto-assigned PSTO based on province
+   assignedPSTO: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PSTO',
+      default: null
    },
    status: {
       type: String,
@@ -65,6 +95,15 @@ const userSchema = new mongoose.Schema({
       default: null
    },
    lastLogin: {
+      type: Date,
+      default: null
+   },
+   // Password reset fields
+   resetPasswordToken: {
+      type: String,
+      default: null
+   },
+   resetPasswordExpires: {
       type: Date,
       default: null
    }

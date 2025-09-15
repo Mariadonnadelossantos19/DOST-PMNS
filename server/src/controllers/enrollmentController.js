@@ -1,81 +1,61 @@
-const Enrollment = require('../models/Enrollment');
+const Proponent = require('../models/Proponent');
+const TNA = require('../models/TNA');
+const Program = require('../models/Program');
+const PSTO = require('../models/PSTO');
 
-// Service options configuration
-const serviceOptions = {
-   SETUP: {
-      name: 'Small Enterprise Technology Upgrading Program',
-      description: 'Technology upgrading program for small enterprises',
-      stages: [
-         { id: 'tna', name: 'Technology Needs Assessment (TNA)', required: true, completed: false },
-         { id: 'rtec', name: 'Review and Technical Evaluation Committee', required: true, completed: false },
-         { id: 'funding', name: 'Funding', required: true, completed: false },
-         { id: 'training', name: 'Technology Training', required: true, completed: false },
-         { id: 'consultancy', name: 'Productivity Consultancy', required: true, completed: false },
-         { id: 'liquidation', name: 'Liquidation', required: true, completed: false }
-      ]
-   },
-   GIA: {
-      name: 'Grants-in-Aid',
-      description: 'Research and development grants for innovative projects',
-      stages: [
-         { id: 'tna', name: 'Technology Needs Assessment (TNA)', required: true, completed: false },
-         { id: 'rtec', name: 'Review and Technical Evaluation Committee', required: true, completed: false },
-         { id: 'funding', name: 'Funding', required: true, completed: false },
-         { id: 'training', name: 'Technology Training', required: true, completed: false },
-         { id: 'consultancy', name: 'Productivity Consultancy', required: true, completed: false },
-         { id: 'liquidation', name: 'Liquidation', required: true, completed: false }
-      ]
-   },
-   CEST: {
-      name: 'Community Empowerment through Science and Technology',
-      description: 'Community-based technology programs and initiatives',
-      stages: [
-         { id: 'tna', name: 'Technology Needs Assessment (TNA)', required: true, completed: false },
-         { id: 'rtec', name: 'Review and Technical Evaluation Committee', required: true, completed: false },
-         { id: 'funding', name: 'Funding', required: true, completed: false },
-         { id: 'training', name: 'Technology Training', required: true, completed: false },
-         { id: 'consultancy', name: 'Productivity Consultancy', required: true, completed: false },
-         { id: 'liquidation', name: 'Liquidation', required: true, completed: false }
-      ]
-   },
-   SSCP: {
-      name: 'Small and Medium Enterprise Development Program',
-      description: 'Comprehensive support for SME development and growth',
-      stages: [
-         { id: 'tna', name: 'Technology Needs Assessment (TNA)', required: true, completed: false },
-         { id: 'rtec', name: 'Review and Technical Evaluation Committee', required: true, completed: false },
-         { id: 'funding', name: 'Funding', required: true, completed: false },
-         { id: 'training', name: 'Technology Training', required: true, completed: false },
-         { id: 'consultancy', name: 'Productivity Consultancy', required: true, completed: false },
-         { id: 'liquidation', name: 'Liquidation', required: true, completed: false }
-      ]
-   }
-};
-
-// Get all enrollments
+// Get all enrollments (aggregated from Proponent and TNA)
 const getAllEnrollments = async (req, res) => {
    try {
-      const { province, status, service } = req.query;
+      const { status, program, province, page = 1, limit = 10 } = req.query;
       
-      // Build filter object
       const filter = {};
-      if (province) filter.province = province;
       if (status) filter.status = status;
-      if (service) filter.service = service;
+      if (province) filter.province = province;
       
-      const enrollments = await Enrollment.find(filter)
-         .populate('enrolledBy', 'firstName lastName email role')
-         .sort({ enrolledDate: -1 });
+      const skip = (page - 1) * limit;
       
+      const proponents = await Proponent.find(filter)
+         .populate('programId', 'programName code')
+         .populate('enrolledBy', 'officeName province')
+         .skip(skip)
+         .limit(parseInt(limit))
+         .sort({ createdAt: -1 });
+
+      // Get TNA data for each proponent
+      const enrollments = await Promise.all(proponents.map(async (proponent) => {
+         const tna = await TNA.findOne({ proponentId: proponent._id });
+         return {
+            id: proponent._id,
+            proponentId: proponent._id,
+            programName: proponent.programId?.programName,
+            programCode: proponent.programId?.code,
+            businessName: proponent.businessName,
+            proponentName: proponent.name,
+            email: proponent.email,
+            province: proponent.province,
+            status: proponent.status,
+            enrolledBy: proponent.enrolledBy?.officeName,
+            tnaStatus: tna?.status || 'not_started',
+            createdAt: proponent.createdAt,
+            updatedAt: proponent.updatedAt
+         };
+      }));
+
       res.json({
          success: true,
-         enrollments: enrollments
+         data: enrollments,
+         pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: await Proponent.countDocuments(filter)
+         }
       });
    } catch (error) {
       console.error('Get enrollments error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
@@ -85,97 +65,148 @@ const getEnrollmentById = async (req, res) => {
    try {
       const { id } = req.params;
       
-      const enrollment = await Enrollment.findById(id)
-         .populate('enrolledBy', 'firstName lastName email role');
+      const proponent = await Proponent.findById(id)
+         .populate('programId', 'programName code description')
+         .populate('enrolledBy', 'officeName province contactInfo');
       
-      if (!enrollment) {
+      if (!proponent) {
          return res.status(404).json({
             success: false,
             message: 'Enrollment not found'
          });
       }
+
+      const tna = await TNA.findOne({ proponentId: id });
       
+      const enrollment = {
+         id: proponent._id,
+         proponentId: proponent._id,
+         programName: proponent.programId?.programName,
+         programCode: proponent.programId?.code,
+         programDescription: proponent.programId?.description,
+         businessName: proponent.businessName,
+         businessType: proponent.businessType,
+         proponentName: proponent.name,
+         email: proponent.email,
+         phone: proponent.contactInfo?.phone,
+         address: proponent.contactInfo?.address,
+         province: proponent.province,
+         type: proponent.type,
+         status: proponent.status,
+         enrolledBy: proponent.enrolledBy?.officeName,
+         pstoProvince: proponent.enrolledBy?.province,
+         tna: tna ? {
+            id: tna._id,
+            status: tna.status,
+            enterpriseName: tna.enterpriseName,
+            businessActivity: tna.businessActivity,
+            expectedOutcomes: tna.expectedOutcomes,
+            budgetRequirement: tna.budgetRequirement,
+            timeline: tna.timeline,
+            reviewStatus: tna.reviewStatus,
+            reviewRemarks: tna.reviewRemarks
+         } : null,
+         createdAt: proponent.createdAt,
+         updatedAt: proponent.updatedAt
+      };
+
       res.json({
          success: true,
-         enrollment: enrollment
+         data: enrollment
       });
    } catch (error) {
       console.error('Get enrollment error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
 
-// Create new enrollment (draft)
+// Create new enrollment
 const createEnrollment = async (req, res) => {
    try {
-      const { customer, service, province, enrolledBy, notes, tnaInfo } = req.body;
-      
-      // Validate required fields
-      if (!customer || !service || !province) {
-         return res.status(400).json({
-            success: false,
-            message: 'Missing required fields: customer, service, province'
-         });
-      }
-      
-      // Validate service
-      if (!serviceOptions[service]) {
-         return res.status(400).json({
-            success: false,
-            message: `Invalid service. Must be one of: ${Object.keys(serviceOptions).join(', ')}`
-         });
-      }
-      
-      // Validate customer data
-      if (!customer.name || !customer.email) {
-         return res.status(400).json({
-            success: false,
-            message: 'Customer name and email are required'
-         });
-      }
-      
-      // PSTO can enroll unlimited customers without restrictions
-      // No validation needed - allow all enrollments
-      
-      // Generate enrollment ID
-      const count = await Enrollment.countDocuments();
-      const enrollmentId = `ENR-${String(count + 1).padStart(6, '0')}`;
+      const { customerData, tnaData, program, pstoId } = req.body;
 
-      // Create new enrollment as draft
-      const newEnrollment = new Enrollment({
-         enrollmentId: enrollmentId,
-         customer: customer,
-         service: service,
-         serviceData: serviceOptions[service],
-         province: province,
-         enrolledBy: enrolledBy || null,
-         notes: notes || '',
-         tnaInfo: tnaInfo || null,
-         status: 'draft',
-         tnaStatus: 'pending',
-         stages: serviceOptions[service].stages.map(stage => ({ ...stage }))
+      // Validate PSTO exists
+      const psto = await PSTO.findById(pstoId);
+      if (!psto) {
+         return res.status(400).json({
+            success: false,
+            message: 'PSTO not found'
+         });
+      }
+
+      // Find program
+      const programDoc = await Program.findOne({ code: program });
+      if (!programDoc) {
+         return res.status(400).json({
+            success: false,
+            message: 'Program not found'
+         });
+      }
+
+      // Create Proponent
+      const newProponent = new Proponent({
+         programId: programDoc._id,
+         name: customerData.name,
+         type: customerData.type,
+         contactInfo: {
+            phone: customerData.phone || '',
+            address: customerData.address || ''
+         },
+         email: customerData.email,
+         businessName: customerData.businessName || '',
+         businessType: customerData.businessType || '',
+         province: psto.province,
+         enrolledBy: pstoId,
+         status: 'active'
       });
-      
-      await newEnrollment.save();
-      
-      // Populate the enrolledBy field
-      await newEnrollment.populate('enrolledBy', 'firstName lastName email role');
-      
+
+      await newProponent.save();
+
+      // Create TNA
+      const newTNA = new TNA({
+         proponentId: newProponent._id,
+         programId: programDoc._id,
+         enterpriseName: tnaData.enterpriseName || customerData.businessName,
+         businessActivity: tnaData.businessActivity || '',
+         expectedOutcomes: tnaData.expectedOutcomes || '',
+         typeOfOrganization: tnaData.typeOfOrganization || customerData.type,
+         technologyNeeds: tnaData.technologyNeeds || '',
+         budgetRequirement: tnaData.budgetRequirement || 0,
+         timeline: tnaData.timeline || '6 months',
+         status: 'draft',
+         submittedBy: req.user?.id || newProponent._id
+      });
+
+      await newTNA.save();
+
+      await newProponent.populate('programId', 'programName code');
+      await newProponent.populate('enrolledBy', 'officeName province');
+
       res.status(201).json({
          success: true,
-         message: 'Enrollment draft created successfully',
-         enrollment: newEnrollment
+         message: 'Enrollment created successfully',
+         data: {
+            id: newProponent._id,
+            proponentId: newProponent._id,
+            programName: newProponent.programId?.programName,
+            programCode: newProponent.programId?.code,
+            businessName: newProponent.businessName,
+            proponentName: newProponent.name,
+            email: newProponent.email,
+            province: newProponent.province,
+            status: newProponent.status,
+            enrolledBy: newProponent.enrolledBy?.officeName,
+            tnaId: newTNA._id,
+            tnaStatus: newTNA.status,
+            createdAt: newProponent.createdAt
+         }
       });
    } catch (error) {
       console.error('Create enrollment error:', error);
-      console.error('Error details:', {
-         message: error.message,
-         stack: error.stack,
-         name: error.name
-      });
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -188,66 +219,27 @@ const createEnrollment = async (req, res) => {
 const updateEnrollment = async (req, res) => {
    try {
       const { id } = req.params;
-      const { customer, notes, status } = req.body;
-      
-      const enrollment = await Enrollment.findById(id);
-      if (!enrollment) {
+      const updateData = req.body;
+
+      const proponent = await Proponent.findByIdAndUpdate(id, updateData, { new: true });
+      if (!proponent) {
          return res.status(404).json({
             success: false,
             message: 'Enrollment not found'
          });
       }
-      
-      // Update fields
-      if (customer) enrollment.customer = { ...enrollment.customer, ...customer };
-      if (notes !== undefined) enrollment.notes = notes;
-      if (status) enrollment.status = status;
-      
-      await enrollment.save();
-      await enrollment.populate('enrolledBy', 'firstName lastName email role');
-      
+
       res.json({
          success: true,
          message: 'Enrollment updated successfully',
-         enrollment: enrollment
+         data: proponent
       });
    } catch (error) {
       console.error('Update enrollment error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
-      });
-   }
-};
-
-// Update stage status
-const updateStageStatus = async (req, res) => {
-   try {
-      const { id } = req.params;
-      const { stageId, completed, notes } = req.body;
-      
-      const enrollment = await Enrollment.findById(id);
-      if (!enrollment) {
-         return res.status(404).json({
-            success: false,
-            message: 'Enrollment not found'
-         });
-      }
-      
-      // Update stage status using the model method
-      await enrollment.updateStageStatus(stageId, completed, notes);
-      await enrollment.populate('enrolledBy', 'firstName lastName email role');
-      
-      res.json({
-         success: true,
-         message: 'Stage status updated successfully',
-         enrollment: enrollment
-      });
-   } catch (error) {
-      console.error('Update stage status error:', error);
-      res.status(500).json({
-         success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
@@ -256,25 +248,28 @@ const updateStageStatus = async (req, res) => {
 const deleteEnrollment = async (req, res) => {
    try {
       const { id } = req.params;
-      
-      const enrollment = await Enrollment.findByIdAndDelete(id);
-      if (!enrollment) {
+
+      const proponent = await Proponent.findByIdAndDelete(id);
+      if (!proponent) {
          return res.status(404).json({
             success: false,
             message: 'Enrollment not found'
          });
       }
-      
+
+      // Also delete associated TNA
+      await TNA.deleteMany({ proponentId: id });
+
       res.json({
          success: true,
-         message: 'Enrollment deleted successfully',
-         enrollmentId: enrollment.enrollmentId
+         message: 'Enrollment deleted successfully'
       });
    } catch (error) {
       console.error('Delete enrollment error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
@@ -282,247 +277,105 @@ const deleteEnrollment = async (req, res) => {
 // Get enrollment statistics
 const getEnrollmentStats = async (req, res) => {
    try {
-      const { province } = req.query;
-      
-      const filter = province ? { province } : {};
-      
-      const stats = await Enrollment.aggregate([
-         { $match: filter },
+      const stats = await Proponent.aggregate([
          {
             $group: {
                _id: null,
                totalEnrollments: { $sum: 1 },
-               enrolled: { $sum: { $cond: [{ $eq: ['$status', 'enrolled'] }, 1, 0] } },
-               inProgress: { $sum: { $cond: [{ $eq: ['$status', 'in_progress'] }, 1, 0] } },
-               completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-               cancelled: { $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] } }
+               activeEnrollments: {
+                  $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+               },
+               pendingEnrollments: {
+                  $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
+               }
             }
          }
       ]);
-      
-      const serviceStats = await Enrollment.aggregate([
-         { $match: filter },
+
+      const programStats = await Proponent.aggregate([
          {
             $group: {
-               _id: '$service',
+               _id: '$programId',
                count: { $sum: 1 }
+            }
+         },
+         {
+            $lookup: {
+               from: 'programs',
+               localField: '_id',
+               foreignField: '_id',
+               as: 'program'
+            }
+         },
+         {
+            $unwind: '$program'
+         },
+         {
+            $project: {
+               programName: '$program.programName',
+               programCode: '$program.code',
+               count: 1
             }
          }
       ]);
-      
+
       res.json({
          success: true,
-         stats: stats[0] || {
-            totalEnrollments: 0,
-            enrolled: 0,
-            inProgress: 0,
-            completed: 0,
-            cancelled: 0
-         },
-         serviceStats: serviceStats
+         data: {
+            totalEnrollments: stats[0]?.totalEnrollments || 0,
+            activeEnrollments: stats[0]?.activeEnrollments || 0,
+            pendingEnrollments: stats[0]?.pendingEnrollments || 0,
+            programStats: programStats
+         }
       });
    } catch (error) {
       console.error('Get enrollment stats error:', error);
       res.status(500).json({
          success: false,
-         message: 'Internal server error'
+         message: 'Internal server error',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
 
-// Submit TNA enrollment for review
-const submitTnaEnrollment = async (req, res) => {
+// Get enrollments for proponent
+const getEnrollmentsForProponent = async (req, res) => {
    try {
-      const { id } = req.params;
-      const { tnaInfo } = req.body;
-      const files = req.files;
+      const { proponentId } = req.params;
       
-      console.log('Submit TNA enrollment request:', { id, tnaInfo, files });
-      
-      const enrollment = await Enrollment.findById(id);
-      if (!enrollment) {
-         console.log('Enrollment not found for ID:', id);
-         return res.status(404).json({
-            success: false,
-            message: 'Enrollment not found'
-         });
-      }
-      
-      // Parse TNA info if it's a string (from form data)
-      let parsedTnaInfo = tnaInfo;
-      if (typeof tnaInfo === 'string') {
-         try {
-            parsedTnaInfo = JSON.parse(tnaInfo);
-         } catch (e) {
-            console.error('Error parsing TNA info:', e);
-            return res.status(400).json({
-               success: false,
-               message: 'Invalid TNA information format'
-            });
-         }
-      }
-      
-      // Validate TNA info is complete
-      if (!parsedTnaInfo || !parsedTnaInfo.affiliation || !parsedTnaInfo.contactPerson || !parsedTnaInfo.position || 
-          !parsedTnaInfo.officeAddress || !parsedTnaInfo.contactNumber || !parsedTnaInfo.emailAddress) {
-         return res.status(400).json({
-            success: false,
-            message: 'All TNA information fields are required'
-         });
-      }
-      
-      // Handle file uploads
-      if (files) {
-         if (files.letterOfIntent && files.letterOfIntent[0]) {
-            parsedTnaInfo.letterOfIntent = {
-               filename: files.letterOfIntent[0].filename,
-               originalName: files.letterOfIntent[0].originalname,
-               path: files.letterOfIntent[0].path,
-               uploadedAt: new Date()
-            };
-         }
-         
-         if (files.dostTnaForm && files.dostTnaForm[0]) {
-            parsedTnaInfo.dostTnaForm = {
-               filename: files.dostTnaForm[0].filename,
-               originalName: files.dostTnaForm[0].originalname,
-               path: files.dostTnaForm[0].path,
-               uploadedAt: new Date()
-            };
-         }
-         
-         if (files.enterpriseProfile && files.enterpriseProfile[0]) {
-            parsedTnaInfo.enterpriseProfile = {
-               filename: files.enterpriseProfile[0].filename,
-               originalName: files.enterpriseProfile[0].originalname,
-               path: files.enterpriseProfile[0].path,
-               uploadedAt: new Date()
-            };
-         }
-      }
-      
-      // Update enrollment with TNA info and submit
-      enrollment.tnaInfo = parsedTnaInfo;
-      enrollment.status = 'submitted';
-      enrollment.tnaStatus = 'under_review';
-      enrollment.submittedAt = new Date();
-      
-      await enrollment.save();
-      await enrollment.populate('enrolledBy', 'firstName lastName email role');
-      
+      const proponents = await Proponent.find({ _id: proponentId })
+         .populate('programId', 'programName code')
+         .populate('enrolledBy', 'officeName province');
+
+      const enrollments = await Promise.all(proponents.map(async (proponent) => {
+         const tna = await TNA.findOne({ proponentId: proponent._id });
+         return {
+            id: proponent._id,
+            proponentId: proponent._id,
+            programName: proponent.programId?.programName,
+            programCode: proponent.programId?.code,
+            businessName: proponent.businessName,
+            proponentName: proponent.name,
+            email: proponent.email,
+            province: proponent.province,
+            status: proponent.status,
+            enrolledBy: proponent.enrolledBy?.officeName,
+            tnaStatus: tna?.status || 'not_started',
+            createdAt: proponent.createdAt,
+            updatedAt: proponent.updatedAt
+         };
+      }));
+
       res.json({
          success: true,
-         message: 'TNA enrollment submitted for review',
-         enrollment: enrollment
+         data: enrollments
       });
    } catch (error) {
-      console.error('Submit TNA enrollment error:', error);
-      console.error('Error details:', {
-         message: error.message,
-         stack: error.stack,
-         name: error.name
-      });
+      console.error('Get proponent enrollments error:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
-         error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-      });
-   }
-};
-
-// Review TNA enrollment (DOST MIMAROPA)
-const reviewTnaEnrollment = async (req, res) => {
-   try {
-      const { id } = req.params;
-      const { action, reviewNotes } = req.body;
-      
-      console.log('Review TNA enrollment request:', { id, action, reviewNotes });
-      
-      // Simple validation
-      if (!action || !['approve', 'reject'].includes(action)) {
-         return res.status(400).json({
-            success: false,
-            message: 'Invalid action. Must be "approve" or "reject"'
-         });
-      }
-      
-      // Find and update enrollment in one operation
-      const updateData = {
-         tnaStatus: action === 'approve' ? 'approved' : 'rejected',
-         status: action === 'approve' ? 'approved' : 'rejected',
-         reviewNotes: reviewNotes || '',
-         reviewedBy: 'DOST MIMAROPA',
-         reviewedAt: new Date()
-      };
-      
-      const enrollment = await Enrollment.findByIdAndUpdate(
-         id,
-         updateData,
-         { new: true }
-      );
-      
-      if (!enrollment) {
-         return res.status(404).json({
-            success: false,
-            message: 'Enrollment not found'
-         });
-      }
-      
-      console.log('Enrollment updated successfully:', enrollment._id);
-      
-      res.json({
-         success: true,
-         message: `TNA enrollment ${action}d successfully`,
-         enrollment: enrollment
-      });
-      
-   } catch (error) {
-      console.error('Review TNA enrollment error:', error);
-      res.status(500).json({
-         success: false,
-         message: 'Failed to review enrollment',
-         error: error.message
-      });
-   }
-};
-
-// Get TNA enrollments for review (DOST MIMAROPA)
-const getTnaEnrollmentsForReview = async (req, res) => {
-   try {
-      const { status } = req.query;
-      
-      const filter = { tnaStatus: status || 'under_review' };
-      
-      const enrollments = await Enrollment.find(filter)
-         .populate('enrolledBy', 'firstName lastName email role')
-         .populate('reviewedBy', 'firstName lastName email role')
-         .sort({ submittedAt: -1 });
-      
-      res.json({
-         success: true,
-         enrollments: enrollments
-      });
-   } catch (error) {
-      console.error('Get TNA enrollments for review error:', error);
-      res.status(500).json({
-         success: false,
-         message: 'Internal server error'
-      });
-   }
-};
-
-// Get service options
-const getServiceOptions = async (req, res) => {
-   try {
-      res.json({
-         success: true,
-         serviceOptions: serviceOptions
-      });
-   } catch (error) {
-      console.error('Get service options error:', error);
-      res.status(500).json({
-         success: false,
-         message: 'Internal server error'
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
       });
    }
 };
@@ -532,11 +385,7 @@ module.exports = {
    getEnrollmentById,
    createEnrollment,
    updateEnrollment,
-   updateStageStatus,
    deleteEnrollment,
    getEnrollmentStats,
-   getServiceOptions,
-   submitTnaEnrollment,
-   reviewTnaEnrollment,
-   getTnaEnrollmentsForReview
+   getEnrollmentsForProponent
 };

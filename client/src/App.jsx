@@ -5,6 +5,8 @@ import { ToastProvider } from './Component/UI';
 import { FloatingMiniGamesButton } from './Component/Interactive';
 import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
+import { ProponentMainPage } from './Pages/Proponents/pages';
+import ResetPassword from './Component/Registration/ResetPassword';
 import './App.css';
 
 // Sample data for demonstration
@@ -224,10 +226,30 @@ function AppContent({ onLogout }) {
       console.log('Task deleted:', taskId);
    };
 
+   // Navigation function for proponent profile
+   const [proponentNavigateToProfile, setProponentNavigateToProfile] = useState(null);
+
+   // Create a stable navigation function
+   const handleNavigateToProfile = (callback) => {
+      if (callback) {
+         setProponentNavigateToProfile(() => callback);
+      }
+   };
+
    // Render different dashboards based on user role
    const renderDashboard = () => {
       if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
          return <DostMimaropaDashboard />;
+      } else if (currentUser.role === 'proponent') {
+         return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
+      } else if (currentUser.role === 'psto') {
+         // PSTO Dashboard - to be implemented with new flow
+         return (
+            <div className="p-6">
+               <h1 className="text-2xl font-bold text-gray-900 mb-4">PSTO Dashboard</h1>
+               <p className="text-gray-600">PSTO functionality will be implemented with the new flow.</p>
+            </div>
+         );
       } else {
          return (
             <ProjectDashboard
@@ -244,7 +266,11 @@ function AppContent({ onLogout }) {
    };
 
    return (
-      <MainLayout user={currentUser} onLogout={handleLogout}>
+      <MainLayout 
+         user={currentUser} 
+         onLogout={handleLogout}
+         onNavigateToProfile={proponentNavigateToProfile}
+      >
          {renderDashboard()}
       </MainLayout>
    );
@@ -256,11 +282,22 @@ function App() {
       return localStorage.getItem('isLoggedIn') === 'true';
    });
 
+   const [currentPage, setCurrentPage] = useState(() => {
+      // Check URL for reset password token
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      if (token) {
+         return 'reset-password';
+      }
+      return 'landing';
+   });
+
    const handleLoginSuccess = (userData) => {
       // Save login state to localStorage
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(userData));
       setShowDashboard(true);
+      setCurrentPage('dashboard');
    };
 
    const handleLogout = () => {
@@ -268,7 +305,23 @@ function App() {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('userData');
       setShowDashboard(false);
+      setCurrentPage('landing');
    };
+
+   const handleNavigateToLogin = () => {
+      setCurrentPage('landing');
+   };
+
+   // Handle reset password page
+   if (currentPage === 'reset-password') {
+      return (
+         <DarkModeProvider>
+            <ToastProvider>
+               <ResetPassword onNavigateToLogin={handleNavigateToLogin} />
+            </ToastProvider>
+         </DarkModeProvider>
+      );
+   }
 
    if (showDashboard) {
       return (

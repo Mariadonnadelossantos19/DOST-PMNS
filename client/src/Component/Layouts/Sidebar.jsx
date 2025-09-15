@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDarkMode } from '../Context';
 
-const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false }) => {
+const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false, userData = null }) => {
    const { isDarkMode } = useDarkMode();
    const [stats, setStats] = useState({
       totalApplications: 0,

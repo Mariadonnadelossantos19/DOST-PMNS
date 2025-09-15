@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
-import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
 import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const PalawanDashboard = ({ currentUser }) => {
@@ -289,7 +288,12 @@ const PalawanDashboard = ({ currentUser }) => {
          {view === 'interactive' && <InteractiveDashboard userStats={userStats} />}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
-         {view === 'enrollment' && <EnrollmentSystem province="Palawan" />}
+         {view === 'enrollment' && (
+            <div className="p-6 text-center">
+               <h3 className="text-lg font-semibold text-gray-900 mb-2">Enrollment System</h3>
+               <p className="text-gray-600">Enrollment functionality will be implemented with the new flow.</p>
+            </div>
+         )}
       </div>
    );
 };

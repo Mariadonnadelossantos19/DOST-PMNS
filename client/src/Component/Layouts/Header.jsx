@@ -1,8 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../Context';
 
-const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, sidebarOpen, sidebarCollapsed }) => {
+const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, sidebarOpen, onNavigateToProfile }) => {
    const { isDarkMode, toggleDarkMode } = useDarkMode();
+   
+   // User dropdown state
+   const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+   // Close dropdown when clicking outside
+   useEffect(() => {
+      const handleClickOutside = (event) => {
+         if (showUserDropdown && !event.target.closest('.user-dropdown')) {
+            setShowUserDropdown(false);
+         }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+         document.removeEventListener('mousedown', handleClickOutside);
+      };
+   }, [showUserDropdown]);
+
+   const handleProfileClick = () => {
+      if (onNavigateToProfile) {
+         onNavigateToProfile();
+      } else if (window.openEnterpriseProfile) {
+         window.openEnterpriseProfile();
+      }
+      setShowUserDropdown(false);
+   };
    
    return (
       <header className={`flex items-center justify-between px-6 h-16 border-b shadow-sm sticky top-0 z-50 transition-colors duration-300 ${
@@ -119,53 +145,86 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
                </button>
             </div>
 
-            {/* User Profile */}
-            <div className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-               isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
-            }`}>
-               <div className={`relative w-10 h-10 rounded-full overflow-hidden ${
-                  isDarkMode ? 'bg-gray-600' : 'bg-gray-200'
-               }`}>
-                  <img 
-                     src={user?.avatar || '/default-avatar.png'} 
-                     alt={user?.name || 'User'} 
-                     className="w-full h-full object-cover"
-                     onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                     }}
-                  />
-                  <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center font-semibold text-sm" style={{display: 'none'}}>
-                     {user?.name?.charAt(0) || 'U'}
-                  </div>
-               </div>
-               <div className="hidden sm:flex flex-col">
-                  <span className={`text-sm font-semibold transition-colors ${
-                     isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                     {user?.name || user?.firstName + ' ' + user?.lastName || 'User'}
-                  </span>
-                  <span className={`text-xs transition-colors ${
-                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}>
-                     {user?.userId || user?.id || 'No ID'} • {user?.role || 'Administrator'}
-                  </span>
-               </div>
+            {/* User Profile Dropdown */}
+            <div className="relative user-dropdown">
                <button 
-                  className={`p-2 rounded-md transition-colors ${
-                     isDarkMode 
-                        ? 'hover:bg-red-900 text-gray-300 hover:text-red-400' 
-                        : 'hover:bg-red-50 text-gray-600 hover:text-red-600'
-                  }`} 
-                  onClick={onLogout} 
-                  title="Logout"
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                     isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                     <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                     <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                     <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+                     isDarkMode ? 'bg-blue-600' : 'bg-blue-600'
+                  }`}>
+                     {user?.firstName?.charAt(0) || user?.name?.charAt(0) || 'U'}{user?.lastName?.charAt(0) || ''}
+                  </div>
+                  <div className="flex flex-col">
+                     <span className={`text-sm font-semibold transition-colors ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                     }`}>
+                        {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.name || 'User'}
+                     </span>
+                     <span className={`text-xs transition-colors ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                     }`}>
+                        {user?.userId || user?.id || 'No ID'} • {user?.role || 'Administrator'}
+                     </span>
+                  </div>
+                  <svg 
+                     className={`w-4 h-4 transition-transform ${showUserDropdown ? 'rotate-180' : ''}`}
+                     fill="none" 
+                     stroke="currentColor" 
+                     viewBox="0 0 24 24"
+                  >
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                </button>
+
+               {/* Dropdown Menu */}
+               {showUserDropdown && (
+                  <div className={`absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 z-50 ${
+                     isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                  }`}>
+                     {/* Profile Option */}
+                     {user?.role === 'proponent' && (
+                        <button
+                           onClick={handleProfileClick}
+                           className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                              isDarkMode 
+                                 ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
+                                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                           }`}
+                        >
+                           <div className="flex items-center gap-3">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              Enterprise Profile
+                           </div>
+                        </button>
+                     )}
+                     
+                     {/* Divider */}
+                     <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} my-1`}></div>
+                     
+                     {/* Logout Option */}
+                     <button
+                        onClick={onLogout}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                           isDarkMode 
+                              ? 'text-red-400 hover:bg-red-900 hover:text-red-300' 
+                              : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+                        }`}
+                     >
+                        <div className="flex items-center gap-3">
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                           </svg>
+                           Logout
+                        </div>
+                     </button>
+                  </div>
+               )}
             </div>
          </div>
       </header>

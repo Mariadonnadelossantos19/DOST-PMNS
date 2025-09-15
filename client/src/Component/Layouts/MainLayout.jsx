@@ -3,10 +3,10 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import { useDarkMode } from '../Context';
 
-const MainLayout = ({ children, user, onLogout }) => {
+const MainLayout = ({ children, user, onLogout, onNavigateToProfile }) => {
    const [sidebarOpen, setSidebarOpen] = useState(false);
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-   const [currentPath, setCurrentPath] = useState('/dashboard');
+   const [currentPath] = useState('/dashboard');
    const { isDarkMode } = useDarkMode();
 
    const toggleSidebar = () => {
@@ -33,16 +33,19 @@ const MainLayout = ({ children, user, onLogout }) => {
             onToggleSidebarCollapse={toggleSidebarCollapse}
             sidebarOpen={sidebarOpen}
             sidebarCollapsed={sidebarCollapsed}
+            onNavigateToProfile={onNavigateToProfile}
          />
 
          <div className="flex">
-            {/* Sidebar */}
-            <Sidebar 
-               isOpen={sidebarOpen}
-               onClose={closeSidebar}
-               currentPath={currentPath}
-               isCollapsed={sidebarCollapsed}
-            />
+                    {/* Sidebar */}
+                    <Sidebar 
+                       isOpen={sidebarOpen}
+                       onClose={closeSidebar}
+                       currentPath={currentPath}
+                       isCollapsed={sidebarCollapsed}
+                       userRole={user?.role}
+                       userData={user}
+                    />
 
             {/* Main Content */}
             <main className={`flex-1 transition-all duration-300 ease-in-out ${

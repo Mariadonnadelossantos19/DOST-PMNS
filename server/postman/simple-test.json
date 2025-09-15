@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "url": "http://localhost:4000/api/auth/login",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "email": "admin@dost-mimaropa.gov.ph",
+    "password": "admin123"
+  }
+}

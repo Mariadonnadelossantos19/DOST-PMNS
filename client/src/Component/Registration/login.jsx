@@ -143,10 +143,17 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
          const data = await response.json();
 
          if (response.ok) {
+            let message = 'Password reset instructions sent to your email.';
+            
+            // If reset URL is provided (for testing), show it
+            if (data.resetUrl) {
+               message += `\n\nFor testing, you can use this link: ${data.resetUrl}`;
+            }
+            
             setAlert({
                show: true,
                type: 'success',
-               message: 'Password reset instructions sent to your email.'
+               message: message
             });
          } else {
             setAlert({

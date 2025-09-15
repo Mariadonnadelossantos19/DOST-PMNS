@@ -1,10 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
-import { EnrollmentSystem } from '../../../../Component/EnrollmentSystem';
 import { InteractiveDashboard } from '../../../../Component/Interactive';
 
 const MarinduqueDashboard = ({ currentUser }) => {
    const [view, setView] = useState('overview');
+   const [proponents, setProponents] = useState([]);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
+
+   // Fetch proponents for this PSTO
+   const fetchProponents = async () => {
+      try {
+         setLoading(true);
+         setError(null);
+         
+         const response = await fetch(`http://localhost:4000/api/users/psto/Marinduque/proponents`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+         
+         if (response.ok) {
+            const data = await response.json();
+            setProponents(data.data || []);
+         } else {
+            setError('Failed to load proponents');
+         }
+      } catch (err) {
+         setError('Error loading proponents');
+         console.error('Fetch proponents error:', err);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   useEffect(() => {
+      fetchProponents();
+   }, []);
 
    // Marinduque-specific data
    const marinduqueProjects = [
@@ -60,7 +92,9 @@ const MarinduqueDashboard = ({ currentUser }) => {
       completedProjects: marinduqueProjects.filter(p => p.status === 'completed').length,
       totalTasks: marinduqueTasks.length,
       completedTasks: marinduqueTasks.filter(t => t.status === 'completed').length,
-      totalBeneficiaries: marinduqueProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0)
+      totalBeneficiaries: marinduqueProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0),
+      totalProponents: proponents.length,
+      activeProponents: proponents.filter(p => p.status === 'active').length
    };
 
    // Interactive user stats for Marinduque PSTO
@@ -137,10 +171,24 @@ const MarinduqueDashboard = ({ currentUser }) => {
                   </div>
                </div>
             </Card>
+
+            <Card className="p-6">
+               <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                     <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                        <span className="text-white font-bold">🏢</span>
+                     </div>
+                  </div>
+                  <div className="ml-4">
+                     <p className="text-sm font-medium text-gray-500">Proponents</p>
+                     <p className="text-2xl font-semibold text-gray-900">{stats.totalProponents}</p>
+                  </div>
+               </div>
+            </Card>
          </div>
 
          {/* Marinduque-specific content */}
-         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="p-6">
                <h3 className="text-lg font-medium text-gray-900 mb-4">Marinduque Projects</h3>
                <div className="space-y-3">
@@ -173,6 +221,54 @@ const MarinduqueDashboard = ({ currentUser }) => {
                      </div>
                   ))}
                </div>
+            </Card>
+
+            <Card className="p-6">
+               <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Proponents</h3>
+               {loading ? (
+                  <div className="text-center py-4">
+                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                     <p className="text-sm text-gray-500 mt-2">Loading proponents...</p>
+                  </div>
+               ) : error ? (
+                  <div className="text-center py-4">
+                     <p className="text-sm text-red-500">{error}</p>
+                     <Button onClick={fetchProponents} className="mt-2 text-xs">
+                        Retry
+                     </Button>
+                  </div>
+               ) : proponents.length === 0 ? (
+                  <div className="text-center py-4">
+                     <p className="text-sm text-gray-500">No proponents yet</p>
+                  </div>
+               ) : (
+                  <div className="space-y-3">
+                     {proponents.slice(0, 3).map(proponent => (
+                        <div key={proponent._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                           <div>
+                              <p className="font-medium text-gray-900">
+                                 {proponent.firstName} {proponent.lastName}
+                              </p>
+                              <p className="text-sm text-gray-500">{proponent.email}</p>
+                              {proponent.proponentInfo?.businessName && (
+                                 <p className="text-xs text-gray-400">{proponent.proponentInfo.businessName}</p>
+                              )}
+                           </div>
+                           <Badge variant={proponent.status === 'active' ? 'success' : 'warning'}>
+                              {proponent.status}
+                           </Badge>
+                        </div>
+                     ))}
+                     {proponents.length > 3 && (
+                        <Button 
+                           onClick={() => setView('proponents')}
+                           className="w-full text-xs"
+                        >
+                           View All ({proponents.length})
+                        </Button>
+                     )}
+                  </div>
+               )}
             </Card>
          </div>
       </div>
@@ -289,7 +385,12 @@ const MarinduqueDashboard = ({ currentUser }) => {
          {view === 'interactive' && <InteractiveDashboard userStats={userStats} />}
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
-         {view === 'enrollment' && <EnrollmentSystem province="Marinduque" />}
+         {view === 'enrollment' && (
+            <div className="p-6 text-center">
+               <h3 className="text-lg font-semibold text-gray-900 mb-2">Enrollment System</h3>
+               <p className="text-gray-600">Enrollment functionality will be implemented with the new flow.</p>
+            </div>
+         )}
       </div>
    );
 };

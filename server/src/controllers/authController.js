@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const { sendPasswordResetEmail, sendWelcomeEmail } = require('../services/emailService');
 
 // Register new user
 const register = async (req, res) => {
@@ -61,13 +64,16 @@ const register = async (req, res) => {
       userId = `USER_${Date.now()}`;
    }
 
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       // Create new user
       const newUser = new User({
          userId,
          firstName,
          lastName,
          email,
-         password, // In production, hash this password
+         password: hashedPassword,
          role,
          department,
          position,
@@ -126,8 +132,19 @@ const login = async (req, res) => {
          });
       }
 
-      // Check password (in production, use bcrypt to compare hashed passwords)
-      if (user.password !== password) {
+      // Check password - handle both hashed and plain text passwords
+      let isPasswordValid = false;
+      
+      // Check if password is hashed (starts with $2a$ or $2b$)
+      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+         // Password is hashed, use bcrypt to compare
+         isPasswordValid = await bcrypt.compare(password, user.password);
+      } else {
+         // Password is plain text, compare directly (for backward compatibility)
+         isPasswordValid = user.password === password;
+      }
+      
+      if (!isPasswordValid) {
          return res.status(401).json({
             success: false,
             message: 'Invalid email or password'
@@ -176,9 +193,50 @@ const forgotPassword = async (req, res) => {
          });
       }
 
+      // Find user by email
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (!user) {
+         // For security, don't reveal if email exists or not
+         return res.json({
+            success: true,
+            message: 'If an account with that email exists, password reset instructions have been sent.'
+         });
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetExpires = new Date(Date.now() + 3600000); // 1 hour from now
+
+      // Save reset token to user
+      user.resetPasswordToken = resetToken;
+      user.resetPasswordExpires = resetExpires;
+      await user.save();
+
+      // Send password reset email
+      const resetUrl = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
+      
+      // Try to send email, but don't fail if it doesn't work
+      try {
+         const emailResult = await sendPasswordResetEmail(
+            user.email, 
+            user.firstName, 
+            resetUrl
+         );
+
+         if (emailResult.success) {
+            console.log('Password reset email sent successfully to:', user.email);
+         } else {
+            console.error('Failed to send password reset email:', emailResult.error);
+         }
+      } catch (emailError) {
+         console.error('Email service error:', emailError.message);
+      }
+
+      // Always return success with reset URL for testing
       res.json({
          success: true,
-         message: 'Password reset instructions sent to your email'
+         message: 'Password reset instructions have been sent. Check your email or use the link below for testing.',
+         resetUrl: resetUrl // Always return URL for testing
       });
    } catch (error) {
       console.error('Forgot password error:', error);
@@ -189,8 +247,105 @@ const forgotPassword = async (req, res) => {
    }
 };
 
+// Reset password
+const resetPassword = async (req, res) => {
+   try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+         return res.status(400).json({
+            success: false,
+            message: 'Token and new password are required'
+         });
+      }
+
+      if (newPassword.length < 6) {
+         return res.status(400).json({
+            success: false,
+            message: 'Password must be at least 6 characters long'
+         });
+      }
+
+      // Find user with valid reset token
+      const user = await User.findOne({
+         resetPasswordToken: token,
+         resetPasswordExpires: { $gt: Date.now() }
+      });
+
+      if (!user) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid or expired reset token'
+         });
+      }
+
+      // Update password and clear reset token
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+ 
+      res.json({
+         success: true,
+         message: 'Password has been reset successfully'
+      });
+   } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
+// Verify reset token
+const verifyResetToken = async (req, res) => {
+   try {
+      const { token } = req.params;
+      
+      if (!token) {
+         return res.status(400).json({
+            success: false,
+            message: 'Token is required'
+         });
+      }
+
+      // Find user with valid reset token
+      const user = await User.findOne({
+         resetPasswordToken: token,
+         resetPasswordExpires: { $gt: Date.now() }
+      });
+
+      if (!user) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid or expired reset token'
+         });
+      }
+
+      res.json({
+         success: true,
+         message: 'Token is valid',
+         user: {
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+         }
+      });
+   } catch (error) {
+      console.error('Verify reset token error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
 module.exports = {
    register,
    login,
-   forgotPassword
+   forgotPassword,
+   resetPassword,
+   verifyResetToken
 };

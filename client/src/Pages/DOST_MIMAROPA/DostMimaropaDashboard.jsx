@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { TnaReviewPanel } from '../../Component/EnrollmentSystem';
 import { InteractiveDashboard } from '../../Component/Interactive';
 import { useDarkMode } from '../../Component/Context';
 
@@ -96,7 +95,12 @@ const DostMimaropaDashboard = () => {
             {/* Tab Content */}
             <div>
                {activeTab === 'dashboard' && <InteractiveDashboard userStats={userStats} />}
-               {activeTab === 'tna-review' && <TnaReviewPanel />}
+               {activeTab === 'tna-review' && (
+                  <div className="p-6 text-center">
+                     <h3 className="text-lg font-semibold text-gray-900 mb-2">TNA Review Panel</h3>
+                     <p className="text-gray-600">TNA review functionality will be implemented with the new flow.</p>
+                  </div>
+               )}
                
                {activeTab === 'enrollments' && (
                   <div className="text-center py-8">

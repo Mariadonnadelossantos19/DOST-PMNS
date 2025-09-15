@@ -1,0 +1,18 @@
+{
+  "collection": "users",
+  "document": {
+    "_id": "ObjectId('64f8a1b2c3d4e5f6a7b8c9d0')",
+    "userId": "SUPER_ADMIN_001",
+    "firstName": "Super",
+    "lastName": "Administrator", 
+    "email": "admin@dost-mimaropa.gov.ph",
+    "password": "$2a$10$rQZ8K9mN2pL3sT4uV5wX6yA7bC8dE9fG0hI1jK2lM3nO4pQ5rS6tU7vW8xY9zA",
+    "role": "super_admin",
+    "department": "DOST MIMAROPA",
+    "position": "Regional Director",
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z",
+    "__v": 0
+  }
+}

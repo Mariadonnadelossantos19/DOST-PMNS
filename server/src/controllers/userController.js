@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const PSTO = require('../models/PSTO');
+const bcrypt = require('bcryptjs');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -18,22 +21,65 @@ const getAllUsers = async (req, res) => {
    }
 };
 
-// Create new user (for super admin)
+// Get proponents by PSTO province
+const getProponentsByPSTO = async (req, res) => {
+   try {
+      const { province } = req.params;
+      
+      if (!province) {
+         return res.status(400).json({
+            success: false,
+            message: 'Province parameter is required'
+         });
+      }
+
+      // Find proponents assigned to this PSTO province
+      const proponents = await User.find({
+         role: 'proponent',
+         province: province
+      }).select('-password').sort({ createdAt: -1 });
+
+      res.json({
+         success: true,
+         data: proponents,
+         count: proponents.length
+      });
+   } catch (error) {
+      console.error('Get proponents by PSTO error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
+// Create new user (for super admin and proponent registration)
 const createUser = async (req, res) => {
    try {
       console.log('Create user request body:', req.body);
-      const { firstName, lastName, email, role, department, position, province, password, createdBy } = req.body;
+      const { 
+         firstName, 
+         lastName, 
+         email, 
+         role, 
+         department, 
+         position, 
+         province, 
+         password, 
+         createdBy,
+         proponentInfo 
+      } = req.body;
       
       // Basic validation
-      if (!firstName || !lastName || !email || !password || !role || !department || !position) {
+      if (!firstName || !lastName || !email || !password || !role) {
          return res.status(400).json({
             success: false,
-            message: 'Missing required fields: firstName, lastName, email, password, role, department, position'
+            message: 'Missing required fields: firstName, lastName, email, password, role'
          });
       }
 
       // Validate role
-      const validRoles = ['psto', 'dost_mimaropa', 'super_admin'];
+      const validRoles = ['psto', 'dost_mimaropa', 'super_admin', 'proponent'];
       if (!validRoles.includes(role)) {
          return res.status(400).json({
             success: false,
@@ -41,11 +87,11 @@ const createUser = async (req, res) => {
          });
       }
 
-      // Validate province for PSTO role
-      if (role === 'psto' && !province) {
+      // Validate province for PSTO and proponent roles
+      if ((role === 'psto' || role === 'proponent') && !province) {
          return res.status(400).json({
             success: false,
-            message: 'Province is required for PSTO role'
+            message: 'Province is required for PSTO and proponent roles'
          });
       }
 
@@ -58,26 +104,41 @@ const createUser = async (req, res) => {
          });
       }
 
-   // Generate user ID based on role
-   let userId;
-   if (role === 'psto') {
-      // Check if province already has a PSTO user
-      const existingPSTO = await User.findOne({ role: 'psto', province });
-      if (existingPSTO) {
-         return res.status(400).json({
-            success: false,
-            message: `Only one PSTO user allowed per province. ${province} already has a PSTO user.`
-         });
+      // Generate user ID based on role
+      let userId;
+      if (role === 'psto') {
+         // Check if province already has a PSTO user
+         const existingPSTO = await User.findOne({ role: 'psto', province });
+         if (existingPSTO) {
+            return res.status(400).json({
+               success: false,
+               message: `Only one PSTO user allowed per province. ${province} already has a PSTO user.`
+            });
+         }
+         
+         userId = `PSTO_${province.replace(/\s+/g, '')}`;
+      } else if (role === 'dost_mimaropa') {
+         userId = 'DOST_MIMAROPA';
+      } else if (role === 'super_admin') {
+         userId = 'Super_Admin';
+      } else if (role === 'proponent') {
+         userId = `PROP_${Date.now()}`;
+      } else {
+         userId = `USER_${Date.now()}`;
       }
-      
-      userId = `PSTO_${province.replace(/\s+/g, '')}`;
-   } else if (role === 'dost_mimaropa') {
-      userId = 'DOST_MIMAROPA';
-   } else if (role === 'super_admin') {
-      userId = 'Super_Admin';
-   } else {
-      userId = `USER_${Date.now()}`;
-   }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Auto-assign PSTO for proponent
+      let assignedPSTO = null;
+      if (role === 'proponent' && province) {
+         // Find PSTO for the province
+         const psto = await PSTO.findOne({ province });
+         if (psto) {
+            assignedPSTO = psto._id;
+         }
+      }
 
       // Create new user
       const newUser = new User({
@@ -85,35 +146,49 @@ const createUser = async (req, res) => {
          firstName,
          lastName,
          email,
-         password, // In production, hash this password
+         password: hashedPassword,
          role,
-         department,
-         position,
-         province: role === 'psto' ? province : undefined,
+         department: department || (role === 'proponent' ? 'Proponent' : ''),
+         position: position || (role === 'proponent' ? 'Proponent' : ''),
+         province: (role === 'psto' || role === 'proponent') ? province : undefined,
+         proponentInfo: role === 'proponent' ? proponentInfo : undefined,
+         assignedPSTO: assignedPSTO,
          status: 'active',
-         createdBy: null // Will be set when we have proper user authentication
+         createdBy: createdBy || null
       });
 
-      await newUser.save();
+              await newUser.save();
 
-      res.json({
-         success: true,
-         message: 'User created successfully',
-         user: {
-            id: newUser._id,
-            userId: newUser.userId,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.email,
-            role: newUser.role,
-            department: newUser.department,
-            position: newUser.position,
-            province: newUser.province,
-            status: newUser.status,
-            createdAt: newUser.createdAt,
-            createdBy: newUser.createdBy
-         }
-      });
+              // Send welcome email (don't wait for it to complete)
+              sendWelcomeEmail(
+                 newUser.email,
+                 newUser.firstName,
+                 newUser.lastName,
+                 newUser.role
+              ).catch(error => {
+                 console.error('Failed to send welcome email:', error);
+              });
+
+              res.json({
+                 success: true,
+                 message: 'User created successfully',
+                 user: {
+                    id: newUser._id,
+                    userId: newUser.userId,
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.email,
+                    role: newUser.role,
+                    department: newUser.department,
+                    position: newUser.position,
+                    province: newUser.province,
+                    proponentInfo: newUser.proponentInfo,
+                    assignedPSTO: newUser.assignedPSTO,
+                    status: newUser.status,
+                    createdAt: newUser.createdAt,
+                    createdBy: newUser.createdBy
+                 }
+              });
    } catch (error) {
       console.error('Create user error:', error);
       res.status(500).json({
@@ -345,6 +420,7 @@ const deactivateUser = async (req, res) => {
 
 module.exports = {
    getAllUsers,
+   getProponentsByPSTO,
    createUser,
    deleteUser,
    getUserById,

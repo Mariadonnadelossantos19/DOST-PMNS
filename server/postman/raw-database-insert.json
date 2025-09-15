@@ -1,0 +1,16 @@
+{
+  "database": "pmns2",
+  "collection": "users",
+  "operation": "insertOne",
+  "document": {
+    "userId": "SUPER_ADMIN_001",
+    "firstName": "Super",
+    "lastName": "Administrator",
+    "email": "admin@dost-mimaropa.gov.ph",
+    "password": "$2a$10$rQZ8K9mN2pL3sT4uV5wX6yA7bC8dE9fG0hI1jK2lM3nO4pQ5rS6tU7vW8xY9zA",
+    "role": "super_admin",
+    "department": "DOST MIMAROPA",
+    "position": "Regional Director",
+    "status": "active"
+  }
+}
