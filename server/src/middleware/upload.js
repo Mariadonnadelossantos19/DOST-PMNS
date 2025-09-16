@@ -20,25 +20,20 @@ const storage = multer.diskStorage({
    }
 });
 
-// File filter
+// Simple file filter - allow all files for now
 const fileFilter = (req, file, cb) => {
-   // Allow common document types
-   const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
-   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-   const mimetype = allowedTypes.test(file.mimetype);
-
-   if (mimetype && extname) {
-      return cb(null, true);
-   } else {
-      cb(new Error('Only documents (PDF, DOC, DOCX, TXT) and images (JPEG, PNG, GIF) are allowed'));
-   }
+   cb(null, true);
 };
 
 const upload = multer({
    storage: storage,
    fileFilter: fileFilter,
    limits: {
-      fileSize: 10 * 1024 * 1024 // 10MB limit
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+      fieldSize: 10 * 1024 * 1024, // 10MB limit for fields
+      fieldNameSize: 100,
+      fieldValueSize: 10 * 1024 * 1024,
+      files: 10 // Maximum 10 files
    }
 });
 

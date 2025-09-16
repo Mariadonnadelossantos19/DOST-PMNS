@@ -6,6 +6,7 @@ import { FloatingMiniGamesButton } from './Component/Interactive';
 import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import { ProponentMainPage } from './Pages/Proponents/pages';
+import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import ResetPassword from './Component/Registration/ResetPassword';
 import MarinduqueDashboard from './Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
 import OccidentalMindoroDashboard from './Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
@@ -136,7 +137,7 @@ const sampleUser = {
    avatar: null
 };
 
-function AppContent({ onLogout }) {
+function AppContent({ onLogout, currentPage, onNavigate }) {
    const { showSuccess, showInfo } = useNotifications();
 
    // Helper function to extract province from PSTO userId
@@ -294,13 +295,25 @@ function AppContent({ onLogout }) {
       }
    };
 
+   // Render content based on current page
+   const renderContent = () => {
+      switch (currentPage) {
+         case 'program-selection':
+            return <ProgramSelectionPage />;
+         case 'dashboard':
+         default:
+            return renderDashboard();
+      }
+   };
+
    return (
       <MainLayout 
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
+         onNavigate={onNavigate}
       >
-         {renderDashboard()}
+         {renderContent()}
       </MainLayout>
    );
 }
@@ -320,6 +333,15 @@ function App() {
       }
       return 'landing';
    });
+
+   // Navigation handler
+   const handleNavigate = (path) => {
+      console.log('Navigating to:', path);
+      setCurrentPage(path.replace('/', ''));
+   };
+
+   // Debug current page
+   console.log('Current page:', currentPage);
 
    const handleLoginSuccess = (userData) => {
       // Save login state to localStorage
@@ -357,7 +379,7 @@ function App() {
          <DarkModeProvider>
             <NotificationProvider>
                <ToastProvider>
-                  <AppContent onLogout={handleLogout} />
+                  <AppContent onLogout={handleLogout} currentPage={currentPage} onNavigate={handleNavigate} />
                   <FloatingMiniGamesButton />
                </ToastProvider>
             </NotificationProvider>

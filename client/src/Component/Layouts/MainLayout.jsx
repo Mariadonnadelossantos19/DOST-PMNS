@@ -3,7 +3,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import { useDarkMode } from '../Context';
 
-const MainLayout = ({ children, user, onLogout, onNavigateToProfile }) => {
+const MainLayout = ({ children, user, onLogout, onNavigateToProfile, onNavigate }) => {
    const [sidebarOpen, setSidebarOpen] = useState(false);
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
    const [currentPath] = useState('/dashboard');
@@ -45,6 +45,7 @@ const MainLayout = ({ children, user, onLogout, onNavigateToProfile }) => {
                        isCollapsed={sidebarCollapsed}
                        userRole={user?.role}
                        userData={user}
+                       onNavigate={onNavigate}
                     />
 
             {/* Main Content */}

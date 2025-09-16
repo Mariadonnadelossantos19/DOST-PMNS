@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, Input, Alert } from '../../../Component/UI';
 
-const ProponentDashboard = ({ userData }) => {
+const ProponentDashboard = ({ userData, onOpenProgramSelection }) => {
    const [enrollments, setEnrollments] = useState([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState(null);

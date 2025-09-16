@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { sendPasswordResetEmail, sendWelcomeEmail } = require('../services/emailService');
 
 // Register new user
@@ -155,10 +156,23 @@ const login = async (req, res) => {
       user.lastLogin = new Date();
       await user.save();
 
+      // Generate JWT token
+      const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+      const token = jwt.sign(
+         { 
+            id: user._id,
+            userId: user.userId,
+            email: user.email,
+            role: user.role
+         },
+         JWT_SECRET,
+         { expiresIn: '24h' }
+      );
+
       res.json({
          success: true,
          message: 'Login successful',
-         token: 'jwt_token_' + Date.now(), // In production, use JWT
+         token: token,
          user: {
             id: user._id,
             userId: user.userId,

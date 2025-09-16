@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button } from '../../../../Component/UI';
+import { ProgramSelection } from '../../../../Component/ProgramSelection';
 import PersonalInfoStep from './PersonalInfoStep';
 import BusinessInfoStep from './BusinessInfoStep';
 import LoginCredentialsStep from './LoginCredentialsStep';
@@ -34,7 +35,8 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState(null);
    const [success, setSuccess] = useState(false);
-   const [currentStep, setCurrentStep] = useState(1);
+   const [currentStep, setCurrentStep] = useState(0); // Start with program selection
+   const [selectedProgram, setSelectedProgram] = useState(null);
 
    const programs = [
       { value: 'SETUP', label: 'Small Enterprise Technology Upgrading Program' },
@@ -49,6 +51,28 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
          [field]: value
       }));
       if (error) setError(null);
+   };
+
+   const handleProgramSelect = (program) => {
+      setSelectedProgram(program);
+      setFormData(prev => ({
+         ...prev,
+         requestedProgram: program.code
+      }));
+   };
+
+   const handleNext = () => {
+      if (currentStep === 0 && selectedProgram) {
+         setCurrentStep(1);
+      } else if (validateCurrentStep()) {
+         setCurrentStep(prev => prev + 1);
+      }
+   };
+
+   const handleBack = () => {
+      if (currentStep > 0) {
+         setCurrentStep(prev => prev - 1);
+      }
    };
 
    const validateCurrentStep = () => {
@@ -189,6 +213,7 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
 
    const getStepTitle = (step) => {
       switch (step) {
+         case 0: return 'Program Selection';
          case 1: return 'Personal Information';
          case 2: return 'Business Information';
          case 3: return 'Login Credentials';
@@ -210,6 +235,15 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
 
    const renderCurrentStep = () => {
       switch (currentStep) {
+         case 0:
+            return (
+               <ProgramSelection
+                  onProgramSelect={handleProgramSelect}
+                  selectedProgram={selectedProgram}
+                  onNext={handleNext}
+                  onBack={handleBack}
+               />
+            );
          case 1:
             return <PersonalInfoStep formData={formData} handleChange={handleChange} error={error} />;
          case 2:
@@ -237,7 +271,7 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
                         Register as Proponent
                      </h2>
                      <p className="text-sm text-gray-500 mt-1">
-                        Step {currentStep} of 5: {getStepTitle(currentStep)}
+                        Step {currentStep + 1} of 6: {getStepTitle(currentStep)}
                      </p>
                   </div>
                   <button
@@ -254,12 +288,12 @@ const ProponentRegistrationForm = ({ isOpen, onClose, onSuccess }) => {
                <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
                      <span className="text-sm text-gray-600">Progress</span>
-                     <span className="text-sm text-gray-600">{Math.round((currentStep / 5) * 100)}%</span>
+                     <span className="text-sm text-gray-600">{Math.round(((currentStep + 1) / 6) * 100)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                      <div 
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${(currentStep / 5) * 100}%` }}
+                        style={{ width: `${((currentStep + 1) / 6) * 100}%` }}
                      ></div>
                   </div>
                </div>

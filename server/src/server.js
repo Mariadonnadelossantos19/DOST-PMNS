@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -6,14 +7,18 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
+const programRoutes = require('./routes/programRoutes');
+
+// Import seed functions
+const seedPSTOData = require('./utils/seedPSTO');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve uploaded files with proper headers for viewing
 app.use('/uploads', (req, res, next) => {
@@ -27,10 +32,35 @@ app.use('/uploads', (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/programs', programRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
    console.error('Server error:', err);
+   
+   // Handle multer errors
+   if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+         status: 'ERROR',
+         message: 'File too large. Maximum size is 10MB.'
+      });
+   }
+   
+   if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+         status: 'ERROR',
+         message: 'Unexpected field in file upload.'
+      });
+   }
+   
+   if (err.message && err.message.includes('Malformed part header')) {
+      return res.status(400).json({
+         status: 'ERROR',
+         message: 'Invalid form data format. Please check your request.',
+         error: process.env.NODE_ENV === 'development' ? err.message : 'Form data error'
+      });
+   }
+   
    res.status(500).json({
       status: 'ERROR',
       message: 'Internal server error',
@@ -67,11 +97,20 @@ const startServer = async () => {
       console.log('🔄 Connecting to MongoDB...');
       await connectDB();
       
+      // Seed PSTO data
+      console.log('🌱 Seeding PSTO data...');
+      await seedPSTOData();
+      
       app.listen(PORT, () => {
          console.log(`🚀 Server running on port ${PORT}`);
          console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
          console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
          console.log(`📝 Enrollments API: http://localhost:${PORT}/api/enrollments`);
+         console.log(`📋 Programs API: http://localhost:${PORT}/api/programs`);
+         console.log(`   - SETUP: http://localhost:${PORT}/api/programs/setup`);
+         console.log(`   - GIA: http://localhost:${PORT}/api/programs/gia`);
+         console.log(`   - CEST: http://localhost:${PORT}/api/programs/cest`);
+         console.log(`   - SSCP: http://localhost:${PORT}/api/programs/sscp`);
       });
    } catch (error) {
       console.error('❌ Failed to start server:', error.message);

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProponentDashboard, ProponentRegistrationForm, EnterpriseProfile } from '../Components';
+import { ProgramSelection } from '../../../Component/ProgramSelection';
+import { MultiStepForm } from '../../../Component/ProgramApplication';
 import { Button, Card, Modal } from '../../../Component/UI';
 
 const ProponentMainPage = ({ onNavigateToProfile }) => {
@@ -7,6 +9,9 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
    const [showRegistrationForm, setShowRegistrationForm] = useState(false);
    const [loading, setLoading] = useState(true);
    const [showProfileModal, setShowProfileModal] = useState(false);
+   const [showProgramSelection, setShowProgramSelection] = useState(false);
+   const [showApplicationForm, setShowApplicationForm] = useState(false);
+   const [selectedProgram, setSelectedProgram] = useState(null);
 
    // Debug modal state changes
    useEffect(() => {
@@ -37,6 +42,19 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
       
       return () => {
          delete window.openEnterpriseProfile;
+      };
+   }, []);
+
+   // Listen for program selection event from sidebar
+   useEffect(() => {
+      const handleOpenProgramSelection = () => {
+         setShowProgramSelection(true);
+      };
+
+      window.addEventListener('openProgramSelection', handleOpenProgramSelection);
+      
+      return () => {
+         window.removeEventListener('openProgramSelection', handleOpenProgramSelection);
       };
    }, []);
 
@@ -92,6 +110,89 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
       window.location.href = '/login';
    };
 
+   const handleProgramSelect = (program) => {
+      setSelectedProgram(program);
+   };
+
+   const handleProgramNext = () => {
+      if (selectedProgram) {
+         // Close program selection and show application form
+         setShowProgramSelection(false);
+         setShowApplicationForm(true);
+         console.log('Selected program:', selectedProgram);
+      }
+   };
+
+   const handleProgramBack = () => {
+      setShowProgramSelection(false);
+      setSelectedProgram(null);
+   };
+
+   const handleApplicationBack = () => {
+      setShowApplicationForm(false);
+      setShowProgramSelection(true);
+   };
+
+   const handleApplicationSubmit = async (applicationData) => {
+      try {
+         // Get auth token
+         const token = localStorage.getItem('authToken');
+         console.log('Auth token from localStorage:', token ? 'Token found' : 'No token');
+         if (!token) {
+            alert('Please log in to submit an application');
+            return;
+         }
+
+         // Create FormData for file uploads
+         const formData = new FormData();
+         
+         // Add all form fields
+         Object.keys(applicationData).forEach(key => {
+            if (key !== 'letterOfIntent' && key !== 'enterpriseProfile') {
+               formData.append(key, applicationData[key]);
+            }
+         });
+         
+         // Add files
+         if (applicationData.letterOfIntent) {
+            formData.append('letterOfIntent', applicationData.letterOfIntent);
+         }
+         if (applicationData.enterpriseProfile) {
+            formData.append('enterpriseProfile', applicationData.enterpriseProfile);
+         }
+
+         // Submit to server based on program type
+         const programCode = applicationData.programCode.toLowerCase();
+         console.log('Submitting to:', `http://localhost:4000/api/programs/${programCode}/submit`);
+         console.log('Program code:', programCode);
+         console.log('Form data keys:', Array.from(formData.keys()));
+         
+         const response = await fetch(`http://localhost:4000/api/programs/${programCode}/submit`, {
+            method: 'POST',
+            headers: {
+               'Authorization': `Bearer ${token}`
+            },
+            body: formData
+         });
+
+         const result = await response.json();
+
+         if (result.success) {
+            alert(`Application submitted successfully! Your application ID is: ${result.data.applicationId}`);
+            
+            // Reset states
+            setShowApplicationForm(false);
+            setShowProgramSelection(false);
+            setSelectedProgram(null);
+         } else {
+            alert(`Error submitting application: ${result.message}`);
+         }
+      } catch (error) {
+         console.error('Error submitting application:', error);
+         alert('Error submitting application. Please try again.');
+      }
+   };
+
    if (loading) {
       return (
          <div className="flex justify-center items-center h-64">
@@ -107,7 +208,25 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
             {/* Main Dashboard Content */}
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                <div className="px-6">
-                  <ProponentDashboard userData={userData} />
+                  {showApplicationForm ? (
+                     <MultiStepForm
+                        selectedProgram={selectedProgram}
+                        onBack={handleApplicationBack}
+                        onSubmit={handleApplicationSubmit}
+                     />
+                  ) : showProgramSelection ? (
+                     <ProgramSelection
+                        onProgramSelect={handleProgramSelect}
+                        selectedProgram={selectedProgram}
+                        onNext={handleProgramNext}
+                        onBack={handleProgramBack}
+                     />
+                  ) : (
+                     <ProponentDashboard 
+                        userData={userData} 
+                        onOpenProgramSelection={() => setShowProgramSelection(true)}
+                     />
+                  )}
                </div>
             </div>
 

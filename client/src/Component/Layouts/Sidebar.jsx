@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDarkMode } from '../Context';
 
-const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false, userData = null }) => {
+const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false, userData = null, onNavigate }) => {
    const { isDarkMode } = useDarkMode();
    const [stats, setStats] = useState({
       totalApplications: 0,
@@ -96,6 +96,21 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          count: 0
       }
    ];
+
+   // Program Application
+   const programApplication = {
+      id: 'program-application',
+      label: 'Program Application',
+      description: 'Apply for DOST programs',
+      icon: (
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2"/>
+         </svg>
+      ),
+      path: '/program-selection',
+      color: 'indigo'
+   };
 
    // Management sections
    const managementSections = [
@@ -225,7 +240,8 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
 
                {/* Navigation Menu */}
                <nav className={`flex-1 p-4 space-y-6 ${isCollapsed ? 'px-2' : ''}`}>
-                  {/* DOST Services Section */}
+                  {/* DOST Services Section - Hidden for Proponents */}
+                  {userRole !== 'proponent' && (
                   <div>
                      {!isCollapsed && (
                         <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 transition-colors duration-300 ${
@@ -291,6 +307,59 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                         })}
                      </div>
                   </div>
+                  )}
+
+                  {/* Program Application Section - Only for Proponents */}
+                  {userRole === 'proponent' && (
+                  <div>
+                     {!isCollapsed && (
+                        <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 transition-colors duration-300 ${
+                           isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                        }`}>
+                           Applications
+                        </h3>
+                     )}
+                     <div className="space-y-2">
+                        <div className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                           currentPath === programApplication.path
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                              : isDarkMode 
+                                 ? 'bg-gray-700 border-gray-600 hover:bg-gray-600' 
+                                 : 'bg-white border-gray-200 hover:bg-gray-50'
+                        }`}>
+                           <button
+                              onClick={() => onNavigate && onNavigate(programApplication.path)}
+                              className={`flex items-start gap-3 group ${isCollapsed ? 'justify-center' : ''} w-full text-left`}
+                              title={isCollapsed ? programApplication.label : ''}
+                           >
+                              <div className={`p-2 rounded-lg ${currentPath === programApplication.path ? 'bg-white' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                                 <span className={`${
+                                    currentPath === programApplication.path 
+                                       ? 'text-indigo-600' 
+                                       : isDarkMode 
+                                          ? 'text-gray-400 group-hover:text-gray-300' 
+                                          : 'text-gray-500 group-hover:text-gray-700'
+                                 }`}>
+                                    {programApplication.icon}
+                                 </span>
+                              </div>
+                              {!isCollapsed && (
+                                 <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                       <h4 className="font-semibold text-sm">{programApplication.label}</h4>
+                                    </div>
+                                    <p className={`text-xs leading-relaxed line-clamp-2 transition-colors duration-300 ${
+                                       isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                    }`}>
+                                       {programApplication.description}
+                                    </p>
+                                 </div>
+                              )}
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+                  )}
 
                   {/* Quick Stats Section for DOST MIMAROPA */}
                   {(userRole === 'dost_mimaropa' || userRole === 'super_admin') && (

@@ -1,0 +1,23 @@
+@echo off
+echo Starting PMNS 2.0 Application...
+echo.
+
+echo Starting MongoDB (if not running)...
+net start MongoDB >nul 2>&1
+
+echo Starting Server...
+start "PMNS Server" cmd /k "cd server && npm start"
+
+echo Waiting for server to start...
+timeout /t 3 /nobreak >nul
+
+echo Starting Client...
+start "PMNS Client" cmd /k "cd client && npm run dev"
+
+echo.
+echo Both server and client are starting...
+echo Server: http://localhost:4000
+echo Client: http://localhost:5173
+echo.
+echo Press any key to exit...
+pause >nul

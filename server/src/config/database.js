@@ -3,11 +3,9 @@ const mongoose = require('mongoose');
 // MongoDB connection configuration
 const connectDB = async () => {
    try {
-      const mongoURI = process.env.MONGODB_URI;
+      const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pmns2';
       
-      if (!mongoURI) {
-         throw new Error('MONGODB_URI environment variable is not defined');
-      }
+      console.log('Connecting to MongoDB:', mongoURI);
       
       const conn = await mongoose.connect(mongoURI);
 
