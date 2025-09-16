@@ -7,6 +7,11 @@ import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import { ProponentMainPage } from './Pages/Proponents/pages';
 import ResetPassword from './Component/Registration/ResetPassword';
+import MarinduqueDashboard from './Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
+import OccidentalMindoroDashboard from './Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
+import OrientalMindoroDashboard from './Pages/PSTO/PSTO_OrientalMindoro/pages/OrientalMindoroDashboard';
+import PalawanDashboard from './Pages/PSTO/PSTO_Palawan/pages/PalawanDashboard';
+import RomblonDashboard from './Pages/PSTO/PSTO_Romblon/pages/RomblonDashboard';
 import './App.css';
 
 // Sample data for demonstration
@@ -236,6 +241,36 @@ function AppContent({ onLogout }) {
       }
    };
 
+   // Render PSTO dashboard based on province
+   const renderPSTODashboard = () => {
+      const province = currentUser.province;
+      
+      switch (province) {
+         case 'Marinduque':
+            return <MarinduqueDashboard currentUser={currentUser} />;
+         case 'Occidental Mindoro':
+            return <OccidentalMindoroDashboard currentUser={currentUser} />;
+         case 'Oriental Mindoro':
+            return <OrientalMindoroDashboard currentUser={currentUser} />;
+         case 'Palawan':
+            return <PalawanDashboard currentUser={currentUser} />;
+         case 'Romblon':
+            return <RomblonDashboard currentUser={currentUser} />;
+         default:
+            return (
+               <div className="p-6 text-center">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">PSTO Dashboard</h1>
+                  <p className="text-gray-600 mb-4">
+                     Province: {province || 'Unknown'}
+                  </p>
+                  <p className="text-gray-500">
+                     PSTO dashboard for this province is not yet implemented.
+                  </p>
+               </div>
+            );
+      }
+   };
+
    // Render different dashboards based on user role
    const renderDashboard = () => {
       if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
@@ -243,18 +278,7 @@ function AppContent({ onLogout }) {
       } else if (currentUser.role === 'proponent') {
          return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
       } else if (currentUser.role === 'psto') {
-         // PSTO Dashboard - use ProjectDashboard for province-specific routing
-         return (
-            <ProjectDashboard
-               projects={sampleProjects}
-               tasks={sampleTasks}
-               currentUser={currentUser}
-               onProjectUpdate={handleProjectUpdate}
-               onTaskUpdate={handleTaskUpdate}
-               onTaskCreate={handleTaskCreate}
-               onTaskDelete={handleTaskDelete}
-            />
-         );
+         return renderPSTODashboard();
       } else {
          return (
             <ProjectDashboard

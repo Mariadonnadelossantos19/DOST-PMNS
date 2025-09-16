@@ -20,6 +20,23 @@ const LandingPage = ({ onLoginSuccess }) => {
       return () => window.removeEventListener('scroll', handleScroll);
    }, []);
 
+   // Initialize GLightbox for video popup
+   useEffect(() => {
+      if (window.GLightbox) {
+         const lightbox = window.GLightbox({
+            selector: '.glightbox',
+            autoplayVideos: true,
+            skin: 'modern',
+            width: '90vw',
+            height: '90vh'
+         });
+         
+         return () => {
+            lightbox.destroy();
+         };
+      }
+   }, []);
+
    const handleLoginClick = () => {
       setShowAuthModal(true);
    };
@@ -27,6 +44,7 @@ const LandingPage = ({ onLoginSuccess }) => {
    const handleAuthSuccess = (data) => {
       onLoginSuccess?.(data);
    };
+
 
    return (
       <div className={`min-h-screen transition-colors duration-300 ${
@@ -247,17 +265,10 @@ const LandingPage = ({ onLoginSuccess }) => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                            </svg>
                         </Button>
-                        <Button 
-                           variant="outline" 
-                           size="lg" 
-                           onClick={handleLoginClick}
-                           className="border-white/30 text-white hover:bg-white hover:text-blue-600 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group"
-                        >
-                           <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"/>
-                           </svg>
-                           Watch Demo
-                        </Button>
+                        <a href="https://www.youtube.com/watch?v=aXHLN4qGSWw" className="glightbox btn-watch-video border-white/30 text-white hover:bg-white hover:text-blue-600 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group inline-flex items-center px-6 py-3 border rounded-lg">
+                           <i className="bi bi-play-circle mr-2 group-hover:scale-110 transition-transform"></i>
+                           <span>Watch Video</span>
+                        </a>
                      </div>
                      
                      {/* Stats */}
