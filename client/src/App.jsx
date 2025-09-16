@@ -7,6 +7,7 @@ import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import { ProponentMainPage } from './Pages/Proponents/pages';
 import { ProgramSelectionPage } from './Pages/ProgramSelection';
+import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
 import ResetPassword from './Component/Registration/ResetPassword';
 import MarinduqueDashboard from './Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
 import OccidentalMindoroDashboard from './Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
@@ -297,11 +298,17 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
 
    // Render content based on current page
    const renderContent = () => {
+      console.log('AppContent - renderContent called with currentPage:', currentPage);
       switch (currentPage) {
          case 'program-selection':
+            console.log('Rendering ProgramSelectionPage');
             return <ProgramSelectionPage />;
+         case 'monitoring':
+            console.log('Rendering ApplicationMonitorPage');
+            return <ApplicationMonitorPage />;
          case 'dashboard':
          default:
+            console.log('Rendering Dashboard');
             return renderDashboard();
       }
    };

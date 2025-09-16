@@ -214,9 +214,13 @@ const submitApplication = async (req, res) => {
 // Get user's applications
 const getMyApplications = async (req, res) => {
    try {
+      console.log('Fetching applications for user:', req.user._id);
+      
       const applications = await SETUPApplication.find({ proponentId: req.user._id })
          .sort({ createdAt: -1 })
          .select('-__v');
+
+      console.log('Found applications:', applications.length);
 
       res.json({
          success: true,

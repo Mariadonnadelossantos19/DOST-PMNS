@@ -19,9 +19,13 @@ export const API_ENDPOINTS = {
    
    // Program endpoints
    SETUP_SUBMIT: `${API_BASE_URL}/programs/setup/submit`,
+   SETUP_MY_APPLICATIONS: `${API_BASE_URL}/programs/setup/my-applications`,
    GIA_SUBMIT: `${API_BASE_URL}/programs/gia/submit`,
+   GIA_MY_APPLICATIONS: `${API_BASE_URL}/programs/gia/my-applications`,
    CEST_SUBMIT: `${API_BASE_URL}/programs/cest/submit`,
+   CEST_MY_APPLICATIONS: `${API_BASE_URL}/programs/cest/my-applications`,
    SSCP_SUBMIT: `${API_BASE_URL}/programs/sscp/submit`,
+   SSCP_MY_APPLICATIONS: `${API_BASE_URL}/programs/sscp/my-applications`,
    PROGRAM_SUBMIT: (programCode) => `${API_BASE_URL}/programs/${programCode}/submit`,
    
    // Enrollment endpoints
