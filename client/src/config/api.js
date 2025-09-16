@@ -36,6 +36,11 @@ export const API_ENDPOINTS = {
    
    // Proponent requests
    PROPONENT_REQUESTS: `${API_BASE_URL}/proponent-requests`,
+   
+   // PSTO Review endpoints
+   PSTO_APPLICATIONS: `${API_BASE_URL}/programs/psto/applications`,
+   PSTO_APPLICATION_DETAIL: (id) => `${API_BASE_URL}/programs/psto/applications/${id}`,
+   PSTO_REVIEW: (id) => `${API_BASE_URL}/programs/psto/applications/${id}/review`,
 };
 
 export default API_BASE_URL;

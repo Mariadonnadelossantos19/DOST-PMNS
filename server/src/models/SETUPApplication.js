@@ -193,6 +193,23 @@ const setupApplicationSchema = new mongoose.Schema({
       default: 'pending'
    },
    
+   // PSTO Review Status
+   pstoStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'returned', 'rejected'],
+      default: 'pending'
+   },
+   pstoComments: {
+      type: String
+   },
+   pstoReviewedAt: {
+      type: Date
+   },
+   pstoAssigned: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+   },
+   
    // Review Information
    reviewedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -209,6 +226,13 @@ const setupApplicationSchema = new mongoose.Schema({
    assignedPSTO: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'PSTO'
+   },
+   forwardedToPSTO: {
+      type: Boolean,
+      default: false
+   },
+   forwardedAt: {
+      type: Date
    },
    
    // TNA Assessment Results

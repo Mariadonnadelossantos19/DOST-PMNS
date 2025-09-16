@@ -71,4 +71,13 @@ router.put('/sscp/:id/status', auth, sscpController.updateApplicationStatus);
 router.get('/sscp/:id/download/:fileType', auth, sscpController.downloadFile);
 router.get('/sscp/stats/overview', auth, sscpController.getApplicationStats);
 
+// PSTO Review Routes (for PSTO users to review applications)
+router.get('/psto/applications', auth, setupController.getPSTOApplications);
+router.get('/psto/applications/:id', auth, setupController.getPSTOApplicationById);
+router.put('/psto/applications/:id/review', auth, setupController.reviewApplication);
+router.get('/psto/applications/:id/download/:fileType', auth, setupController.downloadFile);
+
+// Manual fix endpoint for PSTO assignment
+router.post('/setup/fix-psto-assignment/:id', setupController.fixPSTOAssignment);
+
 module.exports = router;
