@@ -60,112 +60,95 @@ const ApplicationsList = ({
    }
 
    const renderCardView = () => (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
          {filteredApplications.map((application) => (
-            <Card key={application._id} className="p-6 hover:shadow-lg transition-shadow duration-200 border border-gray-200">
+            <Card key={application._id} className="p-3 hover:shadow-lg transition-shadow duration-200 border border-gray-200">
                {/* Card Header */}
-               <div className="flex items-start justify-between mb-4">
+               <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                     <div className="flex items-center space-x-2 mb-2">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                           <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="flex items-center space-x-1.5 mb-1">
+                        <div className="p-1 bg-purple-100 rounded-md">
+                           <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                            </svg>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900">
+                        <h3 className="text-xs font-bold text-gray-900 truncate">
                            {application.applicationId}
                         </h3>
                      </div>
-                     <p className="text-sm text-gray-600 font-medium">
+                     <p className="text-xs text-gray-600 font-medium truncate">
                         {application.enterpriseName}
                      </p>
                   </div>
-                  <Badge className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.pstoStatus)}`}>
+                  <Badge className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${getStatusColor(application.pstoStatus)}`}>
                      {application.pstoStatus?.toUpperCase() || 'PENDING'}
                   </Badge>
                </div>
 
                {/* Card Content */}
-               <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-3">
-                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <div className="space-y-1.5 mb-3">
+                  <div className="flex items-center space-x-1.5">
+                     <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                      </div>
-                     <div>
-                        <p className="text-sm font-medium text-gray-900">{application.contactPerson}</p>
-                        <p className="text-xs text-gray-500">Contact Person</p>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900 truncate">{application.contactPerson}</p>
+                        <p className="text-xs text-gray-500">Contact</p>
                      </div>
                   </div>
                   
                   {/* General Agreement Status */}
-                  <div className="flex items-center space-x-3">
-                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center space-x-1.5">
+                     <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                      </div>
-                     <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                           <div className={`w-2 h-2 rounded-full ${application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                           <p className="text-sm font-medium text-gray-900">
-                              General Agreement {application.generalAgreement?.accepted ? 'Accepted' : 'Not Accepted'}
+                     <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-1">
+                           <div className={`w-1 h-1 rounded-full ${application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                           <p className="text-xs font-medium text-gray-900 truncate">
+                              {application.generalAgreement?.accepted ? 'Accepted' : 'Not Accepted'}
                            </p>
                         </div>
-                        {application.generalAgreement?.signatoryName && (
-                           <p className="text-xs text-gray-500">
-                              Signed by: {application.generalAgreement.signatoryName} ({application.generalAgreement.position})
-                           </p>
-                        )}
                      </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center space-x-1.5">
+                     <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                      </div>
-                     <div>
-                        <p className="text-sm font-medium text-gray-900">{application.proponentId?.province || 'N/A'}</p>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900 truncate">{application.proponentId?.province || 'N/A'}</p>
                         <p className="text-xs text-gray-500">Province</p>
                      </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center space-x-1.5">
+                     <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                      </div>
-                     <div>
-                        <p className="text-sm font-medium text-gray-900">{formatDate(application.createdAt)}</p>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900 truncate">{formatDate(application.createdAt)}</p>
                         <p className="text-xs text-gray-500">Submitted</p>
-                     </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                     </div>
-                     <div>
-                        <p className="text-sm font-medium text-gray-900">{application.businessActivity || 'N/A'}</p>
-                        <p className="text-xs text-gray-500">Business Activity</p>
                      </div>
                   </div>
                </div>
 
                {/* Card Actions */}
-               <div className="flex space-x-2 pt-4 border-t border-gray-100">
+               <div className="flex space-x-1 pt-2 border-t border-gray-100">
                   <Button
                      onClick={() => setSelectedApplication(application)}
-                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-1.5 py-1 rounded-md transition-colors duration-200 flex items-center justify-center text-xs"
                   >
-                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                      </svg>
@@ -175,9 +158,9 @@ const ApplicationsList = ({
                   <Button
                      onClick={() => window.open(`/api/programs/psto/applications/${application._id}/download/letterOfIntent`, '_blank')}
                      variant="outline"
-                     className="px-4 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                     className="px-1.5 py-1 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md transition-colors duration-200 flex items-center justify-center text-xs"
                   >
-                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                      </svg>
                      Files
@@ -364,90 +347,130 @@ const ApplicationsList = ({
             </div>
          </div>
 
-         {/* Status Filter Tabs */}
+         {/* Enhanced Status Filter Tabs */}
          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex flex-wrap gap-2">
                <button
                   onClick={() => setStatusFilter('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center ${
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center group ${
                      statusFilter === 'all'
-                        ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-purple-100 text-purple-700 border border-purple-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 border border-gray-200 hover:border-gray-300'
                   }`}
                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  All Applications
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  <div className={`p-1 rounded-md mr-2 transition-colors ${
+                     statusFilter === 'all' ? 'bg-purple-200' : 'bg-gray-200 group-hover:bg-gray-300'
+                  }`}>
+                     <svg className={`w-3 h-3 ${statusFilter === 'all' ? 'text-purple-600' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                     </svg>
+                  </div>
+                  <span>All Applications</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                     statusFilter === 'all' 
+                        ? 'bg-purple-200 text-purple-800' 
+                        : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                  }`}>
                      {statusCounts.all}
                   </span>
                </button>
                
                <button
                   onClick={() => setStatusFilter('pending')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center ${
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center group ${
                      statusFilter === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 border border-gray-200 hover:border-gray-300'
                   }`}
                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Pending
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  <div className={`p-1 rounded-md mr-2 transition-colors ${
+                     statusFilter === 'pending' ? 'bg-yellow-200' : 'bg-gray-200 group-hover:bg-gray-300'
+                  }`}>
+                     <svg className={`w-3 h-3 ${statusFilter === 'pending' ? 'text-yellow-600' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                  </div>
+                  <span>Pending</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                     statusFilter === 'pending' 
+                        ? 'bg-yellow-200 text-yellow-800' 
+                        : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                  }`}>
                      {statusCounts.pending}
                   </span>
                </button>
                
                <button
                   onClick={() => setStatusFilter('approved')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center ${
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center group ${
                      statusFilter === 'approved'
-                        ? 'bg-green-100 text-green-700 border border-green-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-100 text-green-700 border border-green-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 border border-gray-200 hover:border-gray-300'
                   }`}
                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Approved
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  <div className={`p-1 rounded-md mr-2 transition-colors ${
+                     statusFilter === 'approved' ? 'bg-green-200' : 'bg-gray-200 group-hover:bg-gray-300'
+                  }`}>
+                     <svg className={`w-3 h-3 ${statusFilter === 'approved' ? 'text-green-600' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                  </div>
+                  <span>Approved</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                     statusFilter === 'approved' 
+                        ? 'bg-green-200 text-green-800' 
+                        : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                  }`}>
                      {statusCounts.approved}
                   </span>
                </button>
                
                <button
                   onClick={() => setStatusFilter('returned')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center ${
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center group ${
                      statusFilter === 'returned'
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-blue-100 text-blue-700 border border-blue-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 border border-gray-200 hover:border-gray-300'
                   }`}
                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Returned for Revision
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  <div className={`p-1 rounded-md mr-2 transition-colors ${
+                     statusFilter === 'returned' ? 'bg-blue-200' : 'bg-gray-200 group-hover:bg-gray-300'
+                  }`}>
+                     <svg className={`w-3 h-3 ${statusFilter === 'returned' ? 'text-blue-600' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                     </svg>
+                  </div>
+                  <span>Returned for Revision</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                     statusFilter === 'returned' 
+                        ? 'bg-blue-200 text-blue-800' 
+                        : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                  }`}>
                      {statusCounts.returned}
                   </span>
                </button>
                
                <button
                   onClick={() => setStatusFilter('rejected')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center ${
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center group ${
                      statusFilter === 'rejected'
-                        ? 'bg-red-100 text-red-700 border border-red-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-red-100 text-red-700 border border-red-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 border border-gray-200 hover:border-gray-300'
                   }`}
                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Rejected
-                  <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  <div className={`p-1 rounded-md mr-2 transition-colors ${
+                     statusFilter === 'rejected' ? 'bg-red-200' : 'bg-gray-200 group-hover:bg-gray-300'
+                  }`}>
+                     <svg className={`w-3 h-3 ${statusFilter === 'rejected' ? 'text-red-600' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                     </svg>
+                  </div>
+                  <span>Rejected</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                     statusFilter === 'rejected' 
+                        ? 'bg-red-200 text-red-800' 
+                        : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                  }`}>
                      {statusCounts.rejected}
                   </span>
                </button>
