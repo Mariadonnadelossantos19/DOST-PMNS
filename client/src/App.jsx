@@ -308,6 +308,12 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       switch (province) {
          case 'Marinduque':
             return <MarinduqueApplicationsPage currentUser={currentUser} />;
+         case 'Occidental Mindoro':
+            return <OccidentalMindoroApplicationsPage currentUser={currentUser} />;
+         case 'Oriental Mindoro':
+            return <OrientalMindoroApplicationsPage currentUser={currentUser} />;
+         case 'Palawan':
+            return <PalawanApplicationsPage currentUser={currentUser} />;
          case 'Romblon':
             return <RomblonApplicationsPage currentUser={currentUser} />;
          default:

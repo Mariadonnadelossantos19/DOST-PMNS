@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_ENDPOINTS } from '../../config/api';
 import { useDarkMode } from '../Context';
+import useApplicationEdit from './hooks/useApplicationEdit';
 
 const ApplicationMonitor = () => {
    const { isDarkMode } = useDarkMode();
@@ -10,6 +11,9 @@ const ApplicationMonitor = () => {
    const [selectedApplication, setSelectedApplication] = useState(null);
    const [filterStatus, setFilterStatus] = useState('all');
    const [searchTerm, setSearchTerm] = useState('');
+   const [isEditMode, setIsEditMode] = useState(false);
+   const [editFormData, setEditFormData] = useState({});
+   const { resubmitApplication } = useApplicationEdit();
 
    // Fetch user's applications
    const fetchApplications = async () => {
@@ -119,6 +123,87 @@ const ApplicationMonitor = () => {
       });
    };
 
+   // Handle edit mode toggle
+   const handleEditToggle = (application) => {
+      if (application.pstoStatus === 'returned') {
+         setSelectedApplication(application);
+         setIsEditMode(true);
+         setEditFormData({
+            // Basic Information
+            enterpriseName: application.enterpriseName || '',
+            contactPerson: application.contactPerson || '',
+            position: application.position || '',
+            officeAddress: application.officeAddress || '',
+            factoryAddress: application.factoryAddress || '',
+            website: application.website || '',
+            
+            // Contact Details
+            contactPersonEmail: application.contactPersonEmail || '',
+            contactPersonTel: application.contactPersonTel || '',
+            factoryEmail: application.factoryEmail || '',
+            factoryTel: application.factoryTel || '',
+            contactPersonFax: application.contactPersonFax || '',
+            factoryFax: application.factoryFax || '',
+            
+            // Enterprise Details
+            yearEstablished: application.yearEstablished || '',
+            initialCapital: application.initialCapital || '',
+            organizationType: application.organizationType || '',
+            profitType: application.profitType || '',
+            registrationNo: application.registrationNo || '',
+            yearRegistered: application.yearRegistered || '',
+            capitalClassification: application.capitalClassification || '',
+            employmentClassification: application.employmentClassification || '',
+            
+            // Employment Details
+            directWorkers: application.directWorkers || '',
+            productionWorkers: application.productionWorkers || '',
+            nonProductionWorkers: application.nonProductionWorkers || '',
+            contractWorkers: application.contractWorkers || '',
+            totalWorkers: application.totalWorkers || '',
+            
+            // Business Activity
+            businessActivity: application.businessActivity || '',
+            specificProduct: application.specificProduct || '',
+            enterpriseBackground: application.enterpriseBackground || '',
+            
+            // Technology Details
+            technologyNeeds: application.technologyNeeds || '',
+            currentTechnologyLevel: application.currentTechnologyLevel || '',
+            desiredTechnologyLevel: application.desiredTechnologyLevel || '',
+            expectedOutcomes: application.expectedOutcomes || ''
+         });
+      }
+   };
+
+   // Handle form data changes
+   const handleFormChange = (field, value) => {
+      setEditFormData(prev => ({
+         ...prev,
+         [field]: value
+      }));
+   };
+
+   // Handle save changes
+   const handleSaveChanges = async () => {
+      try {
+         await resubmitApplication(selectedApplication._id, editFormData, []);
+         alert('Application updated and resubmitted successfully!');
+         setIsEditMode(false);
+         setEditFormData({});
+         setSelectedApplication(null);
+         fetchApplications();
+      } catch (error) {
+         alert('Error updating application: ' + error.message);
+      }
+   };
+
+   // Handle cancel edit
+   const handleCancelEdit = () => {
+      setIsEditMode(false);
+      setEditFormData({});
+   };
+
    // Render application details modal
    const renderApplicationDetails = () => {
       if (!selectedApplication) return null;
@@ -130,17 +215,58 @@ const ApplicationMonitor = () => {
                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
                   <div className="flex justify-between items-center">
                      <div>
-                        <h3 className="text-xl font-bold">Application Details</h3>
+                        <h3 className="text-xl font-bold">
+                           {isEditMode ? 'Edit Application' : 'Application Details'}
+                        </h3>
                         <p className="text-blue-100 text-sm">{selectedApplication.applicationId}</p>
                      </div>
-                     <button
-                        onClick={() => setSelectedApplication(null)}
-                        className="text-white hover:text-blue-200 transition-colors p-1"
-                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                     </button>
+                     <div className="flex items-center space-x-2">
+                        {selectedApplication.pstoStatus === 'returned' && !isEditMode && (
+                           <button
+                              onClick={() => handleEditToggle(selectedApplication)}
+                              className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200 flex items-center text-sm"
+                           >
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                           </button>
+                        )}
+                        {isEditMode && (
+                           <div className="flex space-x-2">
+                              <button
+                                 onClick={handleSaveChanges}
+                                 className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center text-sm"
+                              >
+                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                 </svg>
+                                 Save
+                              </button>
+                              <button
+                                 onClick={handleCancelEdit}
+                                 className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 flex items-center text-sm"
+                              >
+                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                 </svg>
+                                 Cancel
+                              </button>
+                           </div>
+                        )}
+                        <button
+                           onClick={() => {
+                              setSelectedApplication(null);
+                              setIsEditMode(false);
+                              setEditFormData({});
+                           }}
+                           className="text-white hover:text-blue-200 transition-colors p-1"
+                        >
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                           </svg>
+                        </button>
+                     </div>
                   </div>
                </div>
 
@@ -213,19 +339,55 @@ const ApplicationMonitor = () => {
                               <div className="space-y-2">
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Enterprise Name:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.enterpriseName}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="text"
+                                          value={editFormData.enterpriseName || ''}
+                                          onChange={(e) => handleFormChange('enterpriseName', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.enterpriseName}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Contact Person:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.contactPerson}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="text"
+                                          value={editFormData.contactPerson || ''}
+                                          onChange={(e) => handleFormChange('contactPerson', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.contactPerson}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Position:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.position}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="text"
+                                          value={editFormData.position || ''}
+                                          onChange={(e) => handleFormChange('position', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.position}</span>
+                                    )}
                                  </div>
                                  <div className="py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Office Address:</span>
-                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.officeAddress}</p>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.officeAddress || ''}
+                                          onChange={(e) => handleFormChange('officeAddress', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.officeAddress}</p>
+                                    )}
                                  </div>
                               </div>
                            </div>
@@ -241,15 +403,42 @@ const ApplicationMonitor = () => {
                               <div className="space-y-2">
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Phone:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.contactPersonTel}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="tel"
+                                          value={editFormData.contactPersonTel || ''}
+                                          onChange={(e) => handleFormChange('contactPersonTel', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.contactPersonTel}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Email:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.contactPersonEmail}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="email"
+                                          value={editFormData.contactPersonEmail || ''}
+                                          onChange={(e) => handleFormChange('contactPersonEmail', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.contactPersonEmail}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Website:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.website || 'N/A'}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="url"
+                                          value={editFormData.website || ''}
+                                          onChange={(e) => handleFormChange('website', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.website || 'N/A'}</span>
+                                    )}
                                  </div>
                               </div>
                            </div>
@@ -265,19 +454,123 @@ const ApplicationMonitor = () => {
                               <div className="space-y-2">
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Year Established:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.yearEstablished}</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.yearEstablished || ''}
+                                          onChange={(e) => handleFormChange('yearEstablished', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.yearEstablished}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Initial Capital:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.initialCapital || ''}
+                                          onChange={(e) => handleFormChange('initialCapital', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">₱{selectedApplication.initialCapital?.toLocaleString() || 'N/A'}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Organization Type:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.organizationType}</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.organizationType || ''}
+                                          onChange={(e) => handleFormChange('organizationType', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Type</option>
+                                          <option value="Single proprietorship">Single proprietorship</option>
+                                          <option value="Cooperative">Cooperative</option>
+                                          <option value="Partnership">Partnership</option>
+                                          <option value="Corporation">Corporation</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.organizationType}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Profit Type:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.profitType}</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.profitType || ''}
+                                          onChange={(e) => handleFormChange('profitType', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Type</option>
+                                          <option value="Profit">Profit</option>
+                                          <option value="Non-profit">Non-profit</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.profitType}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Registration No:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="text"
+                                          value={editFormData.registrationNo || ''}
+                                          onChange={(e) => handleFormChange('registrationNo', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.registrationNo}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Year Registered:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.yearRegistered || ''}
+                                          onChange={(e) => handleFormChange('yearRegistered', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.yearRegistered}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Capital Classification:</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.capitalClassification || ''}
+                                          onChange={(e) => handleFormChange('capitalClassification', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Classification</option>
+                                          <option value="Micro">Micro</option>
+                                          <option value="Small">Small</option>
+                                          <option value="Medium">Medium</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.capitalClassification}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5">
-                                    <span className="text-sm font-medium text-gray-600">Registration No:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.registrationNo}</span>
+                                    <span className="text-sm font-medium text-gray-600">Employment Classification:</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.employmentClassification || ''}
+                                          onChange={(e) => handleFormChange('employmentClassification', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Classification</option>
+                                          <option value="Micro">Micro</option>
+                                          <option value="Small">Small</option>
+                                          <option value="Medium">Medium</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.employmentClassification}</span>
+                                    )}
                                  </div>
                               </div>
                            </div>
@@ -296,23 +589,179 @@ const ApplicationMonitor = () => {
                               <div className="space-y-2">
                                  <div className="py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Business Activity:</span>
-                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.businessActivity || 'N/A'}</p>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.businessActivity || ''}
+                                          onChange={(e) => handleFormChange('businessActivity', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.businessActivity || 'N/A'}</p>
+                                    )}
                                  </div>
                                  <div className="py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Specific Product:</span>
-                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.specificProduct || 'N/A'}</p>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.specificProduct || ''}
+                                          onChange={(e) => handleFormChange('specificProduct', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.specificProduct || 'N/A'}</p>
+                                    )}
+                                 </div>
+                                 <div className="py-1.5">
+                                    <span className="text-sm font-medium text-gray-600">Enterprise Background:</span>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.enterpriseBackground || ''}
+                                          onChange={(e) => handleFormChange('enterpriseBackground', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.enterpriseBackground || 'N/A'}</p>
+                                    )}
                                  </div>
                                  <div className="py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Technology Needs:</span>
-                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.technologyNeeds || 'N/A'}</p>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.technologyNeeds || ''}
+                                          onChange={(e) => handleFormChange('technologyNeeds', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.technologyNeeds || 'N/A'}</p>
+                                    )}
+                                 </div>
+                                 <div className="py-1.5">
+                                    <span className="text-sm font-medium text-gray-600">Expected Outcomes:</span>
+                                    {isEditMode ? (
+                                       <textarea
+                                          value={editFormData.expectedOutcomes || ''}
+                                          onChange={(e) => handleFormChange('expectedOutcomes', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-full mt-1"
+                                          rows="2"
+                                       />
+                                    ) : (
+                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.expectedOutcomes || 'N/A'}</p>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Current Tech Level:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.currentTechnologyLevel}</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.currentTechnologyLevel || ''}
+                                          onChange={(e) => handleFormChange('currentTechnologyLevel', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Level</option>
+                                          <option value="Basic">Basic</option>
+                                          <option value="Intermediate">Intermediate</option>
+                                          <option value="Advanced">Advanced</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.currentTechnologyLevel}</span>
+                                    )}
                                  </div>
                                  <div className="flex justify-between py-1.5">
                                     <span className="text-sm font-medium text-gray-600">Desired Tech Level:</span>
-                                    <span className="text-sm text-gray-900">{selectedApplication.desiredTechnologyLevel}</span>
+                                    {isEditMode ? (
+                                       <select
+                                          value={editFormData.desiredTechnologyLevel || ''}
+                                          onChange={(e) => handleFormChange('desiredTechnologyLevel', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       >
+                                          <option value="">Select Level</option>
+                                          <option value="Basic">Basic</option>
+                                          <option value="Intermediate">Intermediate</option>
+                                          <option value="Advanced">Advanced</option>
+                                       </select>
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.desiredTechnologyLevel}</span>
+                                    )}
+                                 </div>
+                              </div>
+                           </div>
+
+                           {/* Employment Details */}
+                           <div className="bg-gray-50 rounded-lg p-4">
+                              <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center">
+                                 <svg className="w-4 h-4 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                 </svg>
+                                 Employment Details
+                              </h4>
+                              <div className="space-y-2">
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Direct Workers:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.directWorkers || ''}
+                                          onChange={(e) => handleFormChange('directWorkers', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.directWorkers || 'N/A'}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Production Workers:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.productionWorkers || ''}
+                                          onChange={(e) => handleFormChange('productionWorkers', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.productionWorkers || 'N/A'}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Non-Production Workers:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.nonProductionWorkers || ''}
+                                          onChange={(e) => handleFormChange('nonProductionWorkers', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.nonProductionWorkers || 'N/A'}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-600">Contract Workers:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.contractWorkers || ''}
+                                          onChange={(e) => handleFormChange('contractWorkers', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.contractWorkers || 'N/A'}</span>
+                                    )}
+                                 </div>
+                                 <div className="flex justify-between py-1.5">
+                                    <span className="text-sm font-medium text-gray-600">Total Workers:</span>
+                                    {isEditMode ? (
+                                       <input
+                                          type="number"
+                                          value={editFormData.totalWorkers || ''}
+                                          onChange={(e) => handleFormChange('totalWorkers', e.target.value)}
+                                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
+                                       />
+                                    ) : (
+                                       <span className="text-sm text-gray-900">{selectedApplication.totalWorkers || 'N/A'}</span>
+                                    )}
                                  </div>
                               </div>
                            </div>
@@ -779,6 +1228,20 @@ const ApplicationMonitor = () => {
                                  </svg>
                                  <span className="text-xs">View</span>
                               </button>
+                              
+                              {application.pstoStatus === 'returned' && (
+                                 <button
+                                    onClick={() => handleEditToggle(application)}
+                                    className="flex-1 px-2 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500/20 shadow-md hover:shadow-lg ring-1 ring-yellow-500/20 hover:ring-yellow-500/40"
+                                    title="Edit Application"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span className="text-xs">Edit</span>
+                                 </button>
+                              )}
+                              
                               <button
                                  onClick={fetchApplications}
                                  className={`flex-1 px-2 py-1.5 border rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
@@ -812,6 +1275,7 @@ const ApplicationMonitor = () => {
 
          {/* Application Details Modal */}
          {renderApplicationDetails()}
+
       </div>
    );
 };

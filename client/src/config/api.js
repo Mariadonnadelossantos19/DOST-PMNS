@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
    // Program endpoints
    SETUP_SUBMIT: `${API_BASE_URL}/programs/setup/submit`,
    SETUP_MY_APPLICATIONS: `${API_BASE_URL}/programs/setup/my-applications`,
+   SETUP_APPLICATION: (id) => `${API_BASE_URL}/programs/setup/${id}`,
+   SETUP_APPLICATION_DOCUMENTS: (id) => `${API_BASE_URL}/programs/setup/${id}/documents`,
+   SETUP_APPLICATION_RESUBMIT: (id) => `${API_BASE_URL}/programs/setup/${id}/resubmit`,
    GIA_SUBMIT: `${API_BASE_URL}/programs/gia/submit`,
    GIA_MY_APPLICATIONS: `${API_BASE_URL}/programs/gia/my-applications`,
    CEST_SUBMIT: `${API_BASE_URL}/programs/cest/submit`,

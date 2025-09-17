@@ -27,7 +27,10 @@ router.post('/setup/submit', auth, upload.any(), setupController.submitApplicati
 
 router.get('/setup/my-applications', auth, setupController.getMyApplications);
 router.get('/setup/:id', auth, setupController.getApplicationById);
+router.put('/setup/:id', auth, setupController.updateApplication);
 router.put('/setup/:id/status', auth, setupController.updateApplicationStatus);
+router.post('/setup/:id/documents', auth, upload.any(), setupController.uploadDocuments);
+router.post('/setup/:id/resubmit', auth, setupController.resubmitApplication);
 router.get('/setup/:id/download/:fileType', auth, setupController.downloadFile);
 router.get('/setup/stats/overview', auth, setupController.getApplicationStats);
 

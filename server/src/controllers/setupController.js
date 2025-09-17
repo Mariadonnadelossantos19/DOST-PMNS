@@ -292,6 +292,185 @@ const getApplicationById = async (req, res) => {
    }
 };
 
+// Update application (Proponent only)
+const updateApplication = async (req, res) => {
+   try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      // Find the application
+      const application = await SETUPApplication.findById(id);
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Check if the user owns this application
+      if (application.proponentId.toString() !== req.user._id.toString()) {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. You can only update your own applications.'
+         });
+      }
+
+      // Check if application can be updated (only if returned for revision)
+      if (application.pstoStatus !== 'returned') {
+         return res.status(400).json({
+            success: false,
+            message: 'Application can only be updated if it has been returned for revision.'
+         });
+      }
+
+      // Update the application fields
+      Object.keys(updateData).forEach(key => {
+         if (updateData[key] !== undefined && updateData[key] !== null) {
+            application[key] = updateData[key];
+         }
+      });
+
+      application.updatedAt = new Date();
+      await application.save();
+
+      res.json({
+         success: true,
+         message: 'Application updated successfully',
+         data: application
+      });
+   } catch (error) {
+      console.error('Update application error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error updating application'
+      });
+   }
+};
+
+// Upload documents (Proponent only)
+const uploadDocuments = async (req, res) => {
+   try {
+      const { id } = req.params;
+      const files = req.files;
+
+      // Find the application
+      const application = await SETUPApplication.findById(id);
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Check if the user owns this application
+      if (application.proponentId.toString() !== req.user._id.toString()) {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. You can only update your own applications.'
+         });
+      }
+
+      // Check if application can be updated (only if returned for revision)
+      if (application.pstoStatus !== 'returned') {
+         return res.status(400).json({
+            success: false,
+            message: 'Application can only be updated if it has been returned for revision.'
+         });
+      }
+
+      // Update file information
+      if (files) {
+         files.forEach(file => {
+            const fileInfo = {
+               filename: file.filename,
+               originalName: file.originalname,
+               path: file.path,
+               size: file.size,
+               mimetype: file.mimetype
+            };
+
+            if (file.fieldname === 'letterOfIntent') {
+               application.letterOfIntent = fileInfo;
+            } else if (file.fieldname === 'enterpriseProfile') {
+               application.enterpriseProfile = fileInfo;
+            } else if (file.fieldname === 'businessPlan') {
+               application.businessPlan = fileInfo;
+            }
+         });
+      }
+
+      application.updatedAt = new Date();
+      await application.save();
+
+      res.json({
+         success: true,
+         message: 'Documents uploaded successfully',
+         data: application
+      });
+   } catch (error) {
+      console.error('Upload documents error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error uploading documents'
+      });
+   }
+};
+
+// Resubmit application (Proponent only)
+const resubmitApplication = async (req, res) => {
+   try {
+      const { id } = req.params;
+
+      // Find the application
+      const application = await SETUPApplication.findById(id);
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Check if the user owns this application
+      if (application.proponentId.toString() !== req.user._id.toString()) {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. You can only update your own applications.'
+         });
+      }
+
+      // Check if application can be resubmitted (only if returned for revision)
+      if (application.pstoStatus !== 'returned') {
+         return res.status(400).json({
+            success: false,
+            message: 'Application can only be resubmitted if it has been returned for revision.'
+         });
+      }
+
+      // Reset status for resubmission
+      application.pstoStatus = 'pending';
+      application.pstoComments = '';
+      application.pstoReviewedAt = null;
+      application.pstoAssigned = null;
+      application.status = 'pending';
+      application.currentStage = 'tna_application';
+      application.updatedAt = new Date();
+
+      await application.save();
+
+      res.json({
+         success: true,
+         message: 'Application resubmitted successfully',
+         data: application
+      });
+   } catch (error) {
+      console.error('Resubmit application error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error resubmitting application'
+      });
+   }
+};
+
 // Update application status (PSTO only)
 const updateApplicationStatus = async (req, res) => {
    try {
@@ -710,7 +889,10 @@ module.exports = {
    submitApplication,
    getMyApplications,
    getApplicationById,
+   updateApplication,
    updateApplicationStatus,
+   uploadDocuments,
+   resubmitApplication,
    downloadFile,
    getApplicationStats,
    getPSTOApplications,
