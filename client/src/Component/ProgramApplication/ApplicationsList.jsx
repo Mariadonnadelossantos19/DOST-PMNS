@@ -172,111 +172,179 @@ const ApplicationsList = ({
    );
 
    const renderListView = () => (
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-               <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-100">
+               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                   <tr>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Application ID
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                           <span>Application ID</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Enterprise Name
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                           <span>Enterprise Name</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Contact Person
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                           <span>Contact Person</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Province
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                           <span>Province</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Business Activity
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                           <span>Business Activity</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Submitted
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                           <span>Submitted</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Agreement
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                           <span>Agreement</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                           <span>Status</span>
+                        </div>
                      </th>
-                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <div className="flex items-center space-x-2">
+                           <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                           <span>Actions</span>
+                        </div>
                      </th>
                   </tr>
                </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredApplications.map((application) => (
-                     <tr key={application._id} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="flex items-center">
-                              <div className="p-2 bg-purple-100 rounded-lg mr-3">
-                                 <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <tbody className="divide-y divide-gray-100">
+                  {filteredApplications.map((application, index) => (
+                     <tr key={application._id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                     }`}>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                  </svg>
                               </div>
-                              <div className="text-sm font-bold text-gray-900">
-                                 {application.applicationId}
+                              <div>
+                                 <div className="text-sm font-bold text-gray-900">{application.applicationId}</div>
+                                 <div className="text-xs text-gray-500">SETUP Program</div>
                               </div>
                            </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm font-medium text-gray-900">{application.enterpriseName}</div>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="text-sm font-semibold text-gray-900">{application.enterpriseName}</div>
+                           <div className="text-xs text-gray-500 truncate max-w-32">{application.businessAddress}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900">{application.contactPerson}</div>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="text-sm font-medium text-gray-900">{application.contactPerson}</div>
+                           <div className="text-xs text-gray-500">{application.contactNumber}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900">{application.proponentId?.province || 'N/A'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900">{application.businessActivity || 'N/A'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-900">{formatDate(application.createdAt)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-5 whitespace-nowrap">
                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                              <span className={`text-xs font-medium ${application.generalAgreement?.accepted ? 'text-green-700' : 'text-red-700'}`}>
+                              <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                                 <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                 </svg>
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">{application.proponentId?.province || 'N/A'}</span>
+                           </div>
+                        </td>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="text-sm font-medium text-gray-900">{application.businessActivity || 'N/A'}</div>
+                           <div className="text-xs text-gray-500">{application.businessType || 'N/A'}</div>
+                        </td>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="text-sm font-medium text-gray-900">
+                              {new Date(application.createdAt).toLocaleDateString('en-US', {
+                                 year: 'numeric',
+                                 month: 'short',
+                                 day: 'numeric'
+                              })}
+                           </div>
+                           <div className="text-xs text-gray-500">
+                              {new Date(application.createdAt).toLocaleTimeString('en-US', {
+                                 hour: '2-digit',
+                                 minute: '2-digit'
+                              })}
+                           </div>
+                        </td>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                 application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'
+                              }`}></div>
+                              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                 application.generalAgreement?.accepted 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                              }`}>
                                  {application.generalAgreement?.accepted ? 'Accepted' : 'Not Accepted'}
                               </span>
                            </div>
                            {application.generalAgreement?.signatoryName && (
-                              <div className="text-xs text-gray-500 mt-1">
+                              <div className="text-xs text-gray-500 mt-1 truncate max-w-24">
                                  {application.generalAgreement.signatoryName}
                               </div>
                            )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <Badge className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.pstoStatus)}`}>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                              application.pstoStatus === 'approved' ? 'bg-green-100 text-green-800 border border-green-200' :
+                              application.pstoStatus === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
+                              application.pstoStatus === 'returned' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                              'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                           }`}>
+                              <div className={`w-2 h-2 rounded-full mr-2 ${
+                                 application.pstoStatus === 'approved' ? 'bg-green-500' :
+                                 application.pstoStatus === 'rejected' ? 'bg-red-500' :
+                                 application.pstoStatus === 'returned' ? 'bg-blue-500' :
+                                 'bg-yellow-500'
+                              }`}></div>
                               {application.pstoStatus?.toUpperCase() || 'PENDING'}
-                           </Badge>
+                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                           <div className="flex space-x-2">
-                              <Button
+                        <td className="px-6 py-5 whitespace-nowrap">
+                           <div className="flex items-center space-x-2">
+                              <button
                                  onClick={() => setSelectedApplication(application)}
-                                 className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg transition-colors duration-200 flex items-center"
+                                 className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-all duration-200 shadow-md hover:shadow-lg"
                               >
-                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                  </svg>
-                                 Review
-                              </Button>
-                              
-                              <Button
+                                 <span>Review</span>
+                              </button>
+                              <button
                                  onClick={() => window.open(`/api/programs/psto/applications/${application._id}/download/letterOfIntent`, '_blank')}
-                                 variant="outline"
-                                 className="px-3 py-1 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 flex items-center"
+                                 className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-all duration-200 shadow-sm hover:shadow-md"
                               >
-                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                  </svg>
-                                 Files
-                              </Button>
+                                 <span>Files</span>
+                              </button>
                            </div>
                         </td>
                      </tr>
