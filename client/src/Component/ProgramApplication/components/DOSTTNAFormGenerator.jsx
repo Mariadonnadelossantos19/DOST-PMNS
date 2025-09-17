@@ -47,7 +47,11 @@ const DOSTTNAFormGenerator = ({
       currentTechnologyLevel: application?.currentTechnologyLevel || '',
       desiredTechnologyLevel: application?.desiredTechnologyLevel || '',
       expectedOutcomes: application?.expectedOutcomes || '',
-      enterpriseBackground: application?.enterpriseBackground || ''
+      enterpriseBackground: application?.enterpriseBackground || '',
+      
+      // Signature Details
+      signature: application?.contactPerson || '',
+      signatureDate: new Date().toISOString().split('T')[0]
    });
 
    const handleInputChange = (field, value) => {
@@ -81,9 +85,10 @@ const DOSTTNAFormGenerator = ({
          <head>
             <title>DOST TNA Form 01 - ${formData.enterpriseName}</title>
             <style>
-               body { font-family: Arial, sans-serif; margin: 10px; font-size: 12px; }
+               body { font-family: Arial, sans-serif; margin: 15px; font-size: 11px; }
                table { width: 100%; border-collapse: collapse; }
-               td { border: 1px solid #000; padding: 4px; vertical-align: top; }
+               td { border: 1px solid #000; padding: 2px; vertical-align: top; }
+               @page { margin: 0.5in; }
                .header-bg { background-color: #f5f5f5; font-weight: bold; }
                .text-center { text-align: center; }
                .text-lg { font-size: 18px; }
@@ -121,9 +126,12 @@ const DOSTTNAFormGenerator = ({
                .border-b { border-bottom: 1px solid #9ca3af; }
                @media print {
                   .no-print { display: none; }
-                  body { margin: 0; }
+                  body { margin: 0; padding: 0.25in; font-size: 10px; }
                   .print\\:border-0 { border: 0; }
                   .print\\:p-0 { padding: 0; }
+                  #tna-form { margin: 0; padding: 0; }
+                  table { font-size: 10px; }
+                  td { padding: 1px; }
                }
             </style>
          </head>
@@ -194,32 +202,32 @@ const DOSTTNAFormGenerator = ({
             </div>
 
             {/* DOST TNA Form 01 */}
-            <div className="bg-white border-2 border-gray-300 p-6 print:border-0 print:p-0" id="tna-form">
+            <div className="bg-white border-2 border-gray-300 p-6 print:border-0 print:p-4" id="tna-form">
                {/* Header */}
-               <div className="text-center mb-6">
-                  <div className="text-sm text-gray-600 mb-1">A Form 01</div>
-                  <h1 className="text-xl font-bold text-gray-900 mb-3">
+               <div className="text-center mb-4">
+                  <div className="text-xs text-gray-600 mb-1 text-right">A Form 01</div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 underline">
                      APPLICATION FOR TECHNOLOGY NEEDS ASSESSMENT
-                  </h1>
+                  </h3>
                </div>
 
                {/* Enterprise Information Table - Compact Layout */}
                <div className="mb-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-3">ENTERPRISE INFORMATION</h2>
+                  
                   <div className="border-2 border-gray-800">
-                     <table className="w-full text-sm">
+                     <table className="w-full text-xs">
                         <tbody>
                            {/* Enterprise Name - Full Width */}
                            <tr className="border-b border-gray-800">
                               <td className="border-r border-gray-800 px-2 py-1 bg-gray-100 font-semibold w-1/4">
                                  Name of Enterprise:
                               </td>
-                              <td className="px-2 py-1">
+                              <td className="px-2 py-1" colSpan="3">
                                  <input
                                     type="text"
                                     value={formData.enterpriseName}
                                     onChange={(e) => handleInputChange('enterpriseName', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.enterpriseName}</span>
                               </td>
@@ -235,11 +243,11 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.contactPerson}
                                     onChange={(e) => handleInputChange('contactPerson', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.contactPerson}</span>
                               </td>
-                              <td className="border-l border-gray-800 px-2 py-1 bg-gray-100 font-semibold w-1/4">
+                              <td className="border-l border-gray-800 px-2 py-1 bg-gray-100 font-semibold">
                                  Position in the Enterprise:
                               </td>
                               <td className="px-2 py-1">
@@ -247,7 +255,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.position}
                                     onChange={(e) => handleInputChange('position', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.position}</span>
                               </td>
@@ -263,7 +271,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.officeAddress}
                                     onChange={(e) => handleInputChange('officeAddress', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.officeAddress}</span>
                               </td>
@@ -271,12 +279,12 @@ const DOSTTNAFormGenerator = ({
                                  Tel. No. / Mobile No.:
                               </td>
                               <td className="px-2 py-1">
-                                 <div className="space-y-1">
+                                 <div className="space-y-0.5">
                                     <input
                                        type="text"
                                        value={formData.officeTel}
                                        onChange={(e) => handleInputChange('officeTel', e.target.value)}
-                                       className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                       className="w-full border-none outline-none bg-transparent no-print text-xs"
                                     />
                                     <span className="print-only">{formData.officeTel}</span>
                                  </div>
@@ -293,7 +301,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.officeFax || 'NONE'}
                                     onChange={(e) => handleInputChange('officeFax', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.officeFax || 'NONE'}</span>
                               </td>
@@ -305,7 +313,7 @@ const DOSTTNAFormGenerator = ({
                                     type="email"
                                     value={formData.officeEmail}
                                     onChange={(e) => handleInputChange('officeEmail', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.officeEmail}</span>
                               </td>
@@ -321,7 +329,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.factoryAddress}
                                     onChange={(e) => handleInputChange('factoryAddress', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.factoryAddress}</span>
                               </td>
@@ -333,7 +341,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.factoryTel}
                                     onChange={(e) => handleInputChange('factoryTel', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.factoryTel}</span>
                               </td>
@@ -349,7 +357,7 @@ const DOSTTNAFormGenerator = ({
                                     type="text"
                                     value={formData.factoryFax || 'NONE'}
                                     onChange={(e) => handleInputChange('factoryFax', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.factoryFax || 'NONE'}</span>
                               </td>
@@ -361,7 +369,7 @@ const DOSTTNAFormGenerator = ({
                                     type="email"
                                     value={formData.factoryEmail}
                                     onChange={(e) => handleInputChange('factoryEmail', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.factoryEmail}</span>
                               </td>
@@ -377,7 +385,7 @@ const DOSTTNAFormGenerator = ({
                                     type="url"
                                     value={formData.website}
                                     onChange={(e) => handleInputChange('website', e.target.value)}
-                                    className="w-full border-none outline-none bg-transparent no-print text-sm"
+                                    className="w-full border-none outline-none bg-transparent no-print text-xs"
                                  />
                                  <span className="print-only">{formData.website}</span>
                               </td>
@@ -388,55 +396,109 @@ const DOSTTNAFormGenerator = ({
                </div>
 
                {/* General Agreements Section - Compact */}
-               <div className="mb-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-3">GENERAL AGREEMENTS:</h2>
-                  <div className="space-y-2 text-sm">
+               <div className="mb-4">
+                  <h2 className="text-sm font-bold text-gray-900 mb-2">GENERAL AGREEMENTS:</h2>
+                  <div className="space-y-1 text-xs">
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">1.</span>
+                        <span className="font-bold mr-2 w-4">1.</span>
                         <p className="flex-1">
                            The applicant shall, at the earliest opportunity, make available to the DOST Regional Office No. IV B (DOST-MIMAROPA) all information (manuals, procedures, etc.) required to establish the technology status of the selected core business functions and management systems;
                         </p>
                      </div>
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">2.</span>
+                        <span className="font-bold mr-2 w-4">2.</span>
                         <p className="flex-1">
                            If DOST-MIMAROPA is not satisfied that all the requirements for business registration are complied with, the Team shall inform the applicant of the observed deficiencies before the assessment to take place;
                         </p>
                      </div>
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">3.</span>
+                        <span className="font-bold mr-2 w-4">3.</span>
                         <p className="flex-1">
                            When the required inputs to the assessment are supplied by the applicant, including the Attachment A, the DOST-MIMAROPA will assess the selected core business functions and management systems to identify technology needs and verify compliance to standard vis-à-vis existing practices;
                         </p>
                      </div>
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">4.</span>
+                        <span className="font-bold mr-2 w-4">4.</span>
                         <p className="flex-1">
                            When the DOST-MIMAROPA has completed the technology assessment, a report will be prepared identifying assessment results against the agreed or standard criteria with compliance results, conclusions, recommendations, and opportunities for improvement. The report prepared will define the scope of activities, functions, management practices and locations assessed. The applicant shall not claim or otherwise imply that the report applies to other locations, product or activities not covered by the report;
                         </p>
                      </div>
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">5.</span>
+                        <span className="font-bold mr-2 w-4">5.</span>
                         <p className="flex-1">
                            The applicant agrees that the report will not be used until permission has been granted by the DOST-MIMAROPA;
                         </p>
                      </div>
                      <div className="flex">
-                        <span className="font-semibold mr-2 w-6">6.</span>
+                        <span className="font-bold mr-2 w-4">6.</span>
                         <p className="flex-1">
-                           The applicant agrees that the receipt and acceptance of the report ends the assessment stage; any technical assistance ensuing from the recommendations of the report will be viewed as a separate project.
+                           The applicant agrees that the receipt or acknowledgment of the report ends the assessment stage; any technical assistance ensuing from the recommendations of the report will be viewed as a separate project.
                         </p>
                      </div>
                   </div>
                </div>
 
-                
-
-               {/* Footer */}
-               <div className="flex justify-between text-xs text-gray-600 mt-8">
-                  <div>SETUP Guidelines - Annex B-11 - DOST TNA Form 01</div>
-                  <div>Page 1 of 10</div>
+               {/* Undertaking and Signature Section */}
+               <div className="mb-6">
+                  <p className="text-lg font-bold text-gray-900 mb-4 text-center">UNDERTAKING</p>
+                  
+                  {/* Certification Text in Border Box */}
+                  <div className="border border-gray-800 p-3 mb-6">
+                     <p className="text-sm text-justify">
+                        I agree to undertake and observe the above General Conditions stipulated by the Department of Science and Technology Regional Office No. IVB DOST
+                     </p>
+                  </div>
+                  
+                  {/* Signature and Date Fields */}
+                  <div className="space-y-4">
+                     {/* Signature and Date Row */}
+                     <div className="flex space-x-8">
+                        <div className="flex-1">
+                           <div className="border-b border-gray-800 h-8 flex items-end">
+                              <input
+                                 type="text"
+                                 value={formData.signature}
+                                 onChange={(e) => handleInputChange('signature', e.target.value)}
+                                 className="w-full border-none outline-none bg-transparent no-print text-sm font-bold"
+                                 placeholder=""
+                              />
+                              <span className="print-only font-bold">{formData.signature}</span>
+                           </div>
+                           <p className="text-xs text-gray-600 mt-1 text-left">Signature over Printed Name</p>
+                        </div>
+                        
+                        <div className="flex-1">
+                           <div className="border-b border-gray-800 h-8 flex items-end">
+                              <input
+                                 type="date"
+                                 value={formData.signatureDate}
+                                 onChange={(e) => handleInputChange('signatureDate', e.target.value)}
+                                 className="w-full border-none outline-none bg-transparent no-print text-sm font-bold"
+                              />
+                              <span className="print-only font-bold">{new Date(formData.signatureDate).toLocaleDateString()}</span>
+                           </div>
+                           <p className="text-xs text-gray-600 mt-1 text-left">Date</p>
+                        </div>
+                     </div>
+                     
+                     {/* Position Field */}
+                     <div className="w-full">
+                        <div className="border-b border-gray-800 h-8 flex items-end">
+                           <input
+                              type="text"
+                              value={formData.position}
+                              onChange={(e) => handleInputChange('position', e.target.value)}
+                              className="w-full border-none outline-none bg-transparent no-print text-sm font-bold"
+                              placeholder=""
+                           />
+                           <span className="print-only font-bold">{formData.position}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1 text-left">Position in the Enterprise</p>
+                     </div>
+                  </div>
                </div>
+
+               
             </div>
 
             {/* Action Buttons */}
