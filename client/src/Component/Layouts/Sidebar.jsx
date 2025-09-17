@@ -34,68 +34,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       }
    };
 
-   // DOST Services with enhanced data
-   const dostServices = [
-      {
-         id: 'setup',
-         label: 'SETUP',
-         description: 'Science Education and Training Small Enterprises Technology Upgrading Program',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/services/setup',
-         color: 'blue',
-         count: 0
-      },
-      {
-         id: 'gia',
-         label: 'GIA',
-         description: 'Grants-in-Aid Program',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/services/gia',
-         color: 'green',
-         count: 0
-      },
-      {
-         id: 'cest',
-         label: 'CEST',
-         description: 'Community Empowerment thru Science & Technology',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-               <path d="M23 21V19C23 18.1645 22.7155 17.3541 22.2094 16.7006C21.7033 16.047 20.9999 15.5909 20.2 15.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/services/cest',
-         color: 'purple',
-         count: 0
-      },
-      {
-         id: 'sscp',
-         label: 'SSCP',
-         description: 'Smart and Sustainable Communities Program',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M9 22V12H15V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/services/sscp',
-         color: 'orange',
-         count: 0
-      }
-   ];
 
    // Program Application
    const programApplication = {
@@ -250,74 +188,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
 
                {/* Navigation Menu */}
                <nav className={`flex-1 p-4 space-y-6 ${isCollapsed ? 'px-2' : ''}`}>
-                  {/* DOST Services Section - Hidden for Proponents */}
-                  {userRole !== 'proponent' && (
-                  <div>
-                     {!isCollapsed && (
-                        <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 transition-colors duration-300 ${
-                           isDarkMode ? 'text-gray-400' : 'text-gray-400'
-                        }`}>
-                           DOST Services
-                        </h3>
-                     )}
-                     <div className="space-y-2">
-                        {dostServices.map((service) => {
-                           const isActive = currentPath === service.path;
-                           const colorClasses = {
-                              blue: 'bg-blue-50 border-blue-200 text-blue-700',
-                              green: 'bg-green-50 border-green-200 text-green-700',
-                              purple: 'bg-purple-50 border-purple-200 text-purple-700',
-                              orange: 'bg-orange-50 border-orange-200 text-orange-700'
-                           };
-                           const iconColorClasses = {
-                              blue: 'text-blue-600',
-                              green: 'text-green-600',
-                              purple: 'text-purple-600',
-                              orange: 'text-orange-600'
-                           };
-                           
-                           return (
-                              <div key={service.id} className={`border rounded-lg p-3 transition-all duration-200 hover:shadow-sm ${isActive ? colorClasses[service.color] : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                 <a
-                                    href={service.path}
-                                    className={`flex items-start gap-3 group ${isCollapsed ? 'justify-center' : ''}`}
-                                    title={isCollapsed ? service.label : ''}
-                                 >
-                                    <div className={`p-2 rounded-lg ${isActive ? 'bg-white' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
-                                       <span className={`${
-                                          isActive 
-                                             ? iconColorClasses[service.color] 
-                                             : isDarkMode 
-                                                ? 'text-gray-400 group-hover:text-gray-300' 
-                                                : 'text-gray-500 group-hover:text-gray-700'
-                                       }`}>
-                                          {service.icon}
-                                       </span>
-                                    </div>
-                                    {!isCollapsed && (
-                                       <div className="flex-1 min-w-0">
-                                          <div className="flex items-center justify-between mb-1">
-                                             <h4 className="font-semibold text-sm">{service.label}</h4>
-                                             {service.count > 0 && (
-                                                <span className={`text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white' : 'bg-gray-100'} font-medium`}>
-                                                   {service.count}
-                                                </span>
-                                             )}
-                                          </div>
-                                          <p className={`text-xs leading-relaxed line-clamp-2 transition-colors duration-300 ${
-                                             isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                          }`}>
-                                             {service.description}
-                                          </p>
-                                       </div>
-                                    )}
-                                 </a>
-                              </div>
-                           );
-                        })}
-                     </div>
-                  </div>
-                  )}
 
                   {/* Program Application Section - Only for Proponents */}
                   {userRole === 'proponent' && (
@@ -342,7 +212,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                               className={`flex items-start gap-3 group ${isCollapsed ? 'justify-center' : ''} w-full text-left`}
                               title={isCollapsed ? programApplication.label : ''}
                            >
-                              <div className={`p-2 rounded-lg ${currentPath === programApplication.path ? 'bg-white' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                              <div className={`p-2 rounded-lg ${currentPath === programApplication.path ? 'bg-white' : isDarkMode ? 'bg-gray-600 group-hover:bg-gray-500' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
                                  <span className={`${
                                     currentPath === programApplication.path 
                                        ? 'text-indigo-600' 
