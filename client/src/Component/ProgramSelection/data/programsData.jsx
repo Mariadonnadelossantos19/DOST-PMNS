@@ -62,7 +62,7 @@ export const programs = [
    {
       id: 'SSCP',
       code: 'SSCP',
-      name: 'Small Scale Commercialization Program',
+      name: 'Smart and Sustainable Communities Program',
       description: 'Support for small and medium enterprises in commercializing innovative products and technologies.',
       icon: (
          <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">

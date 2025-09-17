@@ -5,8 +5,10 @@ import CESTForm from './forms/CESTForm';
 import SSCPForm from './forms/SSCPForm';
 import { ContactInformation } from './components';
 import { API_ENDPOINTS } from '../../config/api';
+import { useDarkMode } from '../Context';
 
 const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
+   const { isDarkMode } = useDarkMode();
    const [currentStep, setCurrentStep] = useState(1);
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [submitError, setSubmitError] = useState('');
@@ -132,10 +134,11 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       if (programCode === 'SETUP') {
          return [
             { id: 1, title: 'Contact Information', description: 'Basic contact details' },
-            { id: 2, title: 'Enterprise Information', description: 'Company details and structure' },
-            { id: 3, title: 'Business Activity', description: 'Business operations and background' },
-            { id: 4, title: 'Technology Assessment', description: 'Technology needs and outcomes' },
-            { id: 5, title: 'Documents', description: 'Required file uploads' }
+            { id: 2, title: 'Basic Enterprise Info', description: 'Company name and contact details' },
+            { id: 3, title: 'Enterprise Details', description: 'Company structure and classification' },
+            { id: 4, title: 'Business Activity', description: 'Business operations and background' },
+            { id: 5, title: 'Technology Assessment', description: 'Technology needs and outcomes' },
+            { id: 6, title: 'Documents', description: 'Required file uploads' }
          ];
       } else if (programCode === 'GIA') {
          return [
@@ -229,31 +232,46 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       // Program-specific step validation
       if (programCode === 'SETUP') {
          if (currentStep === 2) {
+            // Basic Enterprise Information
             const fields = [
-               'enterpriseName', 'officeAddress', 'position', 'contactPersonTel', 'contactPersonEmail',
+               'enterpriseName', 'contactPerson', 'contactPersonTel', 'contactPersonEmail', 
+               'officeAddress', 'position'
+            ];
+            console.log('Validating step 2 fields:', fields);
+            fields.forEach(field => {
+               console.log(`Checking field ${field}:`, formData[field]);
+               if (!formData[field]) {
+                  newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
+                  console.log(`Field ${field} is missing, adding error`);
+               }
+            });
+         } else if (currentStep === 3) {
+            // Enterprise Details and Classification
+            const fields = [
                'yearEstablished', 'organizationType', 'profitType', 'registrationNo', 'yearRegistered',
-               'capitalClassification', 'employmentClassification'
+               'capitalClassification', 'employmentClassification', 'directWorkers', 'productionWorkers',
+               'nonProductionWorkers', 'contractWorkers'
             ];
             fields.forEach(field => {
                if (!formData[field]) {
                   newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
                }
             });
-         } else if (currentStep === 3) {
+         } else if (currentStep === 4) {
             const fields = ['businessActivity', 'specificProduct', 'enterpriseBackground'];
             fields.forEach(field => {
                if (!formData[field]) {
                   newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
                }
             });
-         } else if (currentStep === 4) {
+         } else if (currentStep === 5) {
             const fields = ['technologyNeeds', 'currentTechnologyLevel', 'desiredTechnologyLevel', 'expectedOutcomes'];
             fields.forEach(field => {
                if (!formData[field]) {
                   newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
                }
             });
-         } else if (currentStep === 5) {
+         } else if (currentStep === 6) {
             if (!formData.letterOfIntent) {
                newErrors.letterOfIntent = 'Letter of Intent is required';
             }
@@ -356,8 +374,21 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
    };
 
    const handleNext = () => {
+      console.log('handleNext called, currentStep:', currentStep);
+      console.log('formData for step 2:', {
+         enterpriseName: formData.enterpriseName,
+         contactPerson: formData.contactPerson,
+         contactPersonTel: formData.contactPersonTel,
+         contactPersonEmail: formData.contactPersonEmail,
+         officeAddress: formData.officeAddress,
+         position: formData.position
+      });
+      
       if (validateCurrentStep()) {
+         console.log('Validation passed, moving to next step');
          setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      } else {
+         console.log('Validation failed, errors:', errors);
       }
    };
 
@@ -531,34 +562,48 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
 
    const renderStepIndicator = () => {
       return (
-         <div className="mb-8">
+         <div className="mb-6">
             <div className="flex items-center justify-between">
                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
-                     <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                  <div key={step.id} className="flex items-center group">
+                     <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${
                         currentStep >= step.id
-                           ? 'bg-blue-600 border-blue-600 text-white'
-                           : 'bg-white border-gray-300 text-gray-500'
+                           ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/25'
+                           : isDarkMode 
+                              ? 'bg-gray-700 border-gray-600 text-gray-400 group-hover:border-gray-500'
+                              : 'bg-white border-gray-300 text-gray-500 group-hover:border-gray-400'
                      }`}>
                         {currentStep > step.id ? (
-                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                            </svg>
                         ) : (
-                           <span className="text-sm font-semibold">{step.id}</span>
+                           <span className="text-xs font-semibold">{step.id}</span>
                         )}
                      </div>
-                     <div className="ml-3">
-                        <p className={`text-sm font-medium ${
-                           currentStep >= step.id ? 'text-blue-600' : 'text-gray-500'
+                     <div className="ml-2">
+                        <p className={`text-xs font-medium transition-colors duration-300 ${
+                           currentStep >= step.id 
+                              ? 'text-blue-600' 
+                              : isDarkMode 
+                                 ? 'text-gray-400 group-hover:text-gray-300'
+                                 : 'text-gray-500 group-hover:text-gray-700'
                         }`}>
                            {step.title}
                         </p>
-                        <p className="text-xs text-gray-500">{step.description}</p>
+                        <p className={`text-xs transition-colors duration-300 ${
+                           isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                        }`}>
+                           {step.description}
+                        </p>
                      </div>
                      {index < steps.length - 1 && (
-                        <div className={`flex-1 h-0.5 mx-4 ${
-                           currentStep > step.id ? 'bg-blue-600' : 'bg-gray-300'
+                        <div className={`flex-1 h-0.5 mx-3 transition-colors duration-300 ${
+                           currentStep > step.id 
+                              ? 'bg-blue-600' 
+                              : isDarkMode 
+                                 ? 'bg-gray-600' 
+                                 : 'bg-gray-300'
                         }`} />
                      )}
                   </div>
@@ -595,35 +640,68 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
    };
 
    const renderNavigationButtons = () => (
-      <div className="flex justify-between items-center pt-8 border-t border-gray-200">
+      <div className={`flex justify-between items-center pt-6 border-t transition-colors duration-300 ${
+         isDarkMode ? 'border-gray-700' : 'border-gray-200'
+      }`}>
          <button
             type="button"
             onClick={currentStep === 1 ? onBack : handlePrevious}
-            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            className={`px-4 py-2 border rounded-lg font-medium text-sm transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+               isDarkMode
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+            }`}
          >
-            {currentStep === 1 ? 'Back to Programs' : 'Previous'}
+            <div className="flex items-center">
+               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+               </svg>
+               {currentStep === 1 ? 'Back to Programs' : 'Previous'}
+            </div>
          </button>
          
-         <div className="flex space-x-3">
+         <div className="flex space-x-2">
             {currentStep < totalSteps ? (
                <button
                   type="button"
                   onClick={handleNext}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium text-sm hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-lg hover:shadow-xl"
                >
-                  Next Step
+                  <div className="flex items-center">
+                     Next Step
+                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                     </svg>
+                  </div>
                </button>
             ) : (
                <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-6 py-3 rounded-lg transition-colors font-medium ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 ${
                      isSubmitting 
                         ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-green-600 hover:bg-green-700'
+                        : 'bg-green-600 hover:bg-green-700 hover:scale-105 shadow-lg hover:shadow-xl'
                   } text-white`}
                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  <div className="flex items-center">
+                     {isSubmitting ? (
+                        <>
+                           <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                           </svg>
+                           Submitting...
+                        </>
+                     ) : (
+                        <>
+                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                           </svg>
+                           Submit Application
+                        </>
+                     )}
+                  </div>
                </button>
             )}
          </div>
@@ -641,25 +719,35 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       const color = programColors[selectedProgram.code] || 'blue';
       
       return (
-         <div className={`mb-8 p-6 bg-gradient-to-r from-${color}-50 to-${color}-100 border border-${color}-200 rounded-xl`}>
+         <div className={`mb-6 p-4 rounded-lg border transition-all duration-300 ${
+            isDarkMode 
+               ? `bg-gradient-to-r from-${color}-900/20 to-${color}-800/20 border-${color}-700/30` 
+               : `bg-gradient-to-r from-${color}-50 to-${color}-100 border-${color}-200`
+         }`}>
             <div className="flex items-center">
                <div className="flex-shrink-0">
-                  <div className={`w-16 h-16 bg-${color}-600 rounded-xl flex items-center justify-center`}>
-                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <div className={`w-12 h-12 bg-${color}-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300`}>
+                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
                         <path d="M2 17L12 22L22 17"/>
                         <path d="M2 12L12 17L22 12"/>
                      </svg>
                   </div>
                </div>
-               <div className="ml-6">
-                  <h1 className={`text-2xl font-bold text-${color}-900`}>
-                     {selectedProgram.name} Program Application
+               <div className="ml-4">
+                  <h1 className={`text-xl font-bold transition-colors duration-300 ${
+                     isDarkMode ? `text-${color}-300` : `text-${color}-900`
+                  }`}>
+                     {selectedProgram.name} Application
                   </h1>
-                  <p className={`text-${color}-700 mt-1`}>
+                  <p className={`text-sm mt-1 transition-colors duration-300 ${
+                     isDarkMode ? `text-${color}-400` : `text-${color}-700`
+                  }`}>
                      {selectedProgram.description}
                   </p>
-                  <div className="mt-2 text-sm text-gray-600">
+                  <div className={`mt-1 text-xs transition-colors duration-300 ${
+                     isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                      Step {currentStep} of {totalSteps}: {steps[currentStep - 1]?.title}
                   </div>
                </div>
@@ -669,30 +757,42 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
    };
 
    return (
-      <div className="bg-white rounded-xl shadow-lg p-8 max-w-6xl mx-auto">
+      <div className={`rounded-lg shadow-lg p-4 max-w-5xl mx-auto transition-colors duration-300 ${
+         isDarkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
          {renderProgramHeader()}
          {renderStepIndicator()}
          
-         <form onSubmit={handleSubmit} className="space-y-8">
+         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Display */}
             {submitError && (
-               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+               <div className={`border rounded-lg p-4 transition-colors duration-300 ${
+                  isDarkMode 
+                     ? 'bg-red-900/20 border-red-700/30' 
+                     : 'bg-red-50 border-red-200'
+               }`}>
                   <div className="flex">
                      <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className={`h-5 w-5 transition-colors duration-300 ${
+                           isDarkMode ? 'text-red-400' : 'text-red-400'
+                        }`} viewBox="0 0 20 20" fill="currentColor">
                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                         </svg>
                      </div>
                      <div className="ml-3 flex-1">
-                        <h3 className="text-sm font-medium text-red-800">Submission Error</h3>
-                        <div className="mt-2 text-sm text-red-700">
+                        <h3 className={`text-sm font-medium transition-colors duration-300 ${
+                           isDarkMode ? 'text-red-300' : 'text-red-800'
+                        }`}>Submission Error</h3>
+                        <div className={`mt-2 text-sm transition-colors duration-300 ${
+                           isDarkMode ? 'text-red-400' : 'text-red-700'
+                        }`}>
                            <p>{submitError}</p>
                         </div>
                         {submitError.includes('token') && (
                            <div className="mt-3">
                               <button
                                  onClick={clearAuthData}
-                                 className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                 className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors duration-300"
                               >
                                  Clear Auth Data & Reload
                               </button>

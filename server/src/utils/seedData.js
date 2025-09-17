@@ -67,7 +67,7 @@ const seedInitialData = async () => {
          },
          {
             programId: 'PROG_SSCP',
-            programName: 'Small Scale Commercialization Program',
+            programName: 'Smart and Sustainable Communities Program',
             description: 'Commercialization support for small enterprises',
             code: 'SSCP',
             stages: [

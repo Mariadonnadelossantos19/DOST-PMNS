@@ -9,12 +9,6 @@ const MarinduqueDashboard = ({ currentUser }) => {
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState(null);
    
-   // Application review states
-   const [applications, setApplications] = useState([]);
-   const [applicationsLoading, setApplicationsLoading] = useState(false);
-   const [selectedApplication, setSelectedApplication] = useState(null);
-   const [reviewStatus, setReviewStatus] = useState('');
-   const [reviewComments, setReviewComments] = useState('');
 
    // Fetch proponents for this PSTO
    const fetchProponents = async () => {
@@ -42,82 +36,8 @@ const MarinduqueDashboard = ({ currentUser }) => {
       }
    };
 
-   // Fetch applications for PSTO review
-   const fetchApplications = async () => {
-      try {
-         setApplicationsLoading(true);
-         const token = localStorage.getItem('authToken');
-         
-         if (!token) {
-            setError('Please login first');
-            return;
-         }
-
-         const response = await fetch(API_ENDPOINTS.PSTO_APPLICATIONS, {   
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-            }
-         });
-
-         if (!response.ok) {
-            if (response.status === 403) {
-               setError('Access denied. PSTO role required.');
-               return;
-            }
-            throw new Error('Failed to fetch applications');
-         }
-
-         const data = await response.json();
-         setApplications(data.data || []);
-      } catch (err) {
-         console.error('Error fetching applications:', err);
-         setError(err.message);
-      } finally {
-         setApplicationsLoading(false);
-      }
-   };
-
-   // Review application
-   const reviewApplication = async (applicationId) => {
-      try {
-         const token = localStorage.getItem('authToken');
-         
-         const response = await fetch(`${API_ENDPOINTS.PSTO_APPLICATIONS}/${applicationId}/review`, {
-            method: 'PUT',
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-               status: reviewStatus,
-               comments: reviewComments
-            })
-         });
-
-         if (!response.ok) {
-            throw new Error('Failed to review application');
-         }
-
-         const data = await response.json();
-         console.log('Application reviewed:', data);
-         
-         // Refresh applications list
-         fetchApplications();
-         setSelectedApplication(null);
-         setReviewStatus('');
-         setReviewComments('');
-         
-         alert('Application reviewed successfully!');
-      } catch (err) {
-         console.error('Error reviewing application:', err);
-         alert('Error reviewing application: ' + err.message);
-      }
-   };
-
    useEffect(() => {
       fetchProponents();
-      fetchApplications();
    }, []);
 
    // Marinduque-specific data
@@ -523,183 +443,7 @@ const MarinduqueDashboard = ({ currentUser }) => {
       </div>
    );
 
-   const getStatusColor = (status) => {
-      switch (status) {
-         case 'pending': return 'bg-yellow-100 text-yellow-800';
-         case 'approved': return 'bg-green-100 text-green-800';
-         case 'returned': return 'bg-blue-100 text-blue-800';
-         case 'rejected': return 'bg-red-100 text-red-800';
-         default: return 'bg-gray-100 text-gray-800';
-      }
-   };
 
-   const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
-         year: 'numeric',
-         month: 'short',
-         day: 'numeric',
-         hour: '2-digit',
-         minute: '2-digit'
-      });
-   };
-
-   const renderApplications = () => (
-      <div className="space-y-6">
-         <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">SETUP Applications</h2>
-            <Button onClick={fetchApplications} disabled={applicationsLoading}>
-               {applicationsLoading ? 'Refreshing...' : 'Refresh'}
-            </Button>
-         </div>
-
-         {applicationsLoading ? (
-            <div className="text-center py-8">
-               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-               <p className="text-gray-500 mt-4">Loading applications...</p>
-            </div>
-         ) : applications.length === 0 ? (
-            <div className="text-center py-12">
-               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-               </svg>
-               <h3 className="mt-2 text-sm font-medium text-gray-900">No applications</h3>
-               <p className="mt-1 text-sm text-gray-500">No applications are currently pending review.</p>
-            </div>
-         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {applications.map((application) => (
-                  <Card key={application._id} className="p-6">
-                     <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                           <h3 className="text-lg font-bold text-gray-900 mb-1">
-                              {application.applicationId}
-                           </h3>
-                           <p className="text-sm text-gray-600">
-                              {application.enterpriseName}
-                           </p>
-                        </div>
-                        <Badge className={getStatusColor(application.pstoStatus)}>
-                           {application.pstoStatus?.toUpperCase()}
-                        </Badge>
-                     </div>
-
-                     <div className="space-y-2 mb-4">
-                        <div>
-                           <span className="text-sm font-medium text-gray-500">Contact Person:</span>
-                           <p className="text-sm text-gray-900">{application.contactPerson}</p>
-                        </div>
-                        <div>
-                           <span className="text-sm font-medium text-gray-500">Province:</span>
-                           <p className="text-sm text-gray-900">{application.proponentId?.province || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <span className="text-sm font-medium text-gray-500">Submitted:</span>
-                           <p className="text-sm text-gray-900">{formatDate(application.createdAt)}</p>
-                        </div>
-                        <div>
-                           <span className="text-sm font-medium text-gray-500">Business Activity:</span>
-                           <p className="text-sm text-gray-900">{application.businessActivity || 'N/A'}</p>
-                        </div>
-                     </div>
-
-                     <div className="flex space-x-2">
-                        <Button
-                           onClick={() => setSelectedApplication(application)}
-                           className="flex-1"
-                        >
-                           Review
-                        </Button>
-                        <Button
-                           onClick={() => window.open(`/api/programs/psto/applications/${application._id}/download/letterOfIntent`, '_blank')}
-                           variant="outline"
-                        >
-                           Files
-                        </Button>
-                     </div>
-                  </Card>
-               ))}
-            </div>
-         )}
-
-         {/* Review Modal */}
-         {selectedApplication && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-               <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="p-6">
-                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold">Review Application</h3>
-                        <button
-                           onClick={() => setSelectedApplication(null)}
-                           className="text-gray-500 hover:text-gray-700"
-                        >
-                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                           </svg>
-                        </button>
-                     </div>
-
-                     <div className="space-y-4 mb-6">
-                        <div>
-                           <h4 className="font-semibold text-gray-900">Application Details</h4>
-                           <div className="mt-2 space-y-2">
-                              <p><span className="font-medium">Application ID:</span> {selectedApplication.applicationId}</p>
-                              <p><span className="font-medium">Enterprise:</span> {selectedApplication.enterpriseName}</p>
-                              <p><span className="font-medium">Contact Person:</span> {selectedApplication.contactPerson}</p>
-                              <p><span className="font-medium">Business Activity:</span> {selectedApplication.businessActivity}</p>
-                              <p><span className="font-medium">Technology Needs:</span> {selectedApplication.technologyNeeds}</p>
-                           </div>
-                        </div>
-
-                        <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Review Decision
-                           </label>
-                           <select
-                              value={reviewStatus}
-                              onChange={(e) => setReviewStatus(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           >
-                              <option value="">Select decision</option>
-                              <option value="approved">Approve</option>
-                              <option value="returned">Return for Revision</option>
-                              <option value="rejected">Reject</option>
-                           </select>
-                        </div>
-
-                        <div>
-                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Comments
-                           </label>
-                           <textarea
-                              value={reviewComments}
-                              onChange={(e) => setReviewComments(e.target.value)}
-                              rows={4}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Enter your review comments..."
-                           />
-                        </div>
-                     </div>
-
-                     <div className="flex justify-end space-x-3">
-                        <Button
-                           onClick={() => setSelectedApplication(null)}
-                           variant="outline"
-                        >
-                           Cancel
-                        </Button>
-                        <Button
-                           onClick={() => reviewApplication(selectedApplication._id)}
-                           disabled={!reviewStatus}
-                        >
-                           Submit Review
-                        </Button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
-      </div>
-   );
 
    return (
       <div className="space-y-6">
@@ -720,7 +464,6 @@ const MarinduqueDashboard = ({ currentUser }) => {
                   { key: 'projects', label: 'Projects' },
                   { key: 'tasks', label: 'Tasks' },
                   { key: 'proponents', label: 'Proponents' },
-                  { key: 'applications', label: 'Applications' },
                   { key: 'enrollment', label: 'Enrollment' }
                ].map((tab) => (
                   <button
@@ -744,7 +487,6 @@ const MarinduqueDashboard = ({ currentUser }) => {
          {view === 'projects' && renderProjects()}
          {view === 'tasks' && renderTasks()}
          {view === 'proponents' && renderProponents()}
-         {view === 'applications' && renderApplications()}
          {view === 'enrollment' && (
             <div className="p-6 text-center">
                <h3 className="text-lg font-semibold text-gray-900 mb-2">Enrollment System</h3>

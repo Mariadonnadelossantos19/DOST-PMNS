@@ -1,5 +1,6 @@
 const SETUPApplication = require('../models/SETUPApplication');
 const PSTO = require('../models/PSTO');
+const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
 
@@ -418,6 +419,7 @@ const getApplicationStats = async (req, res) => {
 const getPSTOApplications = async (req, res) => {
    try {
       console.log('Fetching applications for PSTO review by user:', req.user._id);
+      console.log('PSTO User province:', req.user.province);
       
       // Check if user has PSTO role
       if (req.user.role !== 'psto' && req.user.role !== 'admin') {
@@ -434,32 +436,35 @@ const getPSTOApplications = async (req, res) => {
       
       // For PSTO users, only show applications from their province
       if (req.user.role === 'psto') {
-         // Find applications where the proponent is from the same province as the PSTO
-         const applications = await SETUPApplication.find(filter)
-            .populate({
-               path: 'proponentId',
-               select: 'firstName lastName email userId province',
-               match: { province: req.user.province }
-            })
-            .sort({ createdAt: -1 })
-            .limit(limit * 1)
-            .skip((page - 1) * limit);
+         // First, get all proponents from the same province as the PSTO
+         const proponentsInProvince = await mongoose.model('User').find({ 
+            province: req.user.province,
+            role: 'proponent'
+         }).select('_id');
+         
+         const proponentIds = proponentsInProvince.map(p => p._id);
+         console.log(`Found ${proponentIds.length} proponents in ${req.user.province}`);
 
-         // Filter out applications where proponentId is null (proponent not from this province)
-         const filteredApplications = applications.filter(app => app.proponentId !== null);
+         // Find applications from proponents in the same province
+         const applications = await SETUPApplication.find({
+            ...filter,
+            proponentId: { $in: proponentIds }
+         })
+         .populate('proponentId', 'firstName lastName email userId province')
+         .sort({ createdAt: -1 })
+         .limit(limit * 1)
+         .skip((page - 1) * limit);
 
          const total = await SETUPApplication.countDocuments({
             ...filter,
-            proponentId: {
-               $in: await mongoose.model('User').find({ province: req.user.province }).select('_id')
-            }
+            proponentId: { $in: proponentIds }
          });
 
-         console.log(`Found ${filteredApplications.length} applications for PSTO review in ${req.user.province}`);
+         console.log(`Found ${applications.length} applications for PSTO review in ${req.user.province}`);
 
          res.json({
             success: true,
-            data: filteredApplications,
+            data: applications,
             pagination: {
                current: parseInt(page),
                pages: Math.ceil(total / limit),

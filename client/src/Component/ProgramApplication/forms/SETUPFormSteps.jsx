@@ -2,16 +2,16 @@ import React from 'react';
 import { FormSection, FormInput, FormTextarea, FormSelect, FormFileUpload } from '../components';
 
 const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) => {
-   // Step 2: Enterprise Information
+   // Step 2: Basic Enterprise Information
    if (currentStep === 2) {
       return (
          <FormSection 
-            title="Enterprise Information" 
-            description="Provide details about your enterprise"
+            title="Basic Enterprise Information" 
+            description="Provide basic details about your enterprise"
          >
-            <div className="space-y-6">
+            <div className="space-y-4">
                {/* Basic Information */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormInput
                      label="Name of Enterprise"
                      name="enterpriseName"
@@ -100,106 +100,165 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
                      ]}
                   />
                </div>
+            </div>
+         </FormSection>
+      );
+   }
 
+   // Step 3: Enterprise Details and Classification
+   if (currentStep === 3) {
+      return (
+         <FormSection 
+            title="Enterprise Details and Classification" 
+            description="Provide detailed information about your enterprise structure and classification"
+         >
+            <div className="space-y-4">
                {/* Enterprise Details */}
-               <div className="border-t pt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Enterprise Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormInput
+                     label="Year Established"
+                     name="yearEstablished"
+                     type="number"
+                     value={formData.yearEstablished}
+                     onChange={handleInputChange}
+                     placeholder="e.g., 2020"
+                     error={errors.yearEstablished}
+                     required
+                  />
+                  
+                  <FormInput
+                     label="Initial Capital (PHP)"
+                     name="initialCapital"
+                     type="number"
+                     value={formData.initialCapital}
+                     onChange={handleInputChange}
+                     placeholder="e.g., 1000000"
+                  />
+                  
+                  <FormSelect
+                     label="Organization Type"
+                     name="organizationType"
+                     value={formData.organizationType}
+                     onChange={handleInputChange}
+                     error={errors.organizationType}
+                     required
+                     options={[
+                        { value: 'Single proprietorship', label: 'Single proprietorship' },
+                        { value: 'Cooperative', label: 'Cooperative' },
+                        { value: 'Partnership', label: 'Partnership' },
+                        { value: 'Corporation', label: 'Corporation' }
+                     ]}
+                  />
+                  
+                  <FormSelect
+                     label="Profit Type"
+                     name="profitType"
+                     value={formData.profitType}
+                     onChange={handleInputChange}
+                     error={errors.profitType}
+                     required
+                     options={[
+                        { value: 'Profit', label: 'Profit' },
+                        { value: 'Non-profit', label: 'Non-profit' }
+                     ]}
+                  />
+                  
+                  <FormInput
+                     label="Registration Number"
+                     name="registrationNo"
+                     value={formData.registrationNo}
+                     onChange={handleInputChange}
+                     placeholder="e.g., SEC-123456789"
+                     error={errors.registrationNo}
+                     required
+                  />
+                  
+                  <FormInput
+                     label="Year Registered"
+                     name="yearRegistered"
+                     type="number"
+                     value={formData.yearRegistered}
+                     onChange={handleInputChange}
+                     placeholder="e.g., 2020"
+                     error={errors.yearRegistered}
+                     required
+                  />
+                  
+                  <FormSelect
+                     label="Capital Classification"
+                     name="capitalClassification"
+                     value={formData.capitalClassification}
+                     onChange={handleInputChange}
+                     error={errors.capitalClassification}
+                     required
+                     options={[
+                        { value: 'Micro', label: 'Micro' },
+                        { value: 'Small', label: 'Small' },
+                        { value: 'Medium', label: 'Medium' }
+                     ]}
+                  />
+                  
+                  <FormSelect
+                     label="Employment Classification"
+                     name="employmentClassification"
+                     value={formData.employmentClassification}
+                     onChange={handleInputChange}
+                     error={errors.employmentClassification}
+                     required
+                     options={[
+                        { value: 'Micro', label: 'Micro' },
+                        { value: 'Small', label: 'Small' },
+                        { value: 'Medium', label: 'Medium' }
+                     ]}
+                  />
+               </div>
+
+               {/* Employment Information */}
+               <div className="border-t pt-4">
+                  <h3 className="text-base font-medium text-gray-900 mb-3">Employment Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <FormInput
-                        label="Year Established"
-                        name="yearEstablished"
+                        label="Direct Workers"
+                        name="directWorkers"
                         type="number"
-                        value={formData.yearEstablished}
+                        value={formData.directWorkers}
                         onChange={handleInputChange}
-                        placeholder="e.g., 2020"
-                        error={errors.yearEstablished}
+                        placeholder="Number of direct workers"
+                        error={errors.directWorkers}
                         required
                      />
                      
                      <FormInput
-                        label="Initial Capital (PHP)"
-                        name="initialCapital"
+                        label="Production Workers"
+                        name="productionWorkers"
                         type="number"
-                        value={formData.initialCapital}
+                        value={formData.productionWorkers}
                         onChange={handleInputChange}
-                        placeholder="e.g., 1000000"
-                     />
-                     
-                     <FormSelect
-                        label="Organization Type"
-                        name="organizationType"
-                        value={formData.organizationType}
-                        onChange={handleInputChange}
-                        error={errors.organizationType}
-                        required
-                        options={[
-                           { value: 'Single proprietorship', label: 'Single proprietorship' },
-                           { value: 'Cooperative', label: 'Cooperative' },
-                           { value: 'Partnership', label: 'Partnership' },
-                           { value: 'Corporation', label: 'Corporation' }
-                        ]}
-                     />
-                     
-                     <FormSelect
-                        label="Profit Type"
-                        name="profitType"
-                        value={formData.profitType}
-                        onChange={handleInputChange}
-                        error={errors.profitType}
-                        required
-                        options={[
-                           { value: 'Profit', label: 'Profit' },
-                           { value: 'Non-profit', label: 'Non-profit' }
-                        ]}
-                     />
-                     
-                     <FormInput
-                        label="Registration Number"
-                        name="registrationNo"
-                        value={formData.registrationNo}
-                        onChange={handleInputChange}
-                        placeholder="e.g., SEC-123456789"
-                        error={errors.registrationNo}
+                        placeholder="Number of production workers"
+                        error={errors.productionWorkers}
                         required
                      />
                      
                      <FormInput
-                        label="Year Registered"
-                        name="yearRegistered"
+                        label="Non-Production Workers"
+                        name="nonProductionWorkers"
                         type="number"
-                        value={formData.yearRegistered}
+                        value={formData.nonProductionWorkers}
                         onChange={handleInputChange}
-                        placeholder="e.g., 2020"
-                        error={errors.yearRegistered}
+                        placeholder="Number of non-production workers"
+                        error={errors.nonProductionWorkers}
                         required
                      />
                      
-                     <FormSelect
-                        label="Capital Classification"
-                        name="capitalClassification"
-                        value={formData.capitalClassification}
+                     <FormInput
+                        label="Contract Workers"
+                        name="contractWorkers"
+                        type="number"
+                        value={formData.contractWorkers}
                         onChange={handleInputChange}
-                        error={errors.capitalClassification}
+                        placeholder="Number of contract workers"
+                        error={errors.contractWorkers}
                         required
-                        options={[
-                           { value: 'Micro', label: 'Micro' },
-                           { value: 'Small', label: 'Small' },
-                           { value: 'Medium', label: 'Medium' }
-                        ]}
-                     />
-                     
-                     <FormSelect
-                        label="Employment Classification"
-                        name="employmentClassification"
-                        value={formData.employmentClassification}
-                        onChange={handleInputChange}
-                        error={errors.employmentClassification}
-                        required
-                        options={[
-                           { value: 'Micro', label: 'Micro' },
-                           { value: 'Small', label: 'Small' },
-                           { value: 'Medium', label: 'Medium' }
-                        ]}
                      />
                   </div>
                </div>
@@ -208,14 +267,14 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
       );
    }
 
-   // Step 3: Business Activity
-   if (currentStep === 3) {
+   // Step 4: Business Activity
+   if (currentStep === 4) {
       return (
          <FormSection 
             title="Business Activity" 
             description="Describe your business operations and background"
          >
-            <div className="space-y-6">
+            <div className="space-y-4">
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                      Business Activity *
@@ -272,14 +331,14 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
       );
    }
 
-   // Step 4: Technology Assessment
-   if (currentStep === 4) {
+   // Step 5: Technology Assessment
+   if (currentStep === 5) {
       return (
          <FormSection 
             title="Technology Needs Assessment" 
             description="Describe your technology needs and expected outcomes"
          >
-            <div className="space-y-6">
+            <div className="space-y-4">
                <FormTextarea
                   label="Technology Needs"
                   name="technologyNeeds"
@@ -291,7 +350,7 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
                   rows={4}
                />
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormSelect
                      label="Current Technology Level"
                      name="currentTechnologyLevel"
@@ -336,8 +395,8 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
       );
    }
 
-   // Step 5: Documents
-   if (currentStep === 5) {
+   // Step 6: Documents
+   if (currentStep === 6) {
       return (
          <FormSection 
             title="Required Documents" 

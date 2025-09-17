@@ -107,7 +107,7 @@ const ProponentDashboard = ({ userData, onOpenProgramSelection }) => {
       { value: 'SETUP', label: 'SETUP - Small Enterprise Technology Upgrading Program' },
       { value: 'GIA', label: 'GIA - Grants-in-Aid Program' },
       { value: 'CEST', label: 'CEST - Community Empowerment through Science and Technology' },
-      { value: 'SSCP', label: 'SSCP - Small Scale Commercialization Program' }
+      { value: 'SSCP', label: 'SSCP - Smart and Sustainable Communities Program' }
    ];
 
    if (loading) {

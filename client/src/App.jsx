@@ -10,10 +10,15 @@ import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
 import ResetPassword from './Component/Registration/ResetPassword';
 import MarinduqueDashboard from './Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
+import MarinduqueApplicationsPage from './Pages/PSTO/PSTO_Marinduque/pages/ApplicationsPage';
 import OccidentalMindoroDashboard from './Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
+import OccidentalMindoroApplicationsPage from './Pages/PSTO/PSTO_OccidentalMindoro/pages/ApplicationsPage';
 import OrientalMindoroDashboard from './Pages/PSTO/PSTO_OrientalMindoro/pages/OrientalMindoroDashboard';
+import OrientalMindoroApplicationsPage from './Pages/PSTO/PSTO_OrientalMindoro/pages/ApplicationsPage';
 import PalawanDashboard from './Pages/PSTO/PSTO_Palawan/pages/PalawanDashboard';
+import PalawanApplicationsPage from './Pages/PSTO/PSTO_Palawan/pages/ApplicationsPage';
 import RomblonDashboard from './Pages/PSTO/PSTO_Romblon/pages/RomblonDashboard';
+import RomblonApplicationsPage from './Pages/PSTO/PSTO_Romblon/pages/ApplicationsPage';
 import './App.css';
 
 // Sample data for demonstration
@@ -296,6 +301,28 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       }
    };
 
+   // Render Applications page based on user's province
+   const renderApplicationsPage = () => {
+      const province = currentUser.province;
+      
+      switch (province) {
+         case 'Marinduque':
+            return <MarinduqueApplicationsPage currentUser={currentUser} />;
+         case 'Romblon':
+            return <RomblonApplicationsPage currentUser={currentUser} />;
+         default:
+            return (
+               <div className="p-6 text-center">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Applications</h1>
+                  <p className="text-gray-600 mb-4">
+                     Applications page for {province || 'Unknown'} province
+                  </p>
+                  <p className="text-gray-500">Applications functionality will be available soon.</p>
+               </div>
+            );
+      }
+   };
+
    // Render content based on current page
    const renderContent = () => {
       console.log('AppContent - renderContent called with currentPage:', currentPage);
@@ -306,6 +333,9 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          case 'monitoring':
             console.log('Rendering ApplicationMonitorPage');
             return <ApplicationMonitorPage />;
+         case 'applications':
+            console.log('Rendering ApplicationsPage');
+            return renderApplicationsPage();
          case 'dashboard':
          default:
             console.log('Rendering Dashboard');
