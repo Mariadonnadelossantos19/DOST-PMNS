@@ -1,7 +1,8 @@
 import React from 'react';
 import { FormSection, FormInput, FormTextarea, FormSelect, FormFileUpload } from '../components';
+import GeneralAgreement from '../components/GeneralAgreement';
 
-const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) => {
+const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep, onGeneralAgreementChange }) => {
    // Step 2: Basic Enterprise Information
    if (currentStep === 2) {
       return (
@@ -330,7 +331,7 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
          </FormSection>
       );
    }
-
+   
    // Step 5: Technology Assessment
    if (currentStep === 5) {
       return (
@@ -423,6 +424,22 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
                   helpText="PDF, DOC, or DOCX files only (max 10MB)"
                />
             </div>
+         </FormSection>
+      );
+   }
+
+   // Step 7: General Agreement
+   if (currentStep === 7) {
+      return (
+         <FormSection 
+            title="General Agreement and Terms of Service" 
+            description="Please read and accept the general agreement to proceed with your application"
+         >
+            <GeneralAgreement 
+               onAgreementChange={onGeneralAgreementChange}
+               isRequired={true}
+               initialData={formData.generalAgreement}
+            />
          </FormSection>
       );
    }

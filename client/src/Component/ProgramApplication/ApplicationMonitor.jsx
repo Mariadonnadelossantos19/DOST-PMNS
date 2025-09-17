@@ -222,7 +222,7 @@ const ApplicationMonitor = () => {
                      </div>
                      <div className="flex items-center space-x-2">
                         {selectedApplication.pstoStatus === 'returned' && !isEditMode && (
-                           <button
+                     <button
                               onClick={() => handleEditToggle(selectedApplication)}
                               className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200 flex items-center text-sm"
                            >
@@ -260,12 +260,12 @@ const ApplicationMonitor = () => {
                               setIsEditMode(false);
                               setEditFormData({});
                            }}
-                           className="text-white hover:text-blue-200 transition-colors p-1"
-                        >
-                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                           </svg>
-                        </button>
+                        className="text-white hover:text-blue-200 transition-colors p-1"
+                     >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                     </button>
                      </div>
                   </div>
                </div>
@@ -347,7 +347,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.enterpriseName}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.enterpriseName}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -360,7 +360,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.contactPerson}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.contactPerson}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -373,7 +373,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.position}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.position}</span>
                                     )}
                                  </div>
                                  <div className="py-1.5">
@@ -386,7 +386,7 @@ const ApplicationMonitor = () => {
                                           rows="2"
                                        />
                                     ) : (
-                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.officeAddress}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.officeAddress}</p>
                                     )}
                                  </div>
                               </div>
@@ -411,7 +411,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.contactPersonTel}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.contactPersonTel}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -424,7 +424,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.contactPersonEmail}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.contactPersonEmail}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5">
@@ -437,7 +437,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.website || 'N/A'}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.website || 'N/A'}</span>
                                     )}
                                  </div>
                               </div>
@@ -462,7 +462,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.yearEstablished}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.yearEstablished}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -493,7 +493,7 @@ const ApplicationMonitor = () => {
                                           <option value="Corporation">Corporation</option>
                                        </select>
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.organizationType}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.organizationType}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -509,7 +509,7 @@ const ApplicationMonitor = () => {
                                           <option value="Non-profit">Non-profit</option>
                                        </select>
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.profitType}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.profitType}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -522,7 +522,7 @@ const ApplicationMonitor = () => {
                                           className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 w-48"
                                        />
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.registrationNo}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.registrationNo}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
@@ -537,7 +537,7 @@ const ApplicationMonitor = () => {
                                     ) : (
                                        <span className="text-sm text-gray-900">{selectedApplication.yearRegistered}</span>
                                     )}
-                                 </div>
+                              </div>
                                  <div className="flex justify-between py-1.5 border-b border-gray-200">
                                     <span className="text-sm font-medium text-gray-600">Capital Classification:</span>
                                     {isEditMode ? (
@@ -597,7 +597,7 @@ const ApplicationMonitor = () => {
                                           rows="2"
                                        />
                                     ) : (
-                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.businessActivity || 'N/A'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.businessActivity || 'N/A'}</p>
                                     )}
                                  </div>
                                  <div className="py-1.5">
@@ -610,7 +610,7 @@ const ApplicationMonitor = () => {
                                           rows="2"
                                        />
                                     ) : (
-                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.specificProduct || 'N/A'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.specificProduct || 'N/A'}</p>
                                     )}
                                  </div>
                                  <div className="py-1.5">
@@ -636,7 +636,7 @@ const ApplicationMonitor = () => {
                                           rows="2"
                                        />
                                     ) : (
-                                       <p className="text-sm text-gray-900 mt-1">{selectedApplication.technologyNeeds || 'N/A'}</p>
+                                    <p className="text-sm text-gray-900 mt-1">{selectedApplication.technologyNeeds || 'N/A'}</p>
                                     )}
                                  </div>
                                  <div className="py-1.5">
@@ -666,7 +666,7 @@ const ApplicationMonitor = () => {
                                           <option value="Advanced">Advanced</option>
                                        </select>
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.currentTechnologyLevel}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.currentTechnologyLevel}</span>
                                     )}
                                  </div>
                                  <div className="flex justify-between py-1.5">
@@ -683,7 +683,7 @@ const ApplicationMonitor = () => {
                                           <option value="Advanced">Advanced</option>
                                        </select>
                                     ) : (
-                                       <span className="text-sm text-gray-900">{selectedApplication.desiredTechnologyLevel}</span>
+                                    <span className="text-sm text-gray-900">{selectedApplication.desiredTechnologyLevel}</span>
                                     )}
                                  </div>
                               </div>
@@ -917,14 +917,14 @@ const ApplicationMonitor = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                      </svg>
                   </div>
-                  <div>
+            <div>
                      <h2 className={`text-xl font-bold transition-colors duration-300 ${
                         isDarkMode ? 'text-white' : 'text-gray-900'
                      }`}>My Applications</h2>
                      <p className={`text-xs transition-colors duration-300 ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-600'
                      }`}>Track the status of your submitted applications</p>
-                  </div>
+            </div>
                </div>
                
                <div className="flex flex-col sm:flex-row gap-2">
@@ -966,17 +966,17 @@ const ApplicationMonitor = () => {
                   </select>
                   
                   {/* Refresh Button - Program Application Style */}
-                  <button
-                     onClick={fetchApplications}
+            <button
+               onClick={fetchApplications}
                      className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 text-xs hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-md hover:shadow-lg ring-1 ring-blue-500/20 hover:ring-blue-500/40"
-                  >
+            >
                      <div className="flex items-center">
                         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        Refresh
+               Refresh
                      </div>
-                  </button>
+            </button>
                </div>
             </div>
             
@@ -1028,8 +1028,8 @@ const ApplicationMonitor = () => {
                   isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
                }`}>
                   <svg className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+               </svg>
                </div>
                <h3 className={`mt-4 text-lg font-medium transition-colors duration-300 ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
@@ -1077,14 +1077,14 @@ const ApplicationMonitor = () => {
                                  <h3 className={`text-sm font-bold transition-colors duration-300 ${
                                     isDarkMode ? 'text-white' : 'text-gray-900'
                                  } truncate`}>
-                                    {application.applicationId}
-                                 </h3>
+                                 {application.applicationId}
+                              </h3>
                                  <p className={`text-xs transition-colors duration-300 ${
                                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                                  } truncate`}>
-                                    {application.enterpriseName}
-                                 </p>
-                              </div>
+                                 {application.enterpriseName}
+                              </p>
+                           </div>
                            </div>
                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
                               {application.status?.toUpperCase()}
@@ -1126,7 +1126,7 @@ const ApplicationMonitor = () => {
                               <span className={`text-xs transition-colors duration-300 ${
                                  isDarkMode ? 'text-white' : 'text-gray-900'
                               }`}>{new Date(application.createdAt).toLocaleDateString()}</span>
-                           </div>
+                        </div>
                         </div>
 
                         {/* Program Application Style PSTO Status */}
@@ -1153,8 +1153,8 @@ const ApplicationMonitor = () => {
                                        </svg>
                                     </div>
                                     <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getPSTOStatusColor(application.pstoStatus)}`}>
-                                       {application.pstoStatus?.toUpperCase()}
-                                    </span>
+                                 {application.pstoStatus?.toUpperCase()}
+                              </span>
                                  </div>
                               </div>
                            </div>
@@ -1168,8 +1168,8 @@ const ApplicationMonitor = () => {
                               <div className="flex items-center">
                                  <div className="p-1 bg-green-100 rounded mr-2">
                                     <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                 </svg>
                                  </div>
                                  <div>
                                     <p className={`text-xs font-semibold transition-colors duration-300 ${
@@ -1203,8 +1203,8 @@ const ApplicationMonitor = () => {
                                     <p className={`text-xs transition-colors duration-300 ${
                                        isDarkMode ? 'text-yellow-200' : 'text-yellow-700'
                                     }`}>
-                                       {application.pstoComments}
-                                    </p>
+                                 {application.pstoComments}
+                              </p>
                                  </div>
                               </div>
                            </div>

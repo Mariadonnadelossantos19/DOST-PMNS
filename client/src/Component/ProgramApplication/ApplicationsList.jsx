@@ -98,6 +98,28 @@ const ApplicationsList = ({
                         <p className="text-xs text-gray-500">Contact Person</p>
                      </div>
                   </div>
+                  
+                  {/* General Agreement Status */}
+                  <div className="flex items-center space-x-3">
+                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                     </div>
+                     <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                           <div className={`w-2 h-2 rounded-full ${application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                           <p className="text-sm font-medium text-gray-900">
+                              General Agreement {application.generalAgreement?.accepted ? 'Accepted' : 'Not Accepted'}
+                           </p>
+                        </div>
+                        {application.generalAgreement?.signatoryName && (
+                           <p className="text-xs text-gray-500">
+                              Signed by: {application.generalAgreement.signatoryName} ({application.generalAgreement.position})
+                           </p>
+                        )}
+                     </div>
+                  </div>
 
                   <div className="flex items-center space-x-3">
                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
@@ -191,6 +213,9 @@ const ApplicationsList = ({
                         Submitted
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Agreement
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -227,6 +252,19 @@ const ApplicationsList = ({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                            <div className="text-sm text-gray-900">{formatDate(application.createdAt)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                           <div className="flex items-center space-x-2">
+                              <div className={`w-2 h-2 rounded-full ${application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                              <span className={`text-xs font-medium ${application.generalAgreement?.accepted ? 'text-green-700' : 'text-red-700'}`}>
+                                 {application.generalAgreement?.accepted ? 'Accepted' : 'Not Accepted'}
+                              </span>
+                           </div>
+                           {application.generalAgreement?.signatoryName && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                 {application.generalAgreement.signatoryName}
+                              </div>
+                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                            <Badge className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.pstoStatus)}`}>

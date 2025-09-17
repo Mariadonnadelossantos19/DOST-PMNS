@@ -156,6 +156,44 @@ const setupApplicationSchema = new mongoose.Schema({
       required: true
    },
    
+   // General Agreement
+   generalAgreement: {
+      accepted: {
+         type: Boolean,
+         required: true,
+         default: false
+      },
+      acceptedAt: {
+         type: Date,
+         required: true
+      },
+      ipAddress: {
+         type: String
+      },
+      userAgent: {
+         type: String
+      },
+      signature: {
+         filename: String,
+         originalName: String,
+         path: String,
+         size: Number,
+         mimetype: String
+      },
+      signatoryName: {
+         type: String,
+         required: true
+      },
+      position: {
+         type: String,
+         required: true
+      },
+      signedDate: {
+         type: Date,
+         required: true
+      }
+   },
+   
    // File Uploads
    letterOfIntent: {
       filename: String,
@@ -288,6 +326,16 @@ setupApplicationSchema.pre('save', async function(next) {
 // Update updatedAt on save
 setupApplicationSchema.pre('save', function(next) {
    this.updatedAt = new Date();
+   next();
+});
+
+// Validate general agreement acceptance
+setupApplicationSchema.pre('save', function(next) {
+   if (this.isNew && !this.generalAgreement.accepted) {
+      const error = new Error('General agreement must be accepted before submission');
+      error.name = 'ValidationError';
+      return next(error);
+   }
    next();
 });
 

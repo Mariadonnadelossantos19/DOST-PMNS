@@ -9,6 +9,8 @@ const submitApplication = async (req, res) => {
    try {
       console.log('SETUP Application submission - Body:', req.body);
       console.log('SETUP Application submission - Files:', req.files);
+      console.log('SETUP Application submission - generalAgreement from body:', req.body.generalAgreement);
+      console.log('SETUP Application submission - generalAgreement type:', typeof req.body.generalAgreement);
 
       // Extract all form data from MultiStepForm
       const {
@@ -57,7 +59,10 @@ const submitApplication = async (req, res) => {
          // Program information
          programCode,
          programName,
-         submissionDate
+         submissionDate,
+         
+         // General Agreement
+         generalAgreement
       } = req.body;
 
       // Validate required fields
@@ -89,9 +94,45 @@ const submitApplication = async (req, res) => {
          });
       }
 
+      // Parse generalAgreement if it's a JSON string
+      let parsedGeneralAgreement = generalAgreement;
+      if (typeof generalAgreement === 'string') {
+         try {
+            parsedGeneralAgreement = JSON.parse(generalAgreement);
+            console.log('Backend - Parsed generalAgreement from JSON string:', parsedGeneralAgreement);
+         } catch (error) {
+            console.error('Backend - Error parsing generalAgreement JSON:', error);
+            return res.status(400).json({
+               success: false,
+               message: 'Invalid general agreement data format'
+            });
+         }
+      }
+      
+      // Validate general agreement
+      console.log('Backend - Received generalAgreement:', parsedGeneralAgreement);
+      console.log('Backend - generalAgreement.accepted:', parsedGeneralAgreement?.accepted);
+      console.log('Backend - generalAgreement type:', typeof parsedGeneralAgreement);
+      
+      if (!parsedGeneralAgreement || !parsedGeneralAgreement.accepted) {
+         console.log('Backend - General agreement validation failed');
+         return res.status(400).json({
+            success: false,
+            message: 'General agreement must be accepted'
+         });
+      }
+
+      if (!parsedGeneralAgreement.signatoryName || !parsedGeneralAgreement.position || !parsedGeneralAgreement.signedDate) {
+         return res.status(400).json({
+            success: false,
+            message: 'General agreement signature details are required'
+         });
+      }
+
       // Handle file uploads
       let letterOfIntent = null;
       let enterpriseProfile = null;
+      let signatureFile = null;
 
       if (req.files && req.files.length > 0) {
          req.files.forEach(file => {
@@ -99,6 +140,8 @@ const submitApplication = async (req, res) => {
                letterOfIntent = file.filename;
             } else if (file.fieldname === 'enterpriseProfile') {
                enterpriseProfile = file.filename;
+            } else if (file.fieldname === 'signature') {
+               signatureFile = file.filename;
             }
          });
       }
@@ -171,6 +214,24 @@ const submitApplication = async (req, res) => {
          // File uploads
          letterOfIntent,
          enterpriseProfile,
+         
+         // General Agreement
+         generalAgreement: {
+            accepted: parsedGeneralAgreement.accepted,
+            acceptedAt: new Date(),
+            ipAddress: req.ip || req.connection.remoteAddress || '',
+            userAgent: parsedGeneralAgreement.userAgent || req.get('User-Agent') || '',
+            signatoryName: parsedGeneralAgreement.signatoryName,
+            position: parsedGeneralAgreement.position,
+            signedDate: new Date(parsedGeneralAgreement.signedDate),
+            signature: signatureFile ? {
+               filename: signatureFile,
+               originalName: req.files?.find(f => f.fieldname === 'signature')?.originalname || signatureFile,
+               path: `uploads/${signatureFile}`,
+               size: req.files?.find(f => f.fieldname === 'signature')?.size || 0,
+               mimetype: req.files?.find(f => f.fieldname === 'signature')?.mimetype || 'application/octet-stream'
+            } : null
+         },
          
          // Status and PSTO assignment
          status: 'pending',

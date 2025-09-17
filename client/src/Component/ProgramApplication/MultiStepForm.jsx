@@ -110,6 +110,15 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
          experience: ''
       },
       
+      // General Agreement
+      generalAgreement: {
+         accepted: false,
+         signatureFile: null,
+         signatoryName: '',
+         position: '',
+         signedDate: new Date().toISOString().split('T')[0]
+      },
+      
       // File uploads
       letterOfIntent: null,
       enterpriseProfile: null,
@@ -138,7 +147,8 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             { id: 3, title: 'Enterprise Details', description: 'Company structure and classification' },
             { id: 4, title: 'Business Activity', description: 'Business operations and background' },
             { id: 5, title: 'Technology Assessment', description: 'Technology needs and outcomes' },
-            { id: 6, title: 'Documents', description: 'Required file uploads' }
+            { id: 6, title: 'Documents', description: 'Required file uploads' },
+            { id: 7, title: 'General Agreement', description: 'Terms and conditions agreement' }
          ];
       } else if (programCode === 'GIA') {
          return [
@@ -210,6 +220,22 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       }
    };
 
+   const handleGeneralAgreementChange = (agreementData) => {
+      console.log('MultiStepForm - handleGeneralAgreementChange called with:', agreementData);
+      console.log('MultiStepForm - Current formData.generalAgreement before update:', formData.generalAgreement);
+      setFormData(prev => {
+         const newData = {
+            ...prev,
+            generalAgreement: {
+               ...prev.generalAgreement,
+               ...agreementData
+            }
+         };
+         console.log('MultiStepForm - updated formData.generalAgreement:', newData.generalAgreement);
+         return newData;
+      });
+   };
+
    const validateCurrentStep = () => {
       const newErrors = {};
       const programCode = formData.programCode;
@@ -278,6 +304,26 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             if (!formData.enterpriseProfile) {
                newErrors.enterpriseProfile = 'Enterprise Profile is required';
             }
+         } else if (currentStep === 7) {
+            // General Agreement validation
+            console.log('MultiStepForm - Validating Step 7, generalAgreement:', formData.generalAgreement);
+            if (!formData.generalAgreement?.accepted) {
+               console.log('MultiStepForm - General agreement not accepted');
+               newErrors.generalAgreement = 'General agreement must be accepted';
+            }
+            if (!formData.generalAgreement?.signatoryName) {
+               console.log('MultiStepForm - Signatory name missing');
+               newErrors.signatoryName = 'Signatory name is required';
+            }
+            if (!formData.generalAgreement?.position) {
+               console.log('MultiStepForm - Position missing');
+               newErrors.position = 'Position is required';
+            }
+            if (!formData.generalAgreement?.signatureFile) {
+               console.log('MultiStepForm - Signature file missing');
+               newErrors.signatureFile = 'Signature file is required';
+            }
+            console.log('MultiStepForm - Step 7 validation errors:', newErrors);
          }
       } else if (programCode === 'GIA') {
          if (currentStep === 2) {
@@ -471,6 +517,13 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             if (submissionData[key] !== null && submissionData[key] !== undefined) {
                if (submissionData[key] instanceof File) {
                   submitData.append(key, submissionData[key]);
+               } else if (key === 'generalAgreement' && submissionData[key].signature instanceof File) {
+                  // Handle general agreement separately to include signature file
+                  const agreementData = { ...submissionData[key] };
+                  const signatureFile = agreementData.signature;
+                  delete agreementData.signature;
+                  submitData.append('generalAgreement', JSON.stringify(agreementData));
+                  submitData.append('signature', signatureFile);
                } else if (typeof submissionData[key] === 'object') {
                   submitData.append(key, JSON.stringify(submissionData[key]));
                } else {
@@ -540,7 +593,9 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
    const handleSubmit = (e) => {
       e.preventDefault();
       
-      if (validateCurrentStep()) {
+      // Add a small delay to ensure state updates are processed
+      setTimeout(() => {
+         if (validateCurrentStep()) {
          // Calculate total workers for SETUP
          if (formData.programCode === 'SETUP') {
             const total = parseInt(formData.directWorkers || 0) + 
@@ -552,12 +607,29 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             ...formData,
             programCode: selectedProgram.code,
             programName: selectedProgram.name,
-            submissionDate: new Date().toISOString()
+            submissionDate: new Date().toISOString(),
+            // Ensure general agreement data is properly formatted
+            generalAgreement: {
+               accepted: formData.generalAgreement.accepted,
+               acceptedAt: new Date().toISOString(),
+               ipAddress: '', // Will be set by backend
+               userAgent: navigator.userAgent,
+               signatoryName: formData.generalAgreement.signatoryName,
+               position: formData.generalAgreement.position,
+               signedDate: new Date(formData.generalAgreement.signedDate).toISOString(),
+               signature: formData.generalAgreement.signatureFile
+            }
          };
+         
+         console.log('MultiStepForm - Submission data generalAgreement:', submissionData.generalAgreement);
+         console.log('MultiStepForm - formData.generalAgreement:', formData.generalAgreement);
+         console.log('MultiStepForm - generalAgreement.accepted:', formData.generalAgreement?.accepted);
+         console.log('MultiStepForm - generalAgreement type:', typeof formData.generalAgreement);
          
          // Submit directly to API
          submitApplication(submissionData);
-      }
+         }
+      }, 100); // 100ms delay to ensure state updates are processed
    };
 
    const renderStepIndicator = () => {
@@ -626,7 +698,7 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       
       if (currentStep > 1) {
          if (programCode === 'SETUP') {
-            return <SETUPFormSteps formData={formData} errors={errors} handleInputChange={handleInputChange} currentStep={currentStep} />;
+            return <SETUPFormSteps formData={formData} errors={errors} handleInputChange={handleInputChange} currentStep={currentStep} onGeneralAgreementChange={handleGeneralAgreementChange} />;
          } else if (programCode === 'GIA') {
             return <GIAFormSteps formData={formData} errors={errors} handleInputChange={handleInputChange} currentStep={currentStep} />;
          } else if (programCode === 'CEST') {

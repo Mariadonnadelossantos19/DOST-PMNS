@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '../UI';
+import DOSTTNAFormGenerator from './components/DOSTTNAFormGenerator';
 
 const ApplicationReviewModal = ({ 
    selectedApplication, 
@@ -12,6 +13,8 @@ const ApplicationReviewModal = ({
    getStatusColor,
    formatDate 
 }) => {
+   const [showTNAGenerator, setShowTNAGenerator] = useState(false);
+   
    if (!selectedApplication) return null;
 
    return (
@@ -20,14 +23,25 @@ const ApplicationReviewModal = ({
             <div className="p-6">
                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-bold">Review Application</h3>
-                  <button
-                     onClick={() => setSelectedApplication(null)}
-                     className="text-gray-500 hover:text-gray-700"
-                  >
-                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                     </svg>
-                  </button>
+                  <div className="flex items-center space-x-3">
+                     <button
+                        onClick={() => setShowTNAGenerator(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors duration-200"
+                     >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Generate TNA Form
+                     </button>
+                     <button
+                        onClick={() => setSelectedApplication(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                     >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                     </button>
+                  </div>
                </div>
 
                <div className="space-y-6 mb-6">
@@ -102,6 +116,91 @@ const ApplicationReviewModal = ({
                         </div>
                      </div>
                   </div>
+
+                  {/* General Agreement */}
+                  {selectedApplication.generalAgreement && (
+                     <div className="bg-green-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                           <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                           General Agreement & Digital Signature
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Agreement Status</p>
+                              <div className="flex items-center mt-1">
+                                 <div className={`w-3 h-3 rounded-full mr-2 ${selectedApplication.generalAgreement.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                 <p className="text-lg font-semibold text-gray-900">
+                                    {selectedApplication.generalAgreement.accepted ? 'Accepted' : 'Not Accepted'}
+                                 </p>
+                              </div>
+                           </div>
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Accepted Date</p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                 {selectedApplication.generalAgreement.acceptedAt ? 
+                                    new Date(selectedApplication.generalAgreement.acceptedAt).toLocaleDateString() : 'N/A'}
+                              </p>
+                           </div>
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Signatory Name</p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                 {selectedApplication.generalAgreement.signatoryName || 'N/A'}
+                              </p>
+                           </div>
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Position</p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                 {selectedApplication.generalAgreement.position || 'N/A'}
+                              </p>
+                           </div>
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Signed Date</p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                 {selectedApplication.generalAgreement.signedDate ? 
+                                    new Date(selectedApplication.generalAgreement.signedDate).toLocaleDateString() : 'N/A'}
+                              </p>
+                           </div>
+                           <div>
+                              <p className="text-sm font-medium text-gray-600">Signature File</p>
+                              <div className="mt-1">
+                                 {selectedApplication.generalAgreement.signature ? (
+                                    <div className="flex items-center space-x-2">
+                                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                       </svg>
+                                       <a 
+                                          href={`/uploads/${selectedApplication.generalAgreement.signature.filename}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:text-blue-800 underline text-sm"
+                                       >
+                                          View Signature ({selectedApplication.generalAgreement.signature.originalName})
+                                       </a>
+                                    </div>
+                                 ) : (
+                                    <p className="text-lg font-semibold text-gray-500">No signature file</p>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
+                        
+                        {/* Audit Trail */}
+                        <div className="mt-4 pt-4 border-t border-green-200">
+                           <h5 className="text-sm font-medium text-gray-700 mb-2">Audit Trail</h5>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+                              <div>
+                                 <p><span className="font-medium">IP Address:</span> {selectedApplication.generalAgreement.ipAddress || 'N/A'}</p>
+                              </div>
+                              <div>
+                                 <p><span className="font-medium">User Agent:</span> {selectedApplication.generalAgreement.userAgent ? 
+                                    selectedApplication.generalAgreement.userAgent.substring(0, 50) + '...' : 'N/A'}</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  )}
 
                   {/* Contact Information */}
                   <div className="bg-indigo-50 rounded-lg p-4">
@@ -470,6 +569,19 @@ const ApplicationReviewModal = ({
                </div>
             </div>
          </div>
+
+         {/* DOST TNA Form Generator Modal */}
+         <DOSTTNAFormGenerator
+            application={selectedApplication}
+            isOpen={showTNAGenerator}
+            onClose={() => setShowTNAGenerator(false)}
+            onGenerate={(formData) => {
+               console.log('Generated TNA Form Data:', formData);
+               // Here you can add logic to save the generated form or send it to backend
+               setShowTNAGenerator(false);
+            }}
+            pstoOffice="PSTO"
+         />
       </div>
    );
 };
