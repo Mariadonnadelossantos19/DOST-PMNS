@@ -14,6 +14,48 @@ const ApplicationReviewModal = ({
    formatDate 
 }) => {
    const [showTNAGenerator, setShowTNAGenerator] = useState(false);
+
+   // Handle file viewing with proper authentication
+   const handleViewFile = async (fileType) => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) {
+            alert('Please log in to view files');
+            return;
+         }
+
+         const response = await fetch(`/api/programs/setup/${selectedApplication._id}/view/${fileType}`, {
+            method: 'GET',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            }
+         });
+
+         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`Failed to view file: ${response.status} ${response.statusText}`);
+         }
+
+         // Get the file blob
+         const blob = await response.blob();
+         
+         // Create a URL for the blob
+         const fileUrl = window.URL.createObjectURL(blob);
+         
+         // Open in new tab
+         window.open(fileUrl, '_blank');
+         
+         // Clean up the URL after a delay
+         setTimeout(() => {
+            window.URL.revokeObjectURL(fileUrl);
+         }, 1000);
+      } catch (error) {
+         console.error('Error viewing file:', error);
+         alert(`Failed to view file: ${error.message}`);
+      }
+   };
    
    if (!selectedApplication) return null;
 
@@ -439,40 +481,6 @@ const ApplicationReviewModal = ({
                      </div>
                   </div>
 
-                  {/* Financial Information */}
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-5 border border-yellow-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Financial Information</h4>
-                           <p className="text-sm text-yellow-600">Project costs and funding requirements</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-3 gap-3">
-                        {selectedApplication.totalProjectCost && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Total Project Cost</p>
-                              <p className="text-sm font-semibold text-gray-900">₱{selectedApplication.totalProjectCost.toLocaleString()}</p>
-                           </div>
-                        )}
-                        {selectedApplication.requestedAmount && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Requested Amount</p>
-                              <p className="text-sm font-semibold text-gray-900">₱{selectedApplication.requestedAmount.toLocaleString()}</p>
-                           </div>
-                        )}
-                        {selectedApplication.counterpartFunding && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Counterpart Funding</p>
-                              <p className="text-sm font-semibold text-gray-900">₱{selectedApplication.counterpartFunding.toLocaleString()}</p>
-                           </div>
-                        )}
-                     </div>
-                  </div>
 
                   {/* Application Status & Processing */}
                   <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 border border-red-200 shadow-sm">
@@ -563,6 +571,184 @@ const ApplicationReviewModal = ({
                            <div>
                               <p className="text-xs font-medium text-gray-600">Expected End Date</p>
                               <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.expectedEndDate)}</p>
+                           </div>
+                        )}
+                     </div>
+                  </div>
+
+                  {/* Attached Documents */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200 shadow-sm">
+                     <div className="flex items-center mb-4">
+                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                           </svg>
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-bold text-gray-900">Attached Documents</h4>
+                           <p className="text-sm text-indigo-600">Required documents for PSTO review</p>
+                        </div>
+                     </div>
+                     <div className="space-y-3">
+                        {/* Letter of Intent */}
+                        {selectedApplication.letterOfIntent?.filename ? (
+                           <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-red-100 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-900">Letter of Intent</p>
+                                    <p className="text-xs text-gray-500">{selectedApplication.letterOfIntent.originalName || selectedApplication.letterOfIntent.filename}</p>
+                                 </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                 <button
+                                    onClick={() => handleViewFile('letterOfIntent')}
+                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    title="View Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View
+                                 </button>
+                                 <button
+                                    onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/letterOfIntent`, '_blank')}
+                                    className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                                    title="Download Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download
+                                 </button>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-gray-200 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-500">Letter of Intent</p>
+                                    <p className="text-xs text-gray-400">No document uploaded</p>
+                                 </div>
+                              </div>
+                           </div>
+                        )}
+
+                        {/* Enterprise Profile */}
+                        {selectedApplication.enterpriseProfile?.filename ? (
+                           <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-green-100 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-900">Enterprise Profile</p>
+                                    <p className="text-xs text-gray-500">{selectedApplication.enterpriseProfile.originalName || selectedApplication.enterpriseProfile.filename}</p>
+                                 </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                 <button
+                                    onClick={() => handleViewFile('enterpriseProfile')}
+                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    title="View Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View
+                                 </button>
+                                 <button
+                                    onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/enterpriseProfile`, '_blank')}
+                                    className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                                    title="Download Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download
+                                 </button>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-gray-200 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-500">Enterprise Profile</p>
+                                    <p className="text-xs text-gray-400">No document uploaded</p>
+                                 </div>
+                              </div>
+                           </div>
+                        )}
+
+                        {/* Business Plan */}
+                        {selectedApplication.businessPlan?.filename ? (
+                           <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-900">Business Plan</p>
+                                    <p className="text-xs text-gray-500">{selectedApplication.businessPlan.originalName || selectedApplication.businessPlan.filename}</p>
+                                 </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                 <button
+                                    onClick={() => handleViewFile('businessPlan')}
+                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    title="View Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View
+                                 </button>
+                                 <button
+                                    onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/businessPlan`, '_blank')}
+                                    className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                                    title="Download Document"
+                                 >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download
+                                 </button>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
+                              <div className="flex items-center">
+                                 <div className="p-2 bg-gray-200 rounded-lg mr-3">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-semibold text-gray-500">Business Plan</p>
+                                    <p className="text-xs text-gray-400">No document uploaded</p>
+                                 </div>
+                              </div>
                            </div>
                         )}
                      </div>

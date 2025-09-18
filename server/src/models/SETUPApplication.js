@@ -220,14 +220,14 @@ const setupApplicationSchema = new mongoose.Schema({
    // SETUP Process Stages
    currentStage: {
       type: String,
-      enum: ['tna_application', 'psto_review', 'tna_assessment', 'rtec_evaluation', 'implementation', 'completed'],
+      enum: ['tna_application', 'psto_review', 'dost_mimaropa_review', 'tna_assessment', 'rtec_evaluation', 'implementation', 'completed'],
       default: 'tna_application'
    },
    
    // Application Status
    status: {
       type: String,
-      enum: ['pending', 'under_review', 'tna_approved', 'tna_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'],
+      enum: ['pending', 'under_review', 'psto_approved', 'dost_mimaropa_approved', 'dost_mimaropa_rejected', 'tna_approved', 'tna_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'],
       default: 'pending'
    },
    
@@ -271,6 +271,30 @@ const setupApplicationSchema = new mongoose.Schema({
    },
    forwardedAt: {
       type: Date
+   },
+   
+   // DOST MIMAROPA Review Status
+   forwardedToDostMimaropa: {
+      type: Boolean,
+      default: false
+   },
+   forwardedToDostMimaropaAt: {
+      type: Date
+   },
+   dostMimaropaStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'returned', 'rejected'],
+      default: 'pending'
+   },
+   dostMimaropaComments: {
+      type: String
+   },
+   dostMimaropaReviewedAt: {
+      type: Date
+   },
+   dostMimaropaAssigned: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
    },
    
    // TNA Assessment Results

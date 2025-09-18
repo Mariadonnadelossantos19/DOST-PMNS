@@ -204,6 +204,45 @@ const ApplicationMonitor = () => {
       setEditFormData({});
    };
 
+   const handleViewFile = async (fileType) => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) {
+            alert('Please log in to view files');
+            return;
+         }
+
+         const response = await fetch(`/api/programs/setup/${selectedApplication._id}/view/${fileType}`, {
+            method: 'GET',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            }
+         });
+
+         if (!response.ok) {
+            throw new Error('Failed to view file');
+         }
+
+         // Get the file blob
+         const blob = await response.blob();
+         
+         // Create a URL for the blob
+         const fileUrl = window.URL.createObjectURL(blob);
+         
+         // Open in new tab
+         window.open(fileUrl, '_blank');
+         
+         // Clean up the URL after a delay
+         setTimeout(() => {
+            window.URL.revokeObjectURL(fileUrl);
+         }, 1000);
+      } catch (error) {
+         console.error('Error viewing file:', error);
+         alert('Failed to view file. Please try again.');
+      }
+   };
+
    // Render application details modal
    const renderApplicationDetails = () => {
       if (!selectedApplication) return null;
@@ -775,7 +814,7 @@ const ApplicationMonitor = () => {
                                  Attached Files
                               </h4>
                               <div className="space-y-2">
-                                 {selectedApplication.letterOfIntent ? (
+                                 {selectedApplication.letterOfIntent?.filename ? (
                                     <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
                                        <div className="flex items-center">
                                           <svg className="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -783,15 +822,32 @@ const ApplicationMonitor = () => {
                                           </svg>
                                           <div>
                                              <p className="text-sm font-medium text-gray-900">Letter of Intent</p>
-                                             <p className="text-xs text-gray-500">{selectedApplication.letterOfIntent}</p>
+                                             <p className="text-xs text-gray-500">{selectedApplication.letterOfIntent.originalName || selectedApplication.letterOfIntent.filename}</p>
                                           </div>
                                        </div>
-                                       <button
-                                          onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/letterOfIntent`, '_blank')}
-                                          className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-                                       >
-                                          Download
-                                       </button>
+                                       <div className="flex space-x-1">
+                                          <button
+                                             onClick={() => handleViewFile('letterOfIntent')}
+                                             className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center"
+                                             title="View File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                             </svg>
+                                             View
+                                          </button>
+                                          <button
+                                             onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/letterOfIntent`, '_blank')}
+                                             className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center"
+                                             title="Download File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </button>
+                                       </div>
                                     </div>
                                  ) : (
                                     <div className="flex items-center justify-between p-2 bg-gray-100 rounded border border-gray-200">
@@ -807,7 +863,7 @@ const ApplicationMonitor = () => {
                                     </div>
                                  )}
 
-                                 {selectedApplication.enterpriseProfile ? (
+                                 {selectedApplication.enterpriseProfile?.filename ? (
                                     <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
                                        <div className="flex items-center">
                                           <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -815,15 +871,32 @@ const ApplicationMonitor = () => {
                                           </svg>
                                           <div>
                                              <p className="text-sm font-medium text-gray-900">Enterprise Profile</p>
-                                             <p className="text-xs text-gray-500">{selectedApplication.enterpriseProfile}</p>
+                                             <p className="text-xs text-gray-500">{selectedApplication.enterpriseProfile.originalName || selectedApplication.enterpriseProfile.filename}</p>
                                           </div>
                                        </div>
-                                       <button
-                                          onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/enterpriseProfile`, '_blank')}
-                                          className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-                                       >
-                                          Download
-                                       </button>
+                                       <div className="flex space-x-1">
+                                          <button
+                                             onClick={() => handleViewFile('enterpriseProfile')}
+                                             className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center"
+                                             title="View File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                             </svg>
+                                             View
+                                          </button>
+                                          <button
+                                             onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/enterpriseProfile`, '_blank')}
+                                             className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center"
+                                             title="Download File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </button>
+                                       </div>
                                     </div>
                                  ) : (
                                     <div className="flex items-center justify-between p-2 bg-gray-100 rounded border border-gray-200">
@@ -835,6 +908,43 @@ const ApplicationMonitor = () => {
                                              <p className="text-sm font-medium text-gray-500">Enterprise Profile</p>
                                              <p className="text-xs text-gray-400">No file uploaded</p>
                                           </div>
+                                       </div>
+                                    </div>
+                                 )}
+
+                                 {selectedApplication.businessPlan?.filename && (
+                                    <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                                       <div className="flex items-center">
+                                          <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                          </svg>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-900">Business Plan</p>
+                                             <p className="text-xs text-gray-500">{selectedApplication.businessPlan.originalName || selectedApplication.businessPlan.filename}</p>
+                                          </div>
+                                       </div>
+                                       <div className="flex space-x-1">
+                                          <button
+                                             onClick={() => handleViewFile('businessPlan')}
+                                             className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center"
+                                             title="View File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                             </svg>
+                                             View
+                                          </button>
+                                          <button
+                                             onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/businessPlan`, '_blank')}
+                                             className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center"
+                                             title="Download File"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </button>
                                        </div>
                                     </div>
                                  )}

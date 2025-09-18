@@ -44,6 +44,11 @@ export const API_ENDPOINTS = {
    PSTO_APPLICATIONS: `${API_BASE_URL}/programs/psto/applications`,
    PSTO_APPLICATION_DETAIL: (id) => `${API_BASE_URL}/programs/psto/applications/${id}`,
    PSTO_REVIEW: (id) => `${API_BASE_URL}/programs/psto/applications/${id}/review`,
+   
+   // DOST MIMAROPA Review endpoints
+   DOST_MIMAROPA_APPLICATIONS: `${API_BASE_URL}/programs/dost-mimaropa/applications`,
+   DOST_MIMAROPA_APPLICATION_DETAIL: (id) => `${API_BASE_URL}/programs/dost-mimaropa/applications/${id}`,
+   DOST_MIMAROPA_REVIEW: (id) => `${API_BASE_URL}/programs/dost-mimaropa/applications/${id}/review`,
 };
 
 export default API_BASE_URL;

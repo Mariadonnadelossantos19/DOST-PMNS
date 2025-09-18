@@ -32,6 +32,7 @@ router.put('/setup/:id/status', auth, setupController.updateApplicationStatus);
 router.post('/setup/:id/documents', auth, upload.any(), setupController.uploadDocuments);
 router.post('/setup/:id/resubmit', auth, setupController.resubmitApplication);
 router.get('/setup/:id/download/:fileType', auth, setupController.downloadFile);
+router.get('/setup/:id/view/:fileType', auth, setupController.viewFile);
 router.get('/setup/stats/overview', auth, setupController.getApplicationStats);
 
 // GIA Program Routes
@@ -84,5 +85,11 @@ router.get('/psto/applications/:id/download/:fileType', auth, setupController.do
 
 // Manual fix endpoint for PSTO assignment
 router.post('/setup/fix-psto-assignment/:id', setupController.fixPSTOAssignment);
+
+// DOST MIMAROPA Review Routes (for DOST MIMAROPA users to review PSTO-approved applications)
+router.get('/dost-mimaropa/applications', auth, setupController.getDostMimaropaApplications);
+router.put('/dost-mimaropa/applications/:id/review', auth, setupController.reviewDostMimaropaApplication);
+router.get('/dost-mimaropa/applications/:id/download/:fileType', auth, setupController.downloadFile);
+router.get('/dost-mimaropa/applications/:id/view/:fileType', auth, setupController.viewFile);
 
 module.exports = router;

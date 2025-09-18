@@ -135,15 +135,30 @@ const submitApplication = async (req, res) => {
       let signatureFile = null;
 
       if (req.files && req.files.length > 0) {
+         console.log('Processing uploaded files:', req.files.map(f => ({ fieldname: f.fieldname, filename: f.filename, originalname: f.originalname })));
+         
          req.files.forEach(file => {
+            const fileInfo = {
+               filename: file.filename,
+               originalName: file.originalname,
+               path: file.path,
+               size: file.size,
+               mimetype: file.mimetype
+            };
+
             if (file.fieldname === 'letterOfIntent') {
-               letterOfIntent = file.filename;
+               letterOfIntent = fileInfo;
+               console.log('Letter of Intent file processed:', fileInfo);
             } else if (file.fieldname === 'enterpriseProfile') {
-               enterpriseProfile = file.filename;
+               enterpriseProfile = fileInfo;
+               console.log('Enterprise Profile file processed:', fileInfo);
             } else if (file.fieldname === 'signature') {
                signatureFile = file.filename;
+               console.log('Signature file processed:', file.filename);
             }
          });
+      } else {
+         console.log('No files uploaded');
       }
 
       // Generate unique application ID
@@ -249,7 +264,9 @@ const submitApplication = async (req, res) => {
          enterpriseName: application.enterpriseName,
          contactPerson: application.contactPerson,
          assignedPSTO: assignedPSTO,
-         forwardedToPSTO: application.forwardedToPSTO
+         forwardedToPSTO: application.forwardedToPSTO,
+         letterOfIntent: application.letterOfIntent,
+         enterpriseProfile: application.enterpriseProfile
       });
 
       const message = assignedPSTO 
@@ -311,6 +328,15 @@ const getMyApplications = async (req, res) => {
          .select('-__v');
 
       console.log('Found applications:', applications.length);
+      
+      // Log file information for debugging
+      applications.forEach((app, index) => {
+         console.log(`Application ${index + 1} (${app.applicationId}):`, {
+            letterOfIntent: app.letterOfIntent,
+            enterpriseProfile: app.enterpriseProfile,
+            businessPlan: app.businessPlan
+         });
+      });
 
       res.json({
          success: true,
@@ -590,11 +616,13 @@ const downloadFile = async (req, res) => {
          });
       }
 
-      let filename;
-      if (fileType === 'letterOfIntent' && application.letterOfIntent) {
-         filename = application.letterOfIntent;
-      } else if (fileType === 'enterpriseProfile' && application.enterpriseProfile) {
-         filename = application.enterpriseProfile;
+      let fileInfo;
+      if (fileType === 'letterOfIntent' && application.letterOfIntent?.filename) {
+         fileInfo = application.letterOfIntent;
+      } else if (fileType === 'enterpriseProfile' && application.enterpriseProfile?.filename) {
+         fileInfo = application.enterpriseProfile;
+      } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
+         fileInfo = application.businessPlan;
       } else {
          return res.status(404).json({
             success: false,
@@ -602,7 +630,7 @@ const downloadFile = async (req, res) => {
          });
       }
 
-      const filePath = path.join(__dirname, '../../uploads', filename);
+      const filePath = path.join(__dirname, '../../uploads', fileInfo.filename);
       
       if (!fs.existsSync(filePath)) {
          return res.status(404).json({
@@ -611,12 +639,89 @@ const downloadFile = async (req, res) => {
          });
       }
 
-      res.download(filePath);
+      res.download(filePath, fileInfo.originalName || fileInfo.filename);
    } catch (error) {
       console.error('Download file error:', error);
       res.status(500).json({
          success: false,
          message: 'Error downloading file'
+      });
+   }
+};
+
+// View file in browser
+const viewFile = async (req, res) => {
+   try {
+      const { id, fileType } = req.params;
+      
+      // Check if user is proponent (can view their own files) or PSTO/admin (can view any files)
+      let application;
+      
+      if (req.user.role === 'proponent') {
+         // Proponents can only view their own files
+         application = await SETUPApplication.findOne({
+            _id: id,
+            proponentId: req.user._id
+         });
+      } else if (req.user.role === 'psto' || req.user.role === 'admin') {
+         // PSTO and admin can view any application files
+         application = await SETUPApplication.findById(id).populate('proponentId', 'province');
+         
+         // For PSTO users, verify they can review this application (same province)
+         if (req.user.role === 'psto' && application && application.proponentId.province !== req.user.province) {
+            return res.status(403).json({
+               success: false,
+               message: 'Access denied. You can only view files from applications in your province.'
+            });
+         }
+      } else {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. Invalid role.'
+         });
+      }
+
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      let fileInfo;
+      if (fileType === 'letterOfIntent' && application.letterOfIntent?.filename) {
+         fileInfo = application.letterOfIntent;
+      } else if (fileType === 'enterpriseProfile' && application.enterpriseProfile?.filename) {
+         fileInfo = application.enterpriseProfile;
+      } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
+         fileInfo = application.businessPlan;
+      } else {
+         return res.status(404).json({
+            success: false,
+            message: 'File not found'
+         });
+      }
+
+      const filePath = path.join(__dirname, '../../uploads', fileInfo.filename);
+      
+      if (!fs.existsSync(filePath)) {
+         return res.status(404).json({
+            success: false,
+            message: 'File not found on server'
+         });
+      }
+
+      // Set appropriate headers for viewing
+      res.setHeader('Content-Type', fileInfo.mimetype || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `inline; filename="${fileInfo.originalName || fileInfo.filename}"`);
+      
+      // Send the file
+      res.sendFile(filePath);
+   } catch (error) {
+      console.error('View file error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error viewing file'
       });
    }
 };
@@ -924,8 +1029,11 @@ const reviewApplication = async (req, res) => {
 
          // Update main status based on PSTO decision
          if (status === 'approved') {
-            application.status = 'under_review';
-            application.currentStage = 'tna_assessment';
+            application.status = 'psto_approved';
+            application.currentStage = 'dost_mimaropa_review';
+            application.forwardedToDostMimaropa = true;
+            application.forwardedToDostMimaropaAt = new Date();
+            application.dostMimaropaStatus = 'pending';
          } else if (status === 'rejected') {
             application.status = 'tna_rejected';
          } else if (status === 'returned') {
@@ -1141,6 +1249,168 @@ const fixPSTOAssignment = async (req, res) => {
    }
 };
 
+// Get all applications for DOST MIMAROPA review
+const getDostMimaropaApplications = async (req, res) => {
+   try {
+      console.log('Fetching applications for DOST MIMAROPA review by user:', req.user._id);
+      
+      // Check if user has DOST MIMAROPA role
+      if (req.user.role !== 'dost_mimaropa' && req.user.role !== 'admin') {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. DOST MIMAROPA role required.'
+         });
+      }
+
+      const { status, page = 1, limit = 10 } = req.query;
+      const filter = {
+         forwardedToDostMimaropa: true
+      };
+      
+      if (status) filter.dostMimaropaStatus = status;
+
+      const applications = await SETUPApplication.find(filter)
+         .populate('proponentId', 'firstName lastName email userId province')
+         .populate('assignedPSTO', 'name province')
+         .sort({ forwardedToDostMimaropaAt: -1 })
+         .limit(limit * 1)
+         .skip((page - 1) * limit);
+
+      const total = await SETUPApplication.countDocuments(filter);
+
+      console.log(`Found ${applications.length} applications for DOST MIMAROPA review`);
+
+      res.json({
+         success: true,
+         data: applications,
+         pagination: {
+            current: parseInt(page),
+            pages: Math.ceil(total / limit),
+            total: total
+         }
+      });
+   } catch (error) {
+      console.error('Get DOST MIMAROPA applications error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error fetching applications'
+      });
+   }
+};
+
+// Review application (DOST MIMAROPA only)
+const reviewDostMimaropaApplication = async (req, res) => {
+   try {
+      console.log('=== DOST MIMAROPA REVIEW APPLICATION START ===');
+      console.log('Review application request:', {
+         applicationId: req.params.id,
+         userId: req.user._id,
+         userRole: req.user.role,
+         body: req.body
+      });
+
+      const { status, comments } = req.body;
+
+      // Check if user has DOST MIMAROPA role
+      if (req.user.role !== 'dost_mimaropa' && req.user.role !== 'admin') {
+         console.log('Access denied - Invalid role:', req.user.role);
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. DOST MIMAROPA role required.'
+         });
+      }
+
+      if (!['approved', 'returned', 'rejected'].includes(status)) {
+         console.log('Invalid status:', status);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid status. Must be approved, returned, or rejected'
+         });
+      }
+
+      console.log('Looking for application with ID:', req.params.id);
+      
+      const application = await SETUPApplication.findById(req.params.id)
+         .populate('proponentId', 'province');
+      
+      if (!application) {
+         console.log('Application not found:', req.params.id);
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Check if application is forwarded to DOST MIMAROPA
+      if (!application.forwardedToDostMimaropa) {
+         return res.status(400).json({
+            success: false,
+            message: 'Application not forwarded to DOST MIMAROPA'
+         });
+      }
+
+      console.log('Found application:', {
+         applicationId: application.applicationId,
+         currentStatus: application.status,
+         dostMimaropaStatus: application.dostMimaropaStatus
+      });
+
+      // Update application with DOST MIMAROPA review
+      try {
+         console.log('Updating application fields...');
+         
+         application.dostMimaropaStatus = status;
+         application.dostMimaropaComments = comments || '';
+         application.dostMimaropaReviewedAt = new Date();
+         application.dostMimaropaAssigned = req.user._id;
+
+         // Update main status based on DOST MIMAROPA decision
+         if (status === 'approved') {
+            application.status = 'dost_mimaropa_approved';
+            application.currentStage = 'tna_assessment';
+         } else if (status === 'rejected') {
+            application.status = 'dost_mimaropa_rejected';
+         } else if (status === 'returned') {
+            application.status = 'psto_approved';
+            application.currentStage = 'dost_mimaropa_review';
+         }
+
+         console.log('Application fields before save:', {
+            _id: application._id,
+            applicationId: application.applicationId,
+            dostMimaropaStatus: application.dostMimaropaStatus,
+            status: application.status,
+            currentStage: application.currentStage,
+            dostMimaropaComments: application.dostMimaropaComments,
+            dostMimaropaReviewedAt: application.dostMimaropaReviewedAt,
+            dostMimaropaAssigned: application.dostMimaropaAssigned
+         });
+
+         console.log('Attempting to save application...');
+         const savedApplication = await application.save();
+         console.log('Application saved successfully:', savedApplication._id);
+
+         res.json({
+            success: true,
+            message: 'Application reviewed successfully',
+            data: savedApplication
+         });
+      } catch (saveError) {
+         console.error('Error saving application:', saveError);
+         return res.status(500).json({
+            success: false,
+            message: 'Error saving application review'
+         });
+      }
+   } catch (error) {
+      console.error('DOST MIMAROPA review application error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
 module.exports = {
    submitApplication,
    getMyApplications,
@@ -1150,11 +1420,14 @@ module.exports = {
    uploadDocuments,
    resubmitApplication,
    downloadFile,
+   viewFile,
    getApplicationStats,
    getPSTOApplications,
    getPSTOApplicationById,
    testApplicationAccess,
    reviewApplication,
    deleteApplication,
-   fixPSTOAssignment
+   fixPSTOAssignment,
+   getDostMimaropaApplications,
+   reviewDostMimaropaApplication
 };
