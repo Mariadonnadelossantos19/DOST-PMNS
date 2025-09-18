@@ -1,0 +1,1 @@
+export { useDostMimaropaApplications } from './useDostMimaropaApplications';
