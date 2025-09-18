@@ -1212,58 +1212,47 @@ const ApplicationMonitor = () => {
 
                         {/* Program Application Style Actions */}
                         <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                           <div className="flex space-x-1">
+                           <div className="flex justify-end space-x-2">
                               <button
                                  onClick={() => setSelectedApplication(application)}
-                                 className={`flex-1 px-2 py-1.5 border rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                                    isDarkMode 
-                                       ? 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500' 
-                                       : 'border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400'
-                                 }`}
+                                 className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
                                  title="View Details"
                               >
-                                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                  </svg>
-                                 <span className="text-xs">View</span>
                               </button>
                               
                               {application.pstoStatus === 'returned' && (
                                  <button
                                     onClick={() => handleEditToggle(application)}
-                                    className="flex-1 px-2 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500/20 shadow-md hover:shadow-lg ring-1 ring-yellow-500/20 hover:ring-yellow-500/40"
+                                    className="p-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
                                     title="Edit Application"
                                  >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    <span className="text-xs">Edit</span>
                                  </button>
                               )}
                               
                               <button
                                  onClick={fetchApplications}
-                                 className={`flex-1 px-2 py-1.5 border rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                                    isDarkMode 
-                                       ? 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500' 
-                                       : 'border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400'
-                                 }`}
+                                 className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
                                  title="Refresh"
                               >
-                                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                  </svg>
-                                 <span className="text-xs">Refresh</span>
                               </button>
+                              
                               <button
-                                 className={`flex-1 px-2 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 flex items-center justify-center hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-md hover:shadow-lg ring-1 ring-blue-500/20 hover:ring-blue-500/40`}
+                                 className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
                                  title="Download"
                               >
-                                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                  </svg>
-                                 <span className="text-xs">Download</span>
                               </button>
                            </div>
                         </div>
