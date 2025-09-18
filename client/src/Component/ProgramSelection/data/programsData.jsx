@@ -11,7 +11,7 @@ export const programs = [
             <path d="M2 12L12 17L22 12"/>
          </svg>
       ),
-      color: 'blue',
+      color: 'green',
       benefits: [
          'Technology assessment and upgrading',
          'Training and capacity building',
@@ -30,7 +30,7 @@ export const programs = [
             <path d="M9 12L11 14L15 10"/>
          </svg>
       ),
-      color: 'green',
+      color: 'blue',
       benefits: [
          'Research funding support',
          'Innovation project grants',
@@ -51,7 +51,7 @@ export const programs = [
             <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88"/>
          </svg>
       ),
-      color: 'purple',
+      color: 'orange',
       benefits: [
          'Community needs assessment',
          'Local technology solutions',
@@ -72,7 +72,7 @@ export const programs = [
             <path d="M8 16H12V18H8V16Z"/>
          </svg>
       ),
-      color: 'orange',
+      color: 'purple',
       benefits: [
          'Market research support',
          'Business plan development',

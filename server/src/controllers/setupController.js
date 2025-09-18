@@ -768,26 +768,9 @@ const getPSTOApplicationById = async (req, res) => {
    }
 };
 
-// Review application (PSTO only)
-const reviewApplication = async (req, res) => {
+// Test endpoint to check application access
+const testApplicationAccess = async (req, res) => {
    try {
-      const { status, comments } = req.body;
-
-      // Check if user has PSTO role
-      if (req.user.role !== 'psto' && req.user.role !== 'admin') {
-         return res.status(403).json({
-            success: false,
-            message: 'Access denied. PSTO role required.'
-         });
-      }
-
-      if (!['approved', 'returned', 'rejected'].includes(status)) {
-         return res.status(400).json({
-            success: false,
-            message: 'Invalid status. Must be approved, returned, or rejected'
-         });
-      }
-
       const application = await SETUPApplication.findById(req.params.id)
          .populate('proponentId', 'province');
       
@@ -798,8 +781,101 @@ const reviewApplication = async (req, res) => {
          });
       }
 
+      res.json({
+         success: true,
+         data: {
+            _id: application._id,
+            applicationId: application.applicationId,
+            proponentId: application.proponentId,
+            status: application.status,
+            pstoStatus: application.pstoStatus
+         }
+      });
+   } catch (error) {
+      console.error('Test application access error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error accessing application',
+         error: error.message
+      });
+   }
+};
+
+// Review application (PSTO only)
+const reviewApplication = async (req, res) => {
+   try {
+      console.log('=== REVIEW APPLICATION START ===');
+      console.log('Review application request:', {
+         applicationId: req.params.id,
+         userId: req.user._id,
+         userRole: req.user.role,
+         userProvince: req.user.province,
+         body: req.body
+      });
+
+      const { status, comments } = req.body;
+
+      // Check if user has PSTO role
+      if (req.user.role !== 'psto' && req.user.role !== 'admin') {
+         console.log('Access denied - Invalid role:', req.user.role);
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. PSTO role required.'
+         });
+      }
+
+      if (!['approved', 'returned', 'rejected'].includes(status)) {
+         console.log('Invalid status:', status);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid status. Must be approved, returned, or rejected'
+         });
+      }
+
+      console.log('Looking for application with ID:', req.params.id);
+      
+      const application = await SETUPApplication.findById(req.params.id)
+         .populate('proponentId', 'province');
+      
+      if (!application) {
+         console.log('Application not found:', req.params.id);
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Validate application document
+      if (!application._id) {
+         console.log('Application has no _id - corrupted document');
+         return res.status(400).json({
+            success: false,
+            message: 'Application data is corrupted'
+         });
+      }
+
+      console.log('Found application:', {
+         applicationId: application.applicationId,
+         proponentId: application.proponentId,
+         proponentProvince: application.proponentId?.province,
+         currentStatus: application.status
+      });
+
+      // Check if proponentId is properly populated
+      if (!application.proponentId) {
+         console.log('Application has no proponentId - this might be the issue');
+         return res.status(400).json({
+            success: false,
+            message: 'Application data is incomplete - missing proponent information'
+         });
+      }
+
       // For PSTO users, verify they can review this application (same province)
       if (req.user.role === 'psto' && application.proponentId.province !== req.user.province) {
+         console.log('Access denied - Province mismatch:', {
+            userProvince: req.user.province,
+            proponentProvince: application.proponentId.province
+         });
          return res.status(403).json({
             success: false,
             message: 'Access denied. You can only review applications from your province.'
@@ -808,38 +884,79 @@ const reviewApplication = async (req, res) => {
 
       // Find the appropriate PSTO for this province
       let assignedPSTO = null;
-      if (application.proponentId.province) {
-         const psto = await mongoose.model('PSTO').findOne({ 
-            province: application.proponentId.province,
-            status: 'active'
-         });
-         if (psto) {
-            assignedPSTO = psto._id;
+      try {
+         if (application.proponentId.province) {
+            console.log('Looking for PSTO in province:', application.proponentId.province);
+            const psto = await PSTO.findOne({ 
+               province: application.proponentId.province,
+               status: 'active'
+            });
+            if (psto) {
+               assignedPSTO = psto._id;
+               console.log('Found PSTO:', psto._id);
+            } else {
+               console.log('No active PSTO found for province:', application.proponentId.province);
+            }
          }
+      } catch (pstoError) {
+         console.error('Error finding PSTO:', pstoError);
+         // Continue without PSTO assignment
       }
 
       // Update application with PSTO review
-      application.pstoStatus = status;
-      application.pstoComments = comments || '';
-      application.pstoReviewedAt = new Date();
-      application.pstoAssigned = req.user._id;
-      
-      if (assignedPSTO) {
-         application.assignedPSTO = assignedPSTO;
-      }
+      try {
+         console.log('Updating application fields...');
+         
+         // Ensure required fields exist
+         if (!application.pstoStatus) {
+            application.pstoStatus = status;
+         } else {
+            application.pstoStatus = status;
+         }
+         
+         application.pstoComments = comments || '';
+         application.pstoReviewedAt = new Date();
+         application.pstoAssigned = req.user._id;
+         
+         if (assignedPSTO) {
+            application.assignedPSTO = assignedPSTO;
+         }
 
-      // Update main status based on PSTO decision
-      if (status === 'approved') {
-         application.status = 'under_review';
-         application.currentStage = 'tna_assessment';
-      } else if (status === 'rejected') {
-         application.status = 'tna_rejected';
-      } else if (status === 'returned') {
-         application.status = 'pending';
-         application.currentStage = 'tna_application';
-      }
+         // Update main status based on PSTO decision
+         if (status === 'approved') {
+            application.status = 'under_review';
+            application.currentStage = 'tna_assessment';
+         } else if (status === 'rejected') {
+            application.status = 'tna_rejected';
+         } else if (status === 'returned') {
+            application.status = 'pending';
+            application.currentStage = 'tna_application';
+         }
 
-      await application.save();
+         console.log('Application fields before save:', {
+            _id: application._id,
+            applicationId: application.applicationId,
+            pstoStatus: application.pstoStatus,
+            status: application.status,
+            currentStage: application.currentStage,
+            pstoComments: application.pstoComments,
+            pstoReviewedAt: application.pstoReviewedAt,
+            pstoAssigned: application.pstoAssigned
+         });
+
+         console.log('Attempting to save application...');
+         const savedApplication = await application.save();
+         console.log('Application saved successfully:', savedApplication._id);
+      } catch (saveError) {
+         console.error('Error saving application:', saveError);
+         console.error('Save error details:', {
+            message: saveError.message,
+            name: saveError.name,
+            code: saveError.code,
+            errors: saveError.errors
+         });
+         throw saveError;
+      }
 
       console.log('Application reviewed by PSTO:', {
          applicationId: application.applicationId,
@@ -849,7 +966,7 @@ const reviewApplication = async (req, res) => {
          pstoProvince: req.user.province
       });
 
-      res.json({
+      const responseData = {
          success: true,
          message: 'Application reviewed successfully',
          data: {
@@ -861,12 +978,90 @@ const reviewApplication = async (req, res) => {
             pstoReviewedAt: application.pstoReviewedAt,
             assignedPSTO: assignedPSTO
          }
+      };
+
+      console.log('Sending response:', responseData);
+      console.log('=== REVIEW APPLICATION SUCCESS ===');
+      
+      res.json(responseData);
+   } catch (error) {
+      console.error('=== REVIEW APPLICATION ERROR ===');
+      console.error('Review application error:', error);
+      console.error('Error details:', {
+         message: error.message,
+         stack: error.stack,
+         name: error.name,
+         code: error.code
+      });
+      
+      // Ensure response hasn't been sent already
+      if (!res.headersSent) {
+         res.status(500).json({
+            success: false,
+            message: 'Error reviewing application',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+         });
+      } else {
+         console.error('Response already sent, cannot send error response');
+      }
+   }
+};
+
+// Delete application (PSTO only)
+const deleteApplication = async (req, res) => {
+   try {
+      console.log('Delete application request:', {
+         applicationId: req.params.id,
+         userId: req.user._id,
+         userRole: req.user.role
+      });
+
+      // Check if user has PSTO role
+      if (req.user.role !== 'psto' && req.user.role !== 'admin') {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. PSTO role required.'
+         });
+      }
+
+      const application = await SETUPApplication.findById(req.params.id);
+      
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // For PSTO users, verify they can delete this application (same province)
+      if (req.user.role === 'psto' && application.proponentId) {
+         const proponent = await mongoose.model('User').findById(application.proponentId);
+         if (proponent && proponent.province !== req.user.province) {
+            return res.status(403).json({
+               success: false,
+               message: 'Access denied. You can only delete applications from your province.'
+            });
+         }
+      }
+
+      // Delete the application
+      await SETUPApplication.findByIdAndDelete(req.params.id);
+
+      console.log('Application deleted successfully:', {
+         applicationId: application.applicationId,
+         deletedBy: req.user._id
+      });
+
+      res.json({
+         success: true,
+         message: 'Application deleted successfully'
       });
    } catch (error) {
-      console.error('Review application error:', error);
+      console.error('Delete application error:', error);
       res.status(500).json({
          success: false,
-         message: 'Error reviewing application'
+         message: 'Error deleting application',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
       });
    }
 };
@@ -958,6 +1153,8 @@ module.exports = {
    getApplicationStats,
    getPSTOApplications,
    getPSTOApplicationById,
+   testApplicationAccess,
    reviewApplication,
+   deleteApplication,
    fixPSTOAssignment
 };

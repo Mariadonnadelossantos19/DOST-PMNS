@@ -77,7 +77,9 @@ router.get('/sscp/stats/overview', auth, sscpController.getApplicationStats);
 // PSTO Review Routes (for PSTO users to review applications)
 router.get('/psto/applications', auth, setupController.getPSTOApplications);
 router.get('/psto/applications/:id', auth, setupController.getPSTOApplicationById);
+router.get('/psto/applications/:id/test', auth, setupController.testApplicationAccess);
 router.put('/psto/applications/:id/review', auth, setupController.reviewApplication);
+router.delete('/psto/applications/:id', auth, setupController.deleteApplication);
 router.get('/psto/applications/:id/download/:fileType', auth, setupController.downloadFile);
 
 // Manual fix endpoint for PSTO assignment

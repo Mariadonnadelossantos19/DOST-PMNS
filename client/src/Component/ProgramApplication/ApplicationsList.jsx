@@ -26,6 +26,32 @@ const ApplicationsList = ({
       rejected: applications.filter(app => app.pstoStatus === 'rejected').length,
    };
 
+   // Handle delete application
+   const handleDeleteApplication = async (applicationId) => {
+      if (window.confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+         try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/programs/psto/applications/${applicationId}`, {
+               method: 'DELETE',
+               headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+               }
+            });
+
+            if (!response.ok) {
+               throw new Error('Failed to delete application');
+            }
+
+            // Refresh the page or update the applications list
+            window.location.reload();
+         } catch (error) {
+            console.error('Error deleting application:', error);
+            alert('Error deleting application: ' + error.message);
+         }
+      }
+   };
+
    if (applicationsLoading) {
       return (
          <div className="text-center py-8">
@@ -143,28 +169,27 @@ const ApplicationsList = ({
                </div>
 
                {/* Card Actions */}
-               <div className="flex space-x-1 pt-2 border-t border-gray-100">
-                  <Button
+               <div className="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                  <button
                      onClick={() => setSelectedApplication(application)}
-                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-1.5 py-1 rounded-md transition-colors duration-200 flex items-center justify-center text-xs"
+                     className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                     title="Review Application"
                   >
-                     <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                      </svg>
-                     Review
-                  </Button>
-                  
-                  <Button
-                     onClick={() => window.open(`/api/programs/psto/applications/${application._id}/download/letterOfIntent`, '_blank')}
-                     variant="outline"
-                     className="px-1.5 py-1 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md transition-colors duration-200 flex items-center justify-center text-xs"
+                  </button>
+
+                  <button
+                     onClick={() => handleDeleteApplication(application._id)}
+                     className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                     title="Delete Application"
                   >
-                     <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                      </svg>
-                     Files
-                  </Button>
+                  </button>
                </div>
             </Card>
          ))}
@@ -177,55 +202,55 @@ const ApplicationsList = ({
             <table className="min-w-full divide-y divide-gray-100">
                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                   <tr>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                            <span>Application ID</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                            <span>Enterprise Name</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                            <span>Contact Person</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                            <span>Province</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
                            <span>Business Activity</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
                            <span>Submitted</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                            <span>Agreement</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                            <span>Status</span>
                         </div>
                      </th>
-                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         <div className="flex items-center space-x-2">
                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                            <span>Actions</span>
@@ -238,7 +263,7 @@ const ApplicationsList = ({
                      <tr key={application._id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 ${
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                      }`}>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,15 +276,15 @@ const ApplicationsList = ({
                               </div>
                            </div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="text-sm font-semibold text-gray-900">{application.enterpriseName}</div>
                            <div className="text-xs text-gray-500 truncate max-w-32">{application.businessAddress}</div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="text-sm font-medium text-gray-900">{application.contactPerson}</div>
                            <div className="text-xs text-gray-500">{application.contactNumber}</div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="flex items-center space-x-2">
                               <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
                                  <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,11 +295,11 @@ const ApplicationsList = ({
                               <span className="text-sm font-medium text-gray-900">{application.proponentId?.province || 'N/A'}</span>
                            </div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="text-sm font-medium text-gray-900">{application.businessActivity || 'N/A'}</div>
                            <div className="text-xs text-gray-500">{application.businessType || 'N/A'}</div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="text-sm font-medium text-gray-900">
                               {new Date(application.createdAt).toLocaleDateString('en-US', {
                                  year: 'numeric',
@@ -289,7 +314,7 @@ const ApplicationsList = ({
                               })}
                            </div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="flex items-center space-x-2">
                               <div className={`w-3 h-3 rounded-full ${
                                  application.generalAgreement?.accepted ? 'bg-green-500' : 'bg-red-500'
@@ -308,7 +333,7 @@ const ApplicationsList = ({
                               </div>
                            )}
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                               application.pstoStatus === 'approved' ? 'bg-green-100 text-green-800 border border-green-200' :
                               application.pstoStatus === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
@@ -324,26 +349,26 @@ const ApplicationsList = ({
                               {application.pstoStatus?.toUpperCase() || 'PENDING'}
                            </span>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                            <div className="flex items-center space-x-2">
                               <button
                                  onClick={() => setSelectedApplication(application)}
-                                 className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-all duration-200 shadow-md hover:shadow-lg"
+                                 className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                                 title="Review Application"
                               >
-                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                  </svg>
-                                 <span>Review</span>
                               </button>
                               <button
-                                 onClick={() => window.open(`/api/programs/psto/applications/${application._id}/download/letterOfIntent`, '_blank')}
-                                 className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-all duration-200 shadow-sm hover:shadow-md"
+                                 onClick={() => handleDeleteApplication(application._id)}
+                                 className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                                 title="Delete Application"
                               >
-                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                  </svg>
-                                 <span>Files</span>
                               </button>
                            </div>
                         </td>
