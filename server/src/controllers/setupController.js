@@ -1249,6 +1249,102 @@ const fixPSTOAssignment = async (req, res) => {
    }
 };
 
+// Forward application to DOST MIMAROPA (manual forwarding)
+const forwardToDostMimaropa = async (req, res) => {
+   try {
+      console.log('=== FORWARD TO DOST MIMAROPA START ===');
+      console.log('Forward application request:', {
+         applicationId: req.params.id,
+         userId: req.user._id,
+         userRole: req.user.role
+      });
+
+      // Check if user has PSTO role
+      if (req.user.role !== 'psto' && req.user.role !== 'admin') {
+         console.log('Access denied - Invalid role:', req.user.role);
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. PSTO role required.'
+         });
+      }
+
+      console.log('Looking for application with ID:', req.params.id);
+      
+      const application = await SETUPApplication.findById(req.params.id)
+         .populate('proponentId', 'province');
+      
+      if (!application) {
+         console.log('Application not found:', req.params.id);
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Check if application is approved by PSTO
+      if (application.pstoStatus !== 'approved') {
+         return res.status(400).json({
+            success: false,
+            message: 'Application must be approved by PSTO before forwarding to DOST MIMAROPA'
+         });
+      }
+
+      // Allow re-forwarding - no need to check if already forwarded
+
+      console.log('Found application:', {
+         applicationId: application.applicationId,
+         pstoStatus: application.pstoStatus,
+         forwardedToDostMimaropa: application.forwardedToDostMimaropa
+      });
+
+      // Check if this is a re-forward
+      const isReForward = application.forwardedToDostMimaropa;
+
+      // Update application to forward to DOST MIMAROPA
+      try {
+         console.log('Updating application fields...');
+         
+         application.forwardedToDostMimaropa = true;
+         application.forwardedToDostMimaropaAt = new Date();
+         application.dostMimaropaStatus = 'pending';
+         application.status = 'psto_approved';
+         application.currentStage = 'dost_mimaropa_review';
+
+         console.log('Application fields before save:', {
+            _id: application._id,
+            applicationId: application.applicationId,
+            forwardedToDostMimaropa: application.forwardedToDostMimaropa,
+            forwardedToDostMimaropaAt: application.forwardedToDostMimaropaAt,
+            dostMimaropaStatus: application.dostMimaropaStatus,
+            status: application.status,
+            currentStage: application.currentStage
+         });
+
+         console.log('Attempting to save application...');
+         const savedApplication = await application.save();
+         console.log('Application saved successfully:', savedApplication._id);
+
+         res.json({
+            success: true,
+            message: isReForward ? 'Application re-forwarded to DOST MIMAROPA successfully' : 'Application forwarded to DOST MIMAROPA successfully',
+            data: savedApplication
+         });
+      } catch (saveError) {
+         console.error('Error saving application:', saveError);
+         return res.status(500).json({
+            success: false,
+            message: 'Error forwarding application to DOST MIMAROPA'
+         });
+      }
+   } catch (error) {
+      console.error('Forward to DOST MIMAROPA error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error forwarding application to DOST MIMAROPA'
+      });
+   }
+};
+
 // Get all applications for DOST MIMAROPA review
 const getDostMimaropaApplications = async (req, res) => {
    try {
@@ -1428,6 +1524,7 @@ module.exports = {
    reviewApplication,
    deleteApplication,
    fixPSTOAssignment,
+   forwardToDostMimaropa,
    getDostMimaropaApplications,
    reviewDostMimaropaApplication
 };

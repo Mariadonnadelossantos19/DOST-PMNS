@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge } from '../../../../Component/UI';
 import { API_ENDPOINTS } from '../../../../config/api';
 import { useDarkMode } from '../../../../Component/Context';
@@ -7,7 +7,6 @@ const MarinduqueDashboard = ({ currentUser }) => {
    const { isDarkMode } = useDarkMode();
    const [view, setView] = useState('overview');
    const [loading, setLoading] = useState(false);
-   const [error, setError] = useState(null);
    const [dashboardData, setDashboardData] = useState({
       applications: [],
       statistics: {
@@ -28,10 +27,9 @@ const MarinduqueDashboard = ({ currentUser }) => {
       monthlyTrends: []
    });
    // Fetch comprehensive dashboard data
-   const fetchDashboardData = async () => {
+   const fetchDashboardData = useCallback(async () => {
       try {
          setLoading(true);
-         setError(null);
          
          const [applicationsRes, statsRes, proponentsRes] = await Promise.all([
             fetch(`${API_ENDPOINTS.PSTO_APPLICATIONS}?limit=50`, {
@@ -45,7 +43,7 @@ const MarinduqueDashboard = ({ currentUser }) => {
             })
          ]);
 
-         const [applicationsData, statsData, proponentsData] = await Promise.all([
+         const [applicationsData, , proponentsData] = await Promise.all([
             applicationsRes.json(),
             statsRes.json(),
             proponentsRes.json()
@@ -84,12 +82,11 @@ const MarinduqueDashboard = ({ currentUser }) => {
             });
          }
       } catch (err) {
-         setError('Error loading dashboard data');
          console.error('Dashboard data error:', err);
       } finally {
          setLoading(false);
       }
-   };
+   }, []);
 
    // Generate monthly trends from applications
    const generateMonthlyTrends = (applications) => {
@@ -168,9 +165,48 @@ const MarinduqueDashboard = ({ currentUser }) => {
       return Math.round((approvedApps / processedApps.length) * 100);
    };
 
+   // Forward application to DOST MIMAROPA
+   const forwardToDostMimaropa = async (applicationId) => {
+      try {
+         setLoading(true);
+         const token = localStorage.getItem('authToken');
+         
+         if (!token) {
+            alert('Please login first');
+            return;
+         }
+
+         const response = await fetch(`${API_ENDPOINTS.FORWARD_TO_DOST_MIMAROPA}/${applicationId}`, {
+            method: 'PUT',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            }
+         });
+
+         if (!response.ok) {
+            throw new Error('Failed to forward application');
+         }
+
+         const result = await response.json();
+         
+         if (result.success) {
+            alert('Application forwarded to DOST MIMAROPA successfully!');
+            fetchDashboardData(); // Refresh the dashboard data
+         } else {
+            throw new Error(result.message || 'Failed to forward application');
+         }
+      } catch (error) {
+         console.error('Error forwarding application:', error);
+         alert('Error forwarding application: ' + error.message);
+      } finally {
+         setLoading(false);
+      }
+   };
+
    useEffect(() => {
       fetchDashboardData();
-   }, []);
+   }, [fetchDashboardData]);
 
    // Professional KPI Cards
    const renderKPICards = () => (
@@ -546,6 +582,16 @@ const MarinduqueDashboard = ({ currentUser }) => {
                         <Button size="sm" className="flex-1">
                            Review
                         </Button>
+                        {application.pstoStatus === 'approved' && !application.forwardedToDostMimaropa && (
+                           <Button 
+                              size="sm" 
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                              onClick={() => forwardToDostMimaropa(application._id)}
+                              disabled={loading}
+                           >
+                              Forward to DOST
+                           </Button>
+                        )}
                      </div>
                   </Card>
                ))}

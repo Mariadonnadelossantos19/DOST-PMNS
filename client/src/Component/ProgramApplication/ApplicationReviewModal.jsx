@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Badge } from '../UI';
 import DOSTTNAFormGenerator from './components/DOSTTNAFormGenerator';
+import { API_ENDPOINTS } from '../../config/api';
 
 const ApplicationReviewModal = ({ 
    selectedApplication, 
@@ -54,6 +55,39 @@ const ApplicationReviewModal = ({
       } catch (error) {
          console.error('Error viewing file:', error);
          alert(`Failed to view file: ${error.message}`);
+      }
+   };
+
+   // Handle forward to DOST MIMAROPA
+   const handleForwardToDostMimaropa = async () => {
+      if (window.confirm('Are you sure you want to forward this application to DOST MIMAROPA for approval?')) {
+         try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(API_ENDPOINTS.FORWARD_TO_DOST_MIMAROPA(selectedApplication._id), {
+               method: 'PUT',
+               headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+               }
+            });
+
+            if (!response.ok) {
+               throw new Error('Failed to forward application');
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+               alert('Application forwarded to DOST MIMAROPA successfully!');
+               setSelectedApplication(null); // Close the modal
+               window.location.reload(); // Refresh the page
+            } else {
+               throw new Error(result.message || 'Failed to forward application');
+            }
+         } catch (error) {
+            console.error('Error forwarding application:', error);
+            alert('Error forwarding application: ' + error.message);
+         }
       }
    };
    
@@ -848,20 +882,40 @@ const ApplicationReviewModal = ({
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-                     <button
-                        onClick={() => setSelectedApplication(null)}
-                        className="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
-                     >
-                        Cancel
-                     </button>
-                     <button
-                        onClick={() => reviewApplication(selectedApplication._id)}
-                        disabled={!reviewStatus}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-xl"
-                     >
-                        Submit Review
-                     </button>
+                  <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+                     {/* Left side - Forward button (only for approved applications) */}
+                     <div>
+                        {selectedApplication.pstoStatus === 'approved' && (
+                           <button
+                              onClick={handleForwardToDostMimaropa}
+                              className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center space-x-2"
+                           >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                              </svg>
+                              <span>
+                                 {selectedApplication.forwardedToDostMimaropa ? 'Re-forward to DOST MIMAROPA' : 'Forward to DOST MIMAROPA'}
+                              </span>
+                           </button>
+                        )}
+                     </div>
+
+                     {/* Right side - Cancel and Submit buttons */}
+                     <div className="flex space-x-3">
+                        <button
+                           onClick={() => setSelectedApplication(null)}
+                           className="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+                        >
+                           Cancel
+                        </button>
+                        <button
+                           onClick={() => reviewApplication(selectedApplication._id)}
+                           disabled={!reviewStatus}
+                           className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-xl"
+                        >
+                           Submit Review
+                        </button>
+                     </div>
                   </div>
                </div>
             </div>

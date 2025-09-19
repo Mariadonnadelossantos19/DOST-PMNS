@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge } from '../UI';
+import { API_ENDPOINTS } from '../../config/api';
 
 const ApplicationsList = ({ 
    applications, 
@@ -26,6 +27,18 @@ const ApplicationsList = ({
       rejected: applications.filter(app => app.pstoStatus === 'rejected').length,
    };
 
+   // Debug: Log application data to console
+   console.log('ApplicationsList Debug:', {
+      totalApplications: applications.length,
+      applications: applications.map(app => ({
+         id: app._id,
+         applicationId: app.applicationId,
+         pstoStatus: app.pstoStatus,
+         forwardedToDostMimaropa: app.forwardedToDostMimaropa,
+         shouldShowForwardButton: app.pstoStatus === 'approved' && !app.forwardedToDostMimaropa
+      }))
+   });
+
    // Handle delete application
    const handleDeleteApplication = async (applicationId) => {
       if (window.confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
@@ -48,6 +61,39 @@ const ApplicationsList = ({
          } catch (error) {
             console.error('Error deleting application:', error);
             alert('Error deleting application: ' + error.message);
+         }
+      }
+   };
+
+   // Handle forward to DOST MIMAROPA
+   const handleForwardToDostMimaropa = async (applicationId) => {
+      if (window.confirm('Are you sure you want to forward this application to DOST MIMAROPA for approval?')) {
+         try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(API_ENDPOINTS.FORWARD_TO_DOST_MIMAROPA(applicationId), {
+               method: 'PUT',
+               headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+               }
+            });
+
+            if (!response.ok) {
+               throw new Error('Failed to forward application');
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+               alert('Application forwarded to DOST MIMAROPA successfully!');
+               // Refresh the page or update the applications list
+               window.location.reload();
+            } else {
+               throw new Error(result.message || 'Failed to forward application');
+            }
+         } catch (error) {
+            console.error('Error forwarding application:', error);
+            alert('Error forwarding application: ' + error.message);
          }
       }
    };
@@ -180,6 +226,23 @@ const ApplicationsList = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                      </svg>
                   </button>
+
+                  {/* Debug info */}
+                  <div className="text-xs text-gray-500">
+                     Status: {application.pstoStatus}, Forwarded: {application.forwardedToDostMimaropa ? 'Yes' : 'No'}
+                  </div>
+                  
+                  {application.pstoStatus === 'approved' && !application.forwardedToDostMimaropa && (
+                     <button
+                        onClick={() => handleForwardToDostMimaropa(application._id)}
+                        className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                        title="Forward to DOST MIMAROPA"
+                     >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                     </button>
+                  )}
 
                   <button
                      onClick={() => handleDeleteApplication(application._id)}
@@ -361,6 +424,24 @@ const ApplicationsList = ({
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                  </svg>
                               </button>
+
+                              {/* Debug info */}
+                              <div className="text-xs text-gray-500 mb-1">
+                                 Status: {application.pstoStatus}, Forwarded: {application.forwardedToDostMimaropa ? 'Yes' : 'No'}
+                              </div>
+
+                              {application.pstoStatus === 'approved' && !application.forwardedToDostMimaropa && (
+                                 <button
+                                    onClick={() => handleForwardToDostMimaropa(application._id)}
+                                    className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"
+                                    title="Forward to DOST MIMAROPA"
+                                 >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                 </button>
+                              )}
+
                               <button
                                  onClick={() => handleDeleteApplication(application._id)}
                                  className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200 flex items-center justify-center group"

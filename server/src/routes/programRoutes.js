@@ -80,6 +80,7 @@ router.get('/psto/applications', auth, setupController.getPSTOApplications);
 router.get('/psto/applications/:id', auth, setupController.getPSTOApplicationById);
 router.get('/psto/applications/:id/test', auth, setupController.testApplicationAccess);
 router.put('/psto/applications/:id/review', auth, setupController.reviewApplication);
+router.put('/psto/applications/:id/forward-to-dost-mimaropa', auth, setupController.forwardToDostMimaropa);
 router.delete('/psto/applications/:id', auth, setupController.deleteApplication);
 router.get('/psto/applications/:id/download/:fileType', auth, setupController.downloadFile);
 
