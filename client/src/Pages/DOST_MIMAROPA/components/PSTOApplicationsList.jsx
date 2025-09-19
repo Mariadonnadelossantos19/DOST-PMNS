@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDarkMode } from '../../../Component/Context';
-import DostMimaropaReviewModal from './DostMimaropaReviewModal';
+import DostMimaropaReviewModal from './DostMimaropaReviewModal.jsx';
 
 const PSTOApplicationsList = ({ 
    applications, 
