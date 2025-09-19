@@ -281,7 +281,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
    // Render different dashboards based on user role
    const renderDashboard = () => {
       if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         return <DostMimaropaDashboard />;
+         return <DostMimaropaDashboard currentPath={currentPage} />;
       } else if (currentUser.role === 'proponent') {
          return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
       } else if (currentUser.role === 'psto') {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useDarkMode } from '../Context';
 
@@ -11,29 +11,47 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       rejectedApplications: 0
    });
 
+   const loadStatistics = useCallback(async () => {
+      try {
+         if (userRole === 'dost_mimaropa' || userRole === 'super_admin') {
+            // Load DOST MIMAROPA applications statistics
+            const response = await axios.get('http://localhost:4000/api/programs/dost-mimaropa/applications', {
+               headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+               }
+            });
+            if (response.data.success) {
+               const applications = response.data.data || [];
+               setStats({
+                  totalApplications: applications.length,
+                  pendingApplications: applications.filter(app => app.dostMimaropaStatus === 'pending').length,
+                  approvedApplications: applications.filter(app => app.dostMimaropaStatus === 'approved').length,
+                  rejectedApplications: applications.filter(app => app.dostMimaropaStatus === 'rejected').length
+               });
+            }
+         } else {
+            // Load regular enrollment statistics for other roles
+            const response = await axios.get('http://localhost:4000/api/enrollments/stats');
+            if (response.data.success) {
+               setStats({
+                  totalApplications: response.data.stats.totalEnrollments || 0,
+                  pendingApplications: response.data.stats.enrolled || 0,
+                  approvedApplications: response.data.stats.completed || 0,
+                  rejectedApplications: response.data.stats.cancelled || 0
+               });
+            }
+         }
+      } catch (error) {
+         console.error('Error loading statistics:', error);
+      }
+   }, [userRole]);
+
    // Load statistics
    useEffect(() => {
       if (userRole === 'dost_mimaropa' || userRole === 'super_admin') {
          loadStatistics();
       }
    }, [userRole]);
-
-   const loadStatistics = async () => {
-      try {
-         const response = await axios.get('http://localhost:4000/api/enrollments/stats');
-         if (response.data.success) {
-            setStats({
-               totalApplications: response.data.stats.totalEnrollments || 0,
-               pendingApplications: response.data.stats.enrolled || 0,
-               approvedApplications: response.data.stats.completed || 0,
-               rejectedApplications: response.data.stats.cancelled || 0
-            });
-         }
-      } catch (error) {
-         console.error('Error loading statistics:', error);
-      }
-   };
-
 
    // Program Application
    const programApplication = {
@@ -282,6 +300,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                         </div>
                      </div>
                   )}
+
 
                   {/* Management Section */}
                   <div>
