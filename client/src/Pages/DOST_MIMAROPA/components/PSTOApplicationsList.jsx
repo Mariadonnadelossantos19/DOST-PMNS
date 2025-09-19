@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDarkMode } from '../../../Component/Context';
-import ApplicationReviewModal from '../../../Component/ProgramApplication/ApplicationReviewModal';
+import DostMimaropaReviewModal from './DostMimaropaReviewModal';
 
 const PSTOApplicationsList = ({ 
    applications, 
@@ -30,10 +30,6 @@ const PSTOApplicationsList = ({
       return matchesStatus && matchesSearch;
    });
 
-   // Debug logging
-   console.log('PSTOApplicationsList - Total applications:', applications.length);
-   console.log('PSTOApplicationsList - Filtered applications:', filteredApplications.length);
-   console.log('PSTOApplicationsList - Applications data:', applications);
 
    // Get status badge color
    const getStatusColor = useCallback((status) => {
@@ -178,21 +174,21 @@ const PSTOApplicationsList = ({
                               <p className={`text-sm truncate transition-colors duration-300 ${
                                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
                               }`}>
-                                 {application.enterpriseName}
+                                 {typeof application.enterpriseName === 'string' ? application.enterpriseName : 'N/A'}
                               </p>
                               <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                                  <div className="flex items-center">
                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    {formatDate(application.forwardedToDostMimaropaAt)}
+                                    {application.forwardedToDostMimaropaAt ? formatDate(application.forwardedToDostMimaropaAt) : 'N/A'}
                                  </div>
                                  {application.contactPerson && (
                                     <div className="flex items-center">
                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                        </svg>
-                                       {application.contactPerson}
+                                       {typeof application.contactPerson === 'string' ? application.contactPerson : 'N/A'}
                                     </div>
                                  )}
                               </div>
@@ -210,9 +206,9 @@ const PSTOApplicationsList = ({
             )}
          </div>
 
-         {/* Application Review Modal */}
+         {/* DOST MIMAROPA Review Modal */}
          {selectedApplication && (
-            <ApplicationReviewModal
+            <DostMimaropaReviewModal
                selectedApplication={selectedApplication}
                setSelectedApplication={setSelectedApplication}
                reviewStatus={reviewStatus}

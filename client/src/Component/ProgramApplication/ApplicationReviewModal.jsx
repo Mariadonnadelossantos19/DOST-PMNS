@@ -93,6 +93,11 @@ const ApplicationReviewModal = ({
    
    if (!selectedApplication) return null;
 
+   // Debug: Log the selected application data to identify object rendering issues
+   console.log('ApplicationReviewModal - selectedApplication:', selectedApplication);
+   console.log('assignedPSTO type:', typeof selectedApplication.assignedPSTO, selectedApplication.assignedPSTO);
+   console.log('proponentId type:', typeof selectedApplication.proponentId, selectedApplication.proponentId);
+
    return (
       <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-2">
          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[98vh] overflow-hidden border border-gray-200">
@@ -171,7 +176,12 @@ const ApplicationReviewModal = ({
                      <div className="flex items-center justify-between">
                         <div>
                            <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">Enterprise</p>
-                           <p className="text-sm font-bold text-purple-900 mt-1 truncate">{selectedApplication.enterpriseName}</p>
+                           <p className="text-sm font-bold text-purple-900 mt-1 truncate">
+                              {typeof selectedApplication.enterpriseName === 'string' 
+                                 ? selectedApplication.enterpriseName 
+                                 : 'N/A'
+                              }
+                           </p>
                         </div>
                         <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +225,12 @@ const ApplicationReviewModal = ({
                      <div className="grid grid-cols-2 gap-3">
                         <div>
                            <p className="text-xs font-medium text-gray-600">Enterprise Name</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.enterpriseName}</p>
+                           <p className="text-sm font-semibold text-gray-900 truncate">
+                              {typeof selectedApplication.enterpriseName === 'string' 
+                                 ? selectedApplication.enterpriseName 
+                                 : 'N/A'
+                              }
+                           </p>
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Business Activity</p>
@@ -223,7 +238,12 @@ const ApplicationReviewModal = ({
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Contact Person</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.contactPerson}</p>
+                           <p className="text-sm font-semibold text-gray-900">
+                              {typeof selectedApplication.contactPerson === 'string' 
+                                 ? selectedApplication.contactPerson 
+                                 : 'N/A'
+                              }
+                           </p>
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Position</p>
@@ -249,7 +269,12 @@ const ApplicationReviewModal = ({
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Province</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.proponentId?.province || 'N/A'}</p>
+                           <p className="text-sm font-semibold text-gray-900">
+                              {typeof selectedApplication.proponentId === 'object' 
+                                 ? selectedApplication.proponentId?.province || 'N/A'
+                                 : selectedApplication.proponentId || 'N/A'
+                              }
+                           </p>
                         </div>
                      </div>
                   </div>
@@ -564,8 +589,13 @@ const ApplicationReviewModal = ({
                         )}
                         {selectedApplication.assignedPSTO && (
                            <div>
-                              <p className="text-xs font-medium text-gray-600">Assigned PSTO ID</p>
-                              <p className="text-sm font-semibold text-gray-900">{selectedApplication.assignedPSTO}</p>
+                              <p className="text-xs font-medium text-gray-600">Assigned PSTO</p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                 {typeof selectedApplication.assignedPSTO === 'string' 
+                                    ? selectedApplication.assignedPSTO 
+                                    : selectedApplication.assignedPSTO?.name || selectedApplication.assignedPSTO?.fullOfficeName || 'N/A'
+                                 }
+                              </p>
                            </div>
                         )}
                      </div>

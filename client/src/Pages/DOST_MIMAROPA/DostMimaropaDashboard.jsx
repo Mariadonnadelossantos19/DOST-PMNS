@@ -25,17 +25,11 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             throw new Error('Please login first');
          }
 
-         console.log('Fetching DOST MIMAROPA applications...');
-         console.log('API Endpoint:', API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS);
-
          const response = await fetch(API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
-
-         console.log('Response status:', response.status);
-         console.log('Response ok:', response.ok);
 
          if (!response.ok) {
             if (response.status === 401) {
@@ -51,10 +45,8 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
          }
 
          const result = await response.json();
-         console.log('API Response:', result);
          
          if (result.success) {
-            console.log('Applications fetched successfully:', result.data?.length || 0, 'applications');
             setApplications(result.data || []);
          } else {
             throw new Error(result.message || 'Failed to fetch applications');
@@ -68,19 +60,24 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    };
 
    useEffect(() => {
-      console.log('DOST MIMAROPA Dashboard mounted, fetching applications...');
       fetchApplications();
    }, []);
 
    // Format date
    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
-         year: 'numeric',
-         month: 'long',
-         day: 'numeric',
-         hour: '2-digit',
-         minute: '2-digit'
-      });
+      if (!dateString) return 'N/A';
+      try {
+         return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+         });
+      } catch (error) {
+         console.error('Error formatting date:', error, 'Input:', dateString);
+         return 'Invalid Date';
+      }
    };
 
    // Review application
@@ -140,22 +137,11 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
       dailyProcessed: 8
    };
 
+   
 
-   console.log('DOST MIMAROPA Dashboard rendering with currentPath:', currentPath);
-   console.log('Applications state:', applications);
-   console.log('Loading state:', loading);
-   console.log('Error state:', error);
 
    return (
       <div className="flex-1 flex flex-col overflow-hidden">
-         {/* Test content to verify component is rendering */}
-         <div className="p-4 bg-red-100 border border-red-300 rounded-lg m-4">
-            <h3 className="text-red-800 font-bold">DOST MIMAROPA Dashboard Test</h3>
-            <p className="text-red-700">Current Path: {currentPath}</p>
-            <p className="text-red-700">Applications Count: {applications.length}</p>
-            <p className="text-red-700">Loading: {loading ? 'Yes' : 'No'}</p>
-            <p className="text-red-700">Error: {error || 'None'}</p>
-         </div>
 
          {/* Content based on current path */}
          {(currentPath === '/dashboard' || currentPath === 'dashboard') && (
@@ -170,22 +156,6 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
 
          {(currentPath === '/applications' || currentPath === 'applications' || currentPath === '/management' || currentPath === 'management') && (
             <div className="flex-1 overflow-y-auto p-6">
-               {/* Debug Info */}
-               <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-                  <h4 className="font-semibold text-yellow-800 mb-2">Debug Information</h4>
-                  <p className="text-sm text-yellow-700">
-                     <strong>Total Applications:</strong> {applications.length}<br/>
-                     <strong>Loading:</strong> {loading ? 'Yes' : 'No'}<br/>
-                     <strong>Error:</strong> {error || 'None'}<br/>
-                     <strong>API Endpoint:</strong> {API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS}
-                  </p>
-                  <button
-                     onClick={fetchApplications}
-                     className="mt-2 px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
-                  >
-                     Refresh Data
-                  </button>
-               </div>
                
                <PSTOApplicationsList
                   applications={applications}
