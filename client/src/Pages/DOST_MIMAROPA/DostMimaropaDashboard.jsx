@@ -18,17 +18,24 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const fetchApplications = async () => {
       try {
          setLoading(true);
+         setError('');
          const token = localStorage.getItem('authToken');
          
          if (!token) {
             throw new Error('Please login first');
          }
 
+         console.log('Fetching DOST MIMAROPA applications...');
+         console.log('API Endpoint:', API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS);
+
          const response = await fetch(API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
+
+         console.log('Response status:', response.status);
+         console.log('Response ok:', response.ok);
 
          if (!response.ok) {
             if (response.status === 401) {
@@ -38,12 +45,16 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
                window.location.reload();
                return;
             }
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
             throw new Error(`Failed to fetch applications: ${response.status} ${response.statusText}`);
          }
 
          const result = await response.json();
+         console.log('API Response:', result);
          
          if (result.success) {
+            console.log('Applications fetched successfully:', result.data?.length || 0, 'applications');
             setApplications(result.data || []);
          } else {
             throw new Error(result.message || 'Failed to fetch applications');
@@ -57,6 +68,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    };
 
    useEffect(() => {
+      console.log('DOST MIMAROPA Dashboard mounted, fetching applications...');
       fetchApplications();
    }, []);
 
@@ -129,10 +141,24 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    };
 
 
+   console.log('DOST MIMAROPA Dashboard rendering with currentPath:', currentPath);
+   console.log('Applications state:', applications);
+   console.log('Loading state:', loading);
+   console.log('Error state:', error);
+
    return (
       <div className="flex-1 flex flex-col overflow-hidden">
+         {/* Test content to verify component is rendering */}
+         <div className="p-4 bg-red-100 border border-red-300 rounded-lg m-4">
+            <h3 className="text-red-800 font-bold">DOST MIMAROPA Dashboard Test</h3>
+            <p className="text-red-700">Current Path: {currentPath}</p>
+            <p className="text-red-700">Applications Count: {applications.length}</p>
+            <p className="text-red-700">Loading: {loading ? 'Yes' : 'No'}</p>
+            <p className="text-red-700">Error: {error || 'None'}</p>
+         </div>
+
          {/* Content based on current path */}
-         {currentPath === '/dashboard' && (
+         {(currentPath === '/dashboard' || currentPath === 'dashboard') && (
             <div className="flex-1 overflow-y-auto p-6">
                <div className={`rounded-xl p-6 shadow-lg transition-colors duration-300 ${
                   isDarkMode ? 'bg-gray-800' : 'bg-white'
@@ -142,8 +168,25 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             </div>
          )}
 
-         {(currentPath === '/applications' || currentPath === '/management') && (
+         {(currentPath === '/applications' || currentPath === 'applications' || currentPath === '/management' || currentPath === 'management') && (
             <div className="flex-1 overflow-y-auto p-6">
+               {/* Debug Info */}
+               <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+                  <h4 className="font-semibold text-yellow-800 mb-2">Debug Information</h4>
+                  <p className="text-sm text-yellow-700">
+                     <strong>Total Applications:</strong> {applications.length}<br/>
+                     <strong>Loading:</strong> {loading ? 'Yes' : 'No'}<br/>
+                     <strong>Error:</strong> {error || 'None'}<br/>
+                     <strong>API Endpoint:</strong> {API_ENDPOINTS.DOST_MIMAROPA_APPLICATIONS}
+                  </p>
+                  <button
+                     onClick={fetchApplications}
+                     className="mt-2 px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+                  >
+                     Refresh Data
+                  </button>
+               </div>
+               
                <PSTOApplicationsList
                   applications={applications}
                   loading={loading}
@@ -161,7 +204,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             </div>
          )}
 
-         {currentPath === '/reports' && (
+         {(currentPath === '/reports' || currentPath === 'reports') && (
             <div className="flex-1 overflow-y-auto p-6">
                <div className="text-center py-8">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300 ${
@@ -183,7 +226,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             </div>
          )}
 
-         {currentPath === '/monitoring' && (
+         {(currentPath === '/monitoring' || currentPath === 'monitoring') && (
             <div className="flex-1 overflow-y-auto p-6">
                <div className="text-center py-8">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300 ${
@@ -208,7 +251,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             </div>
          )}
 
-         {currentPath === '/notifications' && (
+         {(currentPath === '/notifications' || currentPath === 'notifications') && (
             <div className="flex-1 overflow-y-auto p-6">
                <div className="text-center py-8">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300 ${
@@ -231,7 +274,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             </div>
          )}
 
-         {currentPath === '/settings' && (
+         {(currentPath === '/settings' || currentPath === 'settings') && (
             <div className="flex-1 overflow-y-auto p-6">
                <div className="text-center py-8">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300 ${

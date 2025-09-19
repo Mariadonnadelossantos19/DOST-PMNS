@@ -30,6 +30,11 @@ const PSTOApplicationsList = ({
       return matchesStatus && matchesSearch;
    });
 
+   // Debug logging
+   console.log('PSTOApplicationsList - Total applications:', applications.length);
+   console.log('PSTOApplicationsList - Filtered applications:', filteredApplications.length);
+   console.log('PSTOApplicationsList - Applications data:', applications);
+
    // Get status badge color
    const getStatusColor = useCallback((status) => {
       switch (status) {
