@@ -623,6 +623,8 @@ const downloadFile = async (req, res) => {
          fileInfo = application.enterpriseProfile;
       } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
          fileInfo = application.businessPlan;
+      } else if (fileType === 'generalAgreement' && application.generalAgreement?.signature?.filename) {
+         fileInfo = application.generalAgreement.signature;
       } else {
          return res.status(404).json({
             success: false,
@@ -663,8 +665,8 @@ const viewFile = async (req, res) => {
             _id: id,
             proponentId: req.user._id
          });
-      } else if (req.user.role === 'psto' || req.user.role === 'admin') {
-         // PSTO and admin can view any application files
+      } else if (req.user.role === 'psto' || req.user.role === 'admin' || req.user.role === 'dost_mimaropa') {
+         // PSTO, admin, and DOST MIMAROPA can view any application files
          application = await SETUPApplication.findById(id).populate('proponentId', 'province');
          
          // For PSTO users, verify they can review this application (same province)
@@ -695,6 +697,8 @@ const viewFile = async (req, res) => {
          fileInfo = application.enterpriseProfile;
       } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
          fileInfo = application.businessPlan;
+      } else if (fileType === 'generalAgreement' && application.generalAgreement?.signature?.filename) {
+         fileInfo = application.generalAgreement.signature;
       } else {
          return res.status(404).json({
             success: false,
