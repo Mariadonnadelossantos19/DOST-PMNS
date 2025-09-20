@@ -299,11 +299,11 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
    // Step indicator component
    const StepIndicator = () => (
-      <div className="flex items-center justify-center mb-8">
-         <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-center mb-6 sm:mb-8">
+         <div className="flex items-center space-x-2 sm:space-x-4">
             {[1, 2, 3].map((step) => (
                <div key={step} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                      step <= currentStep 
                         ? 'bg-blue-600 text-white' 
                         : 'bg-gray-200 text-gray-600'
@@ -311,7 +311,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                      {step}
                   </div>
                   {step < 3 && (
-                     <div className={`w-12 h-1 mx-2 ${
+                     <div className={`w-8 sm:w-12 h-1 mx-1 sm:mx-2 ${
                         step < currentStep ? 'bg-blue-600' : 'bg-gray-200'
                      }`} />
                   )}
@@ -329,20 +329,20 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
    };
 
    return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                Register as Proponent
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-xs sm:text-sm text-gray-600 px-4 sm:px-0">
                Create a proponent account to access DOST programs. You will be automatically assigned to your local PSTO based on your province.
             </p>
          </div>
 
          <StepIndicator />
          
-         <div className="text-center mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">
+         <div className="text-center mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                Step {currentStep} of {totalSteps}: {stepTitles[currentStep]}
             </h3>
          </div>
@@ -350,18 +350,18 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
          {alert.show && (
             <Alert 
                type={alert.type} 
-               className="mb-6"
+               className="mb-4 sm:mb-6 text-sm sm:text-base"
                onClose={() => setAlert({ show: false, type: '', message: '' })}
             >
                {alert.message}
             </Alert>
          )}
 
-         <form onSubmit={handleSubmit} className="space-y-6">
+         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Step 1: Personal Information */}
             {currentStep === 1 && (
-               <Card className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <Card className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                <Input
                         label="First Name *"
                   name="firstName"
@@ -401,7 +401,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                         error={errors.phone}
                         placeholder="Enter your phone number"
                      />
-                     <div className="md:col-span-2">
+                     <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                            Address *
                         </label>
@@ -409,13 +409,13 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                            name="address"
                            value={formData.address}
                   onChange={handleChange}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                            rows="2"
                            placeholder="Enter your complete address"
                   required
                />
                         {errors.address && (
-                           <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                           <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.address}</p>
                         )}
             </div>
             </div>
@@ -424,8 +424,8 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
             {/* Step 2: Business Information */}
             {currentStep === 2 && (
-               <Card className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <Card className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                      <Input
                         label="Business Name"
                         name="businessName"
@@ -444,7 +444,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                         error={errors.businessType}
                         placeholder="e.g., Agriculture, Technology"
                      />
-                     <div className="md:col-span-2">
+                     <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                            Organization Type *
                         </label>
@@ -452,7 +452,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                            name="organizationType"
                            value={formData.organizationType}
                            onChange={handleChange}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                            required
                         >
                            <option value="Individual">Individual</option>
@@ -462,7 +462,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                            <option value="Association">Association</option>
                         </select>
                         {errors.organizationType && (
-                           <p className="mt-1 text-sm text-red-600">{errors.organizationType}</p>
+                           <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.organizationType}</p>
                         )}
                      </div>
                   </div>
@@ -471,21 +471,21 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
             {/* Step 3: Login Credentials */}
             {currentStep === 3 && (
-               <Card className="p-6">
-                  <div className="space-y-4">
-                     <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-600">
+               <Card className="p-4 sm:p-6">
+                  <div className="space-y-3 sm:space-y-4">
+                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+                        <p className="text-xs sm:text-sm text-gray-600">
                            You will use these credentials to login and access your dashboard immediately.
                         </p>
                         <button
                            type="button"
                            onClick={generatePassword}
-                           className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200"
+                           className="text-xs sm:text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 self-start sm:self-auto"
                         >
                            Generate Password
                         </button>
                      </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Password *
@@ -496,7 +496,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                                  name="password"
                                  value={formData.password}
                                  onChange={handleChange}
-                                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                 className="w-full px-3 py-2 pr-10 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                  placeholder="Create a password (min 6 characters)"
                                  required
                               />
@@ -518,7 +518,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                               </button>
                            </div>
                            {errors.password && (
-                              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                              <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.password}</p>
                            )}
                         </div>
                         <div>
@@ -531,7 +531,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                                  name="confirmPassword"
                                  value={formData.confirmPassword}
                                  onChange={handleChange}
-                                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                 className="w-full px-3 py-2 pr-10 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                  placeholder="Confirm your password"
                                  required
                               />
@@ -553,7 +553,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                               </button>
                            </div>
                            {errors.confirmPassword && (
-                              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                              <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.confirmPassword}</p>
                            )}
                         </div>
                      </div>
@@ -566,7 +566,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                            name="province"
                            value={formData.province}
                            onChange={handleChange}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                            required
                         >
                            <option value="">Select Province</option>
@@ -577,7 +577,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                            <option value="Palawan">Palawan</option>
                         </select>
                         {errors.province && (
-                           <p className="mt-1 text-sm text-red-600">{errors.province}</p>
+                           <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.province}</p>
                         )}
                      </div>
                   </div>
@@ -586,31 +586,31 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center pt-6">
-               <div>
+            <div className="flex flex-col sm:flex-row justify-between items-center pt-4 sm:pt-6 gap-3 sm:gap-0">
+               <div className="w-full sm:w-auto">
                   {currentStep > 1 && (
                      <Button
                         type="button"
                         onClick={prevStep}
-                        className="bg-gray-300 hover:bg-gray-400 text-gray-700"
+                        className="w-full sm:w-auto bg-gray-300 hover:bg-gray-400 text-gray-700 text-sm sm:text-base"
                      >
                         Previous
                      </Button>
                   )}
                </div>
                
-               <div className="flex space-x-3">
+               <div className="w-full sm:w-auto">
                   {currentStep < totalSteps ? (
                      <Button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                      >
                         Next Step
                      </Button>
                   ) : (
             <Button
                type="submit"
-                        className="bg-green-600 hover:bg-green-700"
+                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm sm:text-base"
                loading={isLoading}
                disabled={isLoading}
             >
@@ -622,7 +622,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
             {/* Switch to Login */}
             <div className="text-center">
-               <p className="text-sm text-gray-600">
+               <p className="text-xs sm:text-sm text-gray-600">
                   Already have an account?{' '}
                   <button
                      type="button"
