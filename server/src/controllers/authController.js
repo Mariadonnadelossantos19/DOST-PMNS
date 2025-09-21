@@ -152,6 +152,22 @@ const login = async (req, res) => {
          });
       }
 
+      // Check if user is active (for all users)
+      if (user.status !== 'active') {
+         return res.status(403).json({
+            success: false,
+            message: 'Account is not active. Please contact your administrator.'
+         });
+      }
+
+      // For proponents, check if they have been activated by PSTO
+      if (user.role === 'proponent' && !user.activatedAt) {
+         return res.status(403).json({
+            success: false,
+            message: 'Your account is pending activation by your Provincial Science and Technology Office (PSTO). Please contact your PSTO for activation.'
+         });
+      }
+
       // Update last login
       user.lastLogin = new Date();
       await user.save();

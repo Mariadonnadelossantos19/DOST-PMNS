@@ -8,6 +8,8 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const programRoutes = require('./routes/programRoutes');
+const tnaRoutes = require('./routes/tnaRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Import seed functions
 const seedPSTOData = require('./utils/seedPSTO');
@@ -33,6 +35,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/programs', programRoutes);
+app.use('/api/tna', tnaRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

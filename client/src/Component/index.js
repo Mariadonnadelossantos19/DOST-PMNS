@@ -25,5 +25,8 @@ export { default as AuthModal } from './Registration/AuthModal';
 // User Management Components
 export * from './UserManagement';
 
+// PSTO Components
+export * from './PSTO';
+
 // Services Components
 export * from './Services';

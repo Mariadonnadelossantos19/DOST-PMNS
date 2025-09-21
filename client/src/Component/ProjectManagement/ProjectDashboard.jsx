@@ -4,46 +4,25 @@ import ProjectCard from './ProjectCard';
 import TaskList from './TaskList';
 import { UserManagement } from '../UserManagement';
 import SuperAdminDashboard from '../../Pages/superAdmin/pages/SuperAdminDashboard';
-import MarinduqueDashboard from '../../Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
-import OccidentalMindoroDashboard from '../../Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
-import OrientalMindoroDashboard from '../../Pages/PSTO/PSTO_OrientalMindoro/pages/OrientalMindoroDashboard';
-import RomblonDashboard from '../../Pages/PSTO/PSTO_Romblon/pages/RomblonDashboard';
-import PalawanDashboard from '../../Pages/PSTO/PSTO_Palawan/pages/PalawanDashboard';
+import PSTODashboard from '../../Pages/PSTO/PSTODashboard';
 
 const ProjectDashboard = ({ projects = [], tasks = [], currentUser }) => {
    const [selectedProject, setSelectedProject] = useState(null);
    const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks', 'users'
 
-   // Render province-specific dashboard for PSTO users
+   // Render PSTO dashboard for PSTO users
    const renderProvinceDashboard = () => {
       console.log('renderProvinceDashboard called with:', currentUser);
       
-      if (currentUser?.role === 'psto' && currentUser?.province) {
-         console.log('Province found:', currentUser.province);
-         switch (currentUser.province) {
-            case 'Marinduque':
-               return <MarinduqueDashboard currentUser={currentUser} />;
-            case 'Occidental Mindoro':
-               return <OccidentalMindoroDashboard currentUser={currentUser} />;
-            case 'Oriental Mindoro':
-               return <OrientalMindoroDashboard currentUser={currentUser} />;
-            case 'Romblon':
-               return <RomblonDashboard currentUser={currentUser} />;
-            case 'Palawan':
-               return <PalawanDashboard currentUser={currentUser} />;
-            default:
-               console.log('Unknown province:', currentUser.province);
-               return <div className="text-center p-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Province Not Assigned</h2>
-                  <p className="text-gray-600">Please contact administrator to assign your province.</p>
-               </div>;
-         }
+      if (currentUser?.role === 'psto') {
+         console.log('PSTO user detected, rendering PSTO dashboard');
+         return <PSTODashboard currentUser={currentUser} />;
       }
       
-      console.log('No province found or not PSTO user');
+      console.log('Not a PSTO user');
       return <div className="text-center p-8">
          <h2 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Not Available</h2>
-         <p className="text-gray-600">Province information is missing. Please contact administrator.</p>
+         <p className="text-gray-600">This dashboard is only available for PSTO users.</p>
       </div>;
    };
 

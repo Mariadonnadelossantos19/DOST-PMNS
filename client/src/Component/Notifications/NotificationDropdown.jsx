@@ -11,7 +11,7 @@ const NotificationDropdown = ({
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef(null);
 
-   const unreadCount = notifications.filter(n => !n.read).length;
+   const unreadCount = notifications.filter(n => !n.isRead).length;
    const recentNotifications = notifications.slice(0, 5);
 
    const getNotificationIcon = (type) => {
@@ -55,8 +55,8 @@ const NotificationDropdown = ({
    };
 
    const handleNotificationClick = (notification) => {
-      if (!notification.read) {
-         onMarkAsRead?.(notification.id);
+      if (!notification.isRead) {
+         onMarkAsRead?.(notification._id);
       }
       if (notification.actionUrl) {
          window.open(notification.actionUrl, '_blank');
@@ -124,9 +124,9 @@ const NotificationDropdown = ({
                      <div className="divide-y divide-gray-200">
                         {recentNotifications.map((notification) => (
                            <div
-                              key={notification.id}
+                              key={notification._id}
                               className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                                 !notification.read ? 'bg-blue-50' : ''
+                                 !notification.isRead ? 'bg-blue-50' : ''
                               }`}
                               onClick={() => handleNotificationClick(notification)}
                            >
@@ -140,7 +140,7 @@ const NotificationDropdown = ({
                                     <div className="flex items-start justify-between">
                                        <div className="flex-1">
                                           <h4 className={`text-sm font-medium ${
-                                             !notification.read ? 'text-gray-900' : 'text-gray-700'
+                                             !notification.isRead ? 'text-gray-900' : 'text-gray-700'
                                           }`}>
                                              {notification.title}
                                           </h4>
@@ -156,7 +156,7 @@ const NotificationDropdown = ({
                                              </Badge>
                                           </div>
                                        </div>
-                                       {!notification.read && (
+                                       {!notification.isRead && (
                                           <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1"></div>
                                        )}
                                     </div>

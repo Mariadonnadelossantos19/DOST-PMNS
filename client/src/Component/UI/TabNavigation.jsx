@@ -24,10 +24,10 @@ const TabNavigation = ({
          <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
                <button
-                  key={tab.key}
-                  onClick={() => onTabChange(tab.key)}
+                  key={tab.id || tab.key}
+                  onClick={() => onTabChange(tab.id || tab.key)}
                   className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                     activeTab === tab.key
+                     activeTab === (tab.id || tab.key)
                         ? `${colorClasses[color]}`
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
@@ -37,9 +37,9 @@ const TabNavigation = ({
                         <span className="text-lg">{tab.icon}</span>
                      )}
                      <span>{tab.label}</span>
-                     {tab.badge && (
+                     {(tab.count !== undefined || tab.badge) && (
                         <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                           {tab.badge}
+                           {tab.count || tab.badge}
                         </span>
                      )}
                   </div>

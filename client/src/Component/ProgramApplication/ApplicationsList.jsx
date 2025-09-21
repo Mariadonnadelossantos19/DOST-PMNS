@@ -12,19 +12,43 @@ const ApplicationsList = ({
    const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
    const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'pending', 'approved', 'returned', 'rejected'
 
-   // Filter applications based on status
+   // Filter applications based on status - Updated for correct DOST PMNS workflow
    const filteredApplications = applications.filter(application => {
       if (statusFilter === 'all') return true;
-      return application.pstoStatus === statusFilter;
+      
+      switch (statusFilter) {
+         case 'pending':
+            return application.status === 'pending' || application.status === 'under_review';
+         case 'psto_approved':
+            return application.status === 'psto_approved';
+         case 'tna_scheduled':
+            return application.status === 'tna_scheduled';
+         case 'tna_conducted':
+            return application.status === 'tna_conducted';
+         case 'tna_report_submitted':
+            return application.status === 'tna_report_submitted';
+         case 'dost_approved':
+            return application.status === 'dost_mimaropa_approved';
+         case 'returned':
+            return application.pstoStatus === 'returned';
+         case 'rejected':
+            return application.status === 'psto_rejected' || application.status === 'dost_mimaropa_rejected';
+         default:
+            return true;
+      }
    });
 
-   // Get status counts for tabs
+   // Get status counts for tabs - Updated for correct DOST PMNS workflow
    const statusCounts = {
       all: applications.length,
-      pending: applications.filter(app => app.pstoStatus === 'pending').length,
-      approved: applications.filter(app => app.pstoStatus === 'approved').length,
+      pending: applications.filter(app => app.status === 'pending' || app.status === 'under_review').length,
+      psto_approved: applications.filter(app => app.status === 'psto_approved').length,
+      tna_scheduled: applications.filter(app => app.status === 'tna_scheduled').length,
+      tna_conducted: applications.filter(app => app.status === 'tna_conducted').length,
+      tna_report_submitted: applications.filter(app => app.status === 'tna_report_submitted').length,
+      dost_approved: applications.filter(app => app.status === 'dost_mimaropa_approved').length,
       returned: applications.filter(app => app.pstoStatus === 'returned').length,
-      rejected: applications.filter(app => app.pstoStatus === 'rejected').length,
+      rejected: applications.filter(app => app.status === 'psto_rejected' || app.status === 'dost_mimaropa_rejected').length,
    };
 
    // Debug: Log application data to console

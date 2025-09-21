@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useDarkMode } from '../Context';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
 
-const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false, onNavigate }) => {
+const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isCollapsed = false, onNavigate, user }) => {
    const { isDarkMode } = useDarkMode();
    const [stats, setStats] = useState({
       totalApplications: 0,
@@ -10,6 +11,75 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       approvedApplications: 0,
       rejectedApplications: 0
    });
+
+   // Notification state for proponents
+   const [notifications, setNotifications] = useState([]);
+
+   // Fetch notifications for proponents
+   const fetchNotifications = useCallback(async () => {
+      if (!user || user.role !== 'proponent') {
+         return;
+      }
+      
+      try {
+         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${user.userId || user._id || user.id}`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            setNotifications(data.notifications || []);
+         }
+      } catch (error) {
+         console.error('Error fetching notifications:', error);
+      }
+   }, [user]);
+
+   // Mark notification as read
+   const markAsRead = async (notificationId) => {
+      try {
+         const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+            method: 'PATCH',
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            setNotifications(prev => 
+               prev.map(notif => 
+                  notif._id === notificationId 
+                     ? { ...notif, isRead: true }
+                     : notif
+               )
+            );
+         }
+      } catch (error) {
+         console.error('Error marking notification as read:', error);
+      }
+   };
+
+   // Mark all as read
+   const markAllAsRead = async () => {
+      try {
+         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${user.userId || user._id || user.id}/mark-all-read`, {
+            method: 'PATCH',
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            setNotifications(prev => 
+               prev.map(notif => ({ ...notif, isRead: true }))
+            );
+         }
+      } catch (error) {
+         console.error('Error marking all notifications as read:', error);
+      }
+   };
 
    const loadStatistics = useCallback(async () => {
       try {
@@ -46,12 +116,15 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       }
    }, [userRole]);
 
-   // Load statistics
+   // Load statistics and notifications
    useEffect(() => {
       if (userRole === 'dost_mimaropa' || userRole === 'super_admin') {
          loadStatistics();
       }
-   }, [userRole]);
+      if (userRole === 'proponent') {
+         fetchNotifications();
+      }
+   }, [userRole, loadStatistics, fetchNotifications]);
 
    // Program Application
    const programApplication = {
@@ -85,13 +158,10 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       },
       {
          id: 'monitoring',
-         label: 'Monitoring',
+         label: 'Application Management',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 19C9 20.1046 9.89543 21 11 21H13C14.1046 21 15 20.1046 15 19V18H9V19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V15C21 16.1046 20.1046 17 19 17H5C3.89543 17 3 16.1046 3 15V5Z" stroke="currentColor" strokeWidth="2"/>
-               <path d="M8 7H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-               <path d="M8 11H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
          path: '/monitoring'
@@ -119,13 +189,33 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          path: '/applications'
       },
       {
+         id: 'proponent-management',
+         label: 'Proponent Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+               <path d="M20 21V19C20 18.1645 19.7155 17.3541 19.2094 16.7006C18.7033 16.047 17.9991 15.5858 17.2 15.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/proponent-management'
+      },
+      {
          id: 'notifications',
          label: 'Notifications',
          icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9965 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <div className="relative">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9965 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               </svg>
+               {userRole === 'proponent' && notifications.filter(n => !n.isRead).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full min-w-[1.25rem] h-5 flex items-center justify-center">
+                     {notifications.filter(n => !n.isRead).length > 99 ? '99+' : notifications.filter(n => !n.isRead).length}
+                  </span>
+               )}
+            </div>
          ),
          path: '/notifications'
       },
@@ -259,6 +349,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                   </div>
                   )}
 
+
                   {/* Quick Stats Section for DOST MIMAROPA */}
                   {(userRole === 'dost_mimaropa' || userRole === 'super_admin') && (
                      <div>
@@ -308,11 +399,22 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                         <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 transition-colors duration-300 ${
                            isDarkMode ? 'text-gray-400' : 'text-gray-400'
                         }`}>
-                           Management
+                           {userRole === 'proponent' ? 'My Account' : 'Management'}
                         </h3>
                      )}
                      <ul className="space-y-1">
-                        {managementSections.map((section) => {
+                        {managementSections
+                           .filter(section => {
+                              // Filter sections based on user role
+                              if (userRole === 'proponent') {
+                                 // For proponents, only show relevant sections
+                                 const allowedSections = ['dashboard', 'monitoring', 'notifications', 'reports', 'settings'];
+                                 return allowedSections.includes(section.id);
+                              }
+                              // For other roles (PSTO, DOST MIMAROPA, Super Admin), show all sections
+                              return true;
+                           })
+                           .map((section) => {
                            const isActive = currentPath === section.path;
                            return (
                               <li key={section.id}>
@@ -347,28 +449,9 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                         })}
                      </ul>
                   </div>
+
                </nav>
 
-               {/* Sidebar Footer */}
-               <div className={`p-4 border-t border-gray-200 ${isCollapsed ? 'px-2' : ''}`}>
-                  {!isCollapsed ? (
-                     <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                           <span className={`text-xs font-medium transition-colors duration-300 ${
-                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                           }`}>System Status</span>
-                        </div>
-                        <p className={`text-xs transition-colors duration-300 ${
-                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>All systems operational</p>
-                     </div>
-                  ) : (
-                     <div className="flex justify-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                     </div>
-                  )}
-               </div>
             </div>
          </aside>
       </>

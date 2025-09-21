@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Register } from './Component';
 import { MainLayout, ProjectDashboard, LandingPage, NotificationProvider, useNotifications } from './Component';
+import UnifiedLayout from './Component/Layouts/UnifiedLayout';
+import UnifiedPSTODashboard from './Pages/PSTO/UnifiedPSTODashboard';
 import { ToastProvider } from './Component/UI';
 import { FloatingMiniGamesButton } from './Component/Interactive';
 import { DarkModeProvider } from './Component/Context';
@@ -8,17 +10,9 @@ import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
 import { ProponentMainPage } from './Pages/Proponents/pages';
 import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
+import NotificationsPage from './Pages/NotificationsPage';
 import ResetPassword from './Component/Registration/ResetPassword';
-import MarinduqueDashboard from './Pages/PSTO/PSTO_Marinduque/pages/MarinduqueDashboard';
-import MarinduqueApplicationsPage from './Pages/PSTO/PSTO_Marinduque/pages/ApplicationsPage';
-import OccidentalMindoroDashboard from './Pages/PSTO/PSTO_OccidentalMindoro/pages/OccidentalMindoroDashboard';
-import OccidentalMindoroApplicationsPage from './Pages/PSTO/PSTO_OccidentalMindoro/pages/ApplicationsPage';
-import OrientalMindoroDashboard from './Pages/PSTO/PSTO_OrientalMindoro/pages/OrientalMindoroDashboard';
-import OrientalMindoroApplicationsPage from './Pages/PSTO/PSTO_OrientalMindoro/pages/ApplicationsPage';
-import PalawanDashboard from './Pages/PSTO/PSTO_Palawan/pages/PalawanDashboard';
-import PalawanApplicationsPage from './Pages/PSTO/PSTO_Palawan/pages/ApplicationsPage';
-import RomblonDashboard from './Pages/PSTO/PSTO_Romblon/pages/RomblonDashboard';
-import RomblonApplicationsPage from './Pages/PSTO/PSTO_Romblon/pages/ApplicationsPage';
+import PSTODashboard from './Pages/PSTO/PSTODashboard';
 import './App.css';
 
 // Sample data for demonstration
@@ -138,8 +132,15 @@ const sampleTasks = [
 ];
 
 const sampleUser = {
-   name: 'John Administrator',
-   role: 'dost_mimaropa', // Changed to test DOST MIMAROPA dashboard
+   name: 'John Doe',
+   role: 'proponent',
+   userId: '68ceb300289e363622ed1d64', // Use the user ID that has notifications in database
+   _id: '68ceb300289e363622ed1d64', // Also add _id for compatibility
+   id: '68ceb300289e363622ed1d64', // Also add id for compatibility
+   firstName: 'John',
+   lastName: 'Doe',
+   email: 'john.doe@example.com',
+   province: 'Marinduque',
    avatar: null
 };
 
@@ -187,7 +188,9 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
             const transformedUser = {
                name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User',
                role: userData.role || 'user',
-               userId: userData.userId || userData.id || 'No ID',
+               userId: userData.userId || userData.id || userData._id || 'No ID',
+               _id: userData._id || userData.userId || userData.id || 'No ID',
+               id: userData.id || userData.userId || userData._id || 'No ID',
                firstName: userData.firstName,
                lastName: userData.lastName,
                email: userData.email,
@@ -207,6 +210,35 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       console.log('No user data found, using sample user');
       return sampleUser;
    };
+
+   // Clear localStorage to force using sample user with correct ID
+   const clearUserData = () => {
+      localStorage.removeItem('userData');
+      localStorage.removeItem('authToken');
+      console.log('Cleared localStorage data');
+   };
+
+   // Set up sample user data and mock auth token
+   const setupSampleUser = () => {
+      // Clear any existing data
+      clearUserData();
+      
+      // Set up sample user data
+      const sampleUserData = {
+         user: sampleUser,
+         token: 'mock-token-for-testing',
+         success: true
+      };
+      
+      localStorage.setItem('userData', JSON.stringify(sampleUserData));
+      localStorage.setItem('authToken', 'mock-token-for-testing');
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      console.log('Set up sample user with mock auth token');
+   };
+
+   // Set up sample user on first load
+   setupSampleUser();
 
    const currentUser = getUserData();
    
@@ -248,34 +280,9 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       }
    };
 
-   // Render PSTO dashboard based on province
+   // Render PSTO dashboard
    const renderPSTODashboard = () => {
-      const province = currentUser.province;
-      
-      switch (province) {
-         case 'Marinduque':
-            return <MarinduqueDashboard currentUser={currentUser} />;
-         case 'Occidental Mindoro':
-            return <OccidentalMindoroDashboard currentUser={currentUser} />;
-         case 'Oriental Mindoro':
-            return <OrientalMindoroDashboard currentUser={currentUser} />;
-         case 'Palawan':
-            return <PalawanDashboard currentUser={currentUser} />;
-         case 'Romblon':
-            return <RomblonDashboard currentUser={currentUser} />;
-         default:
-            return (
-               <div className="p-6 text-center">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">PSTO Dashboard</h1>
-                  <p className="text-gray-600 mb-4">
-                     Province: {province || 'Unknown'}
-                  </p>
-                  <p className="text-gray-500">
-                     PSTO dashboard for this province is not yet implemented.
-                  </p>
-               </div>
-            );
-      }
+      return <UnifiedPSTODashboard currentUser={currentUser} />;
    };
 
    // Render different dashboards based on user role
@@ -301,32 +308,45 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       }
    };
 
-   // Render Applications page based on user's province
+   // Render Applications page - now uses unified PSTO dashboard
    const renderApplicationsPage = () => {
-      const province = currentUser.province;
-      
-      switch (province) {
-         case 'Marinduque':
-            return <MarinduqueApplicationsPage currentUser={currentUser} />;
-         case 'Occidental Mindoro':
-            return <OccidentalMindoroApplicationsPage currentUser={currentUser} />;
-         case 'Oriental Mindoro':
-            return <OrientalMindoroApplicationsPage currentUser={currentUser} />;
-         case 'Palawan':
-            return <PalawanApplicationsPage currentUser={currentUser} />;
-         case 'Romblon':
-            return <RomblonApplicationsPage currentUser={currentUser} />;
-         default:
-            return (
-               <div className="p-6 text-center">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Applications</h1>
-                  <p className="text-gray-600 mb-4">
-                     Applications page for {province || 'Unknown'} province
-                  </p>
-                  <p className="text-gray-500">Applications functionality will be available soon.</p>
-               </div>
-            );
+      // For PSTO users, redirect to their dashboard which includes applications
+      if (currentUser.role === 'psto') {
+         return <UnifiedPSTODashboard currentUser={currentUser} />;
       }
+      
+      // For other users, show a generic applications page
+      return (
+         <div className="p-6 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Applications</h1>
+            <p className="text-gray-600 mb-4">
+               Applications page for {currentUser.province || 'Unknown'} province
+            </p>
+            <p className="text-gray-500">Applications functionality will be available soon.</p>
+         </div>
+      );
+   };
+
+   // Render Management page - comprehensive PSTO management
+   const renderManagementPage = () => {
+      if (currentUser.role === 'psto') {
+         return <UnifiedPSTODashboard currentUser={currentUser} />;
+      }
+      
+      return (
+         <div className="p-6 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Management</h1>
+            <p className="text-gray-600 mb-4">
+               Management functionality for {currentUser.role} users
+            </p>
+            <p className="text-gray-500">Management features will be available soon.</p>
+         </div>
+      );
+   };
+
+   // Render Notifications page
+   const renderNotificationsPage = () => {
+      return <NotificationsPage currentUser={currentUser} />;
    };
 
    // Render content based on current page
@@ -342,12 +362,32 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          case 'applications':
             console.log('Rendering ApplicationsPage');
             return renderApplicationsPage();
+         case 'management':
+            console.log('Rendering ManagementPage');
+            return renderManagementPage();
+         case 'notifications':
+            console.log('Rendering NotificationsPage');
+            return renderNotificationsPage();
          case 'dashboard':
          default:
             console.log('Rendering Dashboard');
             return renderDashboard();
       }
    };
+
+   // Use UnifiedLayout for PSTO users, MainLayout for others
+   if (currentUser.role === 'psto') {
+      return (
+         <UnifiedLayout
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={onNavigate}
+            currentPath={currentPage}
+         >
+            <UnifiedPSTODashboard currentUser={currentUser} currentPage={currentPage} />
+         </UnifiedLayout>
+      );
+   }
 
    return (
       <MainLayout 

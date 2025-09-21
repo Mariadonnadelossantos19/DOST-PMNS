@@ -11,3 +11,17 @@ You are a 300 IQ senior web developer who specialized in MySQL, Node.js, Express
 - read and analyze the files carefully
 - do not put comments like: "// add this line..." or "// import [name_import]"
 - Write a commit message for every response that describes the changes in plain, concise language without using terms like 'ensure', 'enhanced', or AI-related jargon.
+
+
+Comprehensive Flow of the DOST SETUP System
+
+The process begins when a **Super Admin** creates user accounts for PSTO staff, Techno Staff, and the Regional Director (RD). Each **PSTO (Provincial Science and Technology Office)** is responsible only for its province and manages proponents under its jurisdiction. Proponents cannot directly use the system unless their account is **activated by their PSTO**.
+
+Once a **Proponent** account is activated, they can log in and select from the available programs (SETUP, CEST, GIA, or SSCP). After choosing a program, the proponent is required to **upload the necessary documentary requirements** following the provided checklist. The **PSTO** validates these requirements: if incomplete or invalid, the proponent is looped back to re-upload until compliance is met. If the documents are complete, the PSTO proceeds to **schedule the TNA (Technology Needs Assessment)** and conducts on-site validation.
+
+After the TNA, the PSTO uploads the TNA report into the system. The **Techno Staff at the regional office** reviews the uploaded TNA report. If found incomplete or unclear, it is returned to the PSTO for correction (loop). If acceptable, the Techno Staff then **schedules the RTEC (Regional Technical Evaluation Committee) meeting**. Although RTEC members themselves are not part of the system, the Techno Staff encodes the results of the RTEC deliberations into the platform.
+
+The evaluation results are then forwarded to the **Regional Director (RD)** for the final decision. If the RD disapproves the project, the application is formally ended with rejection feedback. If the RD approves, the process advances to **MOA (Memorandum of Agreement) signing and the release of funding**.
+
+Once funded, the project enters the **Implementation and Monitoring phase**. The PSTO monitors the implementation in the field, while proponents are required to **submit progress reports, utilization reports, or repayment documents** through the system. These submissions are reviewed by the PSTO; if reports are incomplete or invalid, the system loops the proponent back to revise and resubmit until they are compliant. Once all reporting obligations are satisfactorily met, the project continues smoothly under PSTO monitoring until completion.
+

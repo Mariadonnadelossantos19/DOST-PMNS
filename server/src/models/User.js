@@ -94,6 +94,16 @@ const userSchema = new mongoose.Schema({
       ref: 'User',
       default: null
    },
+   // PSTO activation fields
+   activatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+   },
+   activatedAt: {
+      type: Date,
+      default: null
+   },
    lastLogin: {
       type: Date,
       default: null

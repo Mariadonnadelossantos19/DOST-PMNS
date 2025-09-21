@@ -17,6 +17,48 @@ export const programs = [
          'Training and capacity building',
          'Equipment and tool support',
          'Market linkage assistance'
+      ],
+      documentRequirements: [
+         {
+            id: 'letterOfIntent',
+            name: 'Letter of Intent',
+            description: 'Formal letter expressing interest in the SETUP program',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         },
+         {
+            id: 'enterpriseProfile',
+            name: 'Enterprise Profile',
+            description: 'Comprehensive profile of the enterprise including business details',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'businessPlan',
+            name: 'Business Plan',
+            description: 'Detailed business plan with financial projections',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'financialStatements',
+            name: 'Financial Statements',
+            description: 'Latest 2 years audited financial statements',
+            required: true,
+            fileTypes: ['.pdf', '.xls', '.xlsx'],
+            maxSize: '5MB'
+         },
+         {
+            id: 'registrationDocuments',
+            name: 'Registration Documents',
+            description: 'SEC/DTI registration and other business permits',
+            required: true,
+            fileTypes: ['.pdf', '.jpg', '.png'],
+            maxSize: '5MB'
+         }
       ]
    },
    {
@@ -36,6 +78,40 @@ export const programs = [
          'Innovation project grants',
          'Equipment and facility access',
          'Technical expertise assistance'
+      ],
+      documentRequirements: [
+         {
+            id: 'researchProposal',
+            name: 'Research Proposal',
+            description: 'Detailed research proposal with methodology and objectives',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'curriculumVitae',
+            name: 'Principal Investigator CV',
+            description: 'Curriculum vitae of the principal investigator',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         },
+         {
+            id: 'budgetProposal',
+            name: 'Budget Proposal',
+            description: 'Detailed budget breakdown for the research project',
+            required: true,
+            fileTypes: ['.pdf', '.xls', '.xlsx'],
+            maxSize: '5MB'
+         },
+         {
+            id: 'institutionalEndorsement',
+            name: 'Institutional Endorsement',
+            description: 'Letter of endorsement from the institution',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         }
       ]
    },
    {
@@ -57,6 +133,40 @@ export const programs = [
          'Local technology solutions',
          'Capacity building programs',
          'Sustainable development support'
+      ],
+      documentRequirements: [
+         {
+            id: 'communityProfile',
+            name: 'Community Profile',
+            description: 'Comprehensive profile of the target community',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'projectProposal',
+            name: 'Project Proposal',
+            description: 'Detailed project proposal addressing community needs',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'communityEndorsement',
+            name: 'Community Endorsement',
+            description: 'Letter of endorsement from community leaders',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         },
+         {
+            id: 'implementationPlan',
+            name: 'Implementation Plan',
+            description: 'Detailed plan for project implementation',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         }
       ]
    },
    {
@@ -78,6 +188,40 @@ export const programs = [
          'Business plan development',
          'Commercialization strategy',
          'Investment and funding assistance'
+      ],
+      documentRequirements: [
+         {
+            id: 'innovationProposal',
+            name: 'Innovation Proposal',
+            description: 'Detailed proposal for the innovative product or technology',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'marketAnalysis',
+            name: 'Market Analysis',
+            description: 'Comprehensive market analysis and feasibility study',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'commercializationPlan',
+            name: 'Commercialization Plan',
+            description: 'Detailed plan for commercializing the innovation',
+            required: true,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '10MB'
+         },
+         {
+            id: 'intellectualProperty',
+            name: 'Intellectual Property Documents',
+            description: 'Patent applications, trademarks, or other IP documentation',
+            required: false,
+            fileTypes: ['.pdf', '.doc', '.docx'],
+            maxSize: '5MB'
+         }
       ]
    }
 ];

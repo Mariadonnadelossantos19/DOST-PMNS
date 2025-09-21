@@ -1,11 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../Context';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
 
 const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, sidebarOpen, onNavigateToProfile }) => {
    const { isDarkMode, toggleDarkMode } = useDarkMode();
    
    // User dropdown state
    const [showUserDropdown, setShowUserDropdown] = useState(false);
+   
+   // Notification state
+   const [notifications, setNotifications] = useState([]);
+   const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+   // Fetch notifications
+   const fetchNotifications = async () => {
+      if (!user || user.role !== 'proponent') return;
+      
+      try {
+         setLoadingNotifications(true);
+         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${user.userId || user._id || user.id}`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            setNotifications(data.notifications || []);
+         }
+      } catch (error) {
+         console.error('Error fetching notifications:', error);
+      } finally {
+         setLoadingNotifications(false);
+      }
+   };
+
+   // Mark notification as read
+   const markAsRead = async (notificationId) => {
+      try {
+         const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+            method: 'PATCH',
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            setNotifications(prev => 
+               prev.map(notif => 
+                  notif._id === notificationId 
+                     ? { ...notif, isRead: true }
+                     : notif
+               )
+            );
+         }
+      } catch (error) {
+         console.error('Error marking notification as read:', error);
+      }
+   };
+
+   // Mark all as read
+   const markAllAsRead = async () => {
+      try {
+         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${user.userId || user._id || user.id}/mark-all-read`, {
+            method: 'PATCH',
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            setNotifications(prev => 
+               prev.map(notif => ({ ...notif, isRead: true }))
+            );
+         }
+      } catch (error) {
+         console.error('Error marking all notifications as read:', error);
+      }
+   };
+
+   // Fetch notifications on component mount
+   useEffect(() => {
+      if (user && user.role === 'proponent') {
+         fetchNotifications();
+      }
+   }, [user]);
 
    // Close dropdown when clicking outside
    useEffect(() => {
@@ -131,19 +210,18 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
             </button>
 
             {/* Notifications */}
-            <div className="relative">
-               <button className={`p-2 rounded-md transition-colors relative ${
-                  isDarkMode 
-                     ? 'hover:bg-gray-700 text-gray-300 hover:text-white' 
-                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-               }`} aria-label="Notifications">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                     <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                     <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9965 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full min-w-[1.25rem] h-5 flex items-center justify-center">3</span>
-               </button>
-            </div>
+            {user && user.role === 'proponent' && (
+               <NotificationDropdown
+                  notifications={notifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={markAllAsRead}
+                  onViewAll={() => {
+                     // Navigate to notifications page or open modal
+                     console.log('View all notifications');
+                  }}
+                  className={isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
+               />
+            )}
 
             {/* User Profile Dropdown */}
             <div className="relative user-dropdown">

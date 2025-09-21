@@ -44,7 +44,7 @@ const MainLayout = ({ children, user, onLogout, onNavigateToProfile, onNavigate 
                        currentPath={currentPath}
                        isCollapsed={sidebarCollapsed}
                        userRole={user?.role}
-                       userData={user}
+                       user={user}
                        onNavigate={onNavigate}
                     />
 

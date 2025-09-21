@@ -217,17 +217,17 @@ const setupApplicationSchema = new mongoose.Schema({
       mimetype: String
    },
    
-   // SETUP Process Stages
+   // SETUP Process Stages - Correct DOST PMNS Workflow
    currentStage: {
       type: String,
-      enum: ['tna_application', 'psto_review', 'dost_mimaropa_review', 'tna_assessment', 'rtec_evaluation', 'implementation', 'completed'],
-      default: 'tna_application'
+      enum: ['application_submitted', 'psto_review', 'psto_approved', 'tna_scheduled', 'tna_conducted', 'tna_report_submitted', 'dost_mimaropa_review', 'rtec_evaluation', 'implementation', 'completed'],
+      default: 'application_submitted'
    },
    
-   // Application Status
+   // Application Status - Correct DOST PMNS Workflow
    status: {
       type: String,
-      enum: ['pending', 'under_review', 'psto_approved', 'dost_mimaropa_approved', 'dost_mimaropa_rejected', 'tna_approved', 'tna_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'],
+      enum: ['pending', 'under_review', 'psto_approved', 'psto_rejected', 'tna_scheduled', 'tna_conducted', 'tna_report_submitted', 'dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'],
       default: 'pending'
    },
    
@@ -239,6 +239,13 @@ const setupApplicationSchema = new mongoose.Schema({
    },
    pstoComments: {
       type: String
+   },
+   validatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+   },
+   validatedAt: {
+      type: Date
    },
    pstoReviewedAt: {
       type: Date
@@ -273,7 +280,37 @@ const setupApplicationSchema = new mongoose.Schema({
       type: Date
    },
    
-   // DOST MIMAROPA Review Status
+   // TNA Information
+   tnaScheduled: {
+      type: Boolean,
+      default: false
+   },
+   tnaScheduledAt: {
+      type: Date
+   },
+   tnaConducted: {
+      type: Boolean,
+      default: false
+   },
+   tnaConductedAt: {
+      type: Date
+   },
+   tnaReportSubmitted: {
+      type: Boolean,
+      default: false
+   },
+   tnaReportSubmittedAt: {
+      type: Date
+   },
+   tnaReport: {
+      filename: String,
+      originalName: String,
+      path: String,
+      size: Number,
+      mimetype: String
+   },
+   
+   // DOST MIMAROPA Review Status (for TNA Reports)
    forwardedToDostMimaropa: {
       type: Boolean,
       default: false

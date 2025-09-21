@@ -507,33 +507,68 @@ const uploadDocuments = async (req, res) => {
 const resubmitApplication = async (req, res) => {
    try {
       const { id } = req.params;
+      console.log('=== RESUBMIT APPLICATION DEBUG ===');
+      console.log('Resubmit application - ID:', id);
+      console.log('Resubmit application - ID type:', typeof id);
+      console.log('Resubmit application - User:', req.user);
+      console.log('Resubmit application - User ID:', req.user?._id);
+      console.log('Resubmit application - User ID type:', typeof req.user?._id);
+
+      // Validate ID format
+      if (!id || typeof id !== 'string') {
+         console.log('Invalid ID format:', id);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid application ID format'
+         });
+      }
 
       // Find the application
+      console.log('Searching for application with ID:', id);
       const application = await SETUPApplication.findById(id);
       if (!application) {
+         console.log('Application not found for ID:', id);
          return res.status(404).json({
             success: false,
             message: 'Application not found'
          });
       }
+      
+      console.log('Application found:', application._id);
+      console.log('Application proponentId:', application.proponentId);
+      console.log('Application proponentId type:', typeof application.proponentId);
+      console.log('User ID:', req.user._id);
+      console.log('User ID type:', typeof req.user._id);
 
       // Check if the user owns this application
+      console.log('Checking ownership...');
+      console.log('Application proponentId (string):', application.proponentId.toString());
+      console.log('User ID (string):', req.user._id.toString());
+      console.log('Ownership check result:', application.proponentId.toString() === req.user._id.toString());
+      
       if (application.proponentId.toString() !== req.user._id.toString()) {
+         console.log('Access denied - user does not own this application');
          return res.status(403).json({
             success: false,
             message: 'Access denied. You can only update your own applications.'
          });
       }
 
-      // Check if application can be resubmitted (only if returned for revision)
-      if (application.pstoStatus !== 'returned') {
+      // Check if application can be resubmitted (only if returned for revision or pending)
+      console.log('Checking PSTO status...');
+      console.log('Current PSTO status:', application.pstoStatus);
+      console.log('Can resubmit:', application.pstoStatus === 'returned' || application.pstoStatus === 'pending');
+      
+      if (application.pstoStatus !== 'returned' && application.pstoStatus !== 'pending') {
+         console.log('Cannot resubmit - application not in returned or pending status');
          return res.status(400).json({
             success: false,
-            message: 'Application can only be resubmitted if it has been returned for revision.'
+            message: 'Application can only be resubmitted if it has been returned for revision or is pending.'
          });
       }
 
       // Reset status for resubmission
+      console.log('Resetting application status for resubmission...');
       application.pstoStatus = 'pending';
       application.pstoComments = '';
       application.pstoReviewedAt = null;
@@ -542,18 +577,28 @@ const resubmitApplication = async (req, res) => {
       application.currentStage = 'tna_application';
       application.updatedAt = new Date();
 
+      console.log('Saving application...');
       await application.save();
+      console.log('Application saved successfully');
 
+      console.log('Sending success response...');
       res.json({
          success: true,
          message: 'Application resubmitted successfully',
          data: application
       });
+      console.log('=== RESUBMIT APPLICATION SUCCESS ===');
    } catch (error) {
       console.error('Resubmit application error:', error);
+      console.error('Error details:', {
+         message: error.message,
+         stack: error.stack,
+         name: error.name
+      });
       res.status(500).json({
          success: false,
-         message: 'Error resubmitting application'
+         message: 'Error resubmitting application',
+         error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
       });
    }
 };
@@ -1031,18 +1076,17 @@ const reviewApplication = async (req, res) => {
             application.assignedPSTO = assignedPSTO;
          }
 
-         // Update main status based on PSTO decision
+         // Update main status based on PSTO decision - Correct DOST PMNS Workflow
          if (status === 'approved') {
             application.status = 'psto_approved';
-            application.currentStage = 'dost_mimaropa_review';
-            application.forwardedToDostMimaropa = true;
-            application.forwardedToDostMimaropaAt = new Date();
-            application.dostMimaropaStatus = 'pending';
+            application.currentStage = 'psto_approved';
+            // TNA will be scheduled after PSTO approval, not forwarded to DOST MIMAROPA yet
          } else if (status === 'rejected') {
-            application.status = 'tna_rejected';
+            application.status = 'psto_rejected';
+            application.currentStage = 'psto_review';
          } else if (status === 'returned') {
             application.status = 'pending';
-            application.currentStage = 'tna_application';
+            application.currentStage = 'application_submitted';
          }
 
          console.log('Application fields before save:', {
@@ -1511,6 +1555,84 @@ const reviewDostMimaropaApplication = async (req, res) => {
    }
 };
 
+// Validate application documents by PSTO
+const validateApplication = async (req, res) => {
+   try {
+      const { id: applicationId } = req.params;
+      const { status, comments, validatedBy, validatedAt } = req.body;
+
+      // Validate required fields
+      if (!status) {
+         return res.status(400).json({
+            success: false,
+            message: 'Status is required'
+         });
+      }
+
+      // Find the application
+      const application = await SETUPApplication.findById(applicationId);
+      if (!application) {
+         return res.status(404).json({
+            success: false,
+            message: 'Application not found'
+         });
+      }
+
+      // Update application status
+      application.pstoStatus = status;
+      application.pstoComments = comments;
+      application.validatedBy = validatedBy;
+      application.validatedAt = new Date(validatedAt);
+      application.updatedAt = new Date();
+      
+      // Update main application status based on PSTO decision
+      if (status === 'approved') {
+         application.status = 'psto_approved';
+         application.currentStage = 'psto_approved';
+      } else if (status === 'rejected') {
+         application.status = 'psto_rejected';
+         application.currentStage = 'psto_review';
+      } else if (status === 'returned') {
+         application.status = 'pending';
+         application.currentStage = 'application_submitted';
+      }
+
+      await application.save();
+
+      // Create notification for proponent
+      const Notification = require('../models/Notification');
+      const notificationMessage = comments 
+         ? `Your ${application.programName} application has been ${status === 'approved' ? 'approved' : 'returned for revision'}. ${comments}`
+         : `Your ${application.programName} application has been ${status === 'approved' ? 'approved' : 'returned for revision'}.`;
+      
+      await Notification.create({
+         recipientId: application.proponentId,
+         recipientType: 'proponent',
+         type: status === 'approved' ? 'application_approved' : 'application_returned',
+         title: 'Application Status Update',
+         message: notificationMessage,
+         relatedEntityType: 'application',
+         relatedEntityId: application._id,
+         actionUrl: `/applications/${application._id}`,
+         actionText: 'View Application',
+         priority: 'high',
+         sentBy: req.user._id
+      });
+
+      res.json({
+         success: true,
+         message: `Application ${status === 'approved' ? 'approved' : 'returned for revision'} successfully`,
+         data: application
+      });
+   } catch (error) {
+      console.error('Validate application error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error validating application'
+      });
+   }
+};
+
 module.exports = {
    submitApplication,
    getMyApplications,
@@ -1527,6 +1649,7 @@ module.exports = {
    testApplicationAccess,
    reviewApplication,
    deleteApplication,
+   validateApplication,
    fixPSTOAssignment,
    forwardToDostMimaropa,
    getDostMimaropaApplications,

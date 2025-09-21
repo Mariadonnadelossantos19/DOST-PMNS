@@ -16,53 +16,68 @@ const seedPSTOData = async () => {
       // Seed PSTO data for MIMAROPA region
       const pstoData = [
          {
-            name: 'PSTO Marinduque',
-            region: 'MIMAROPA',
+            pstoId: 'PSTO-MAR-001',
+            userId: new mongoose.Types.ObjectId(), // This will be updated when PSTO users are created
+            programId: new mongoose.Types.ObjectId(), // This will be updated when programs are created
+            officeName: 'PSTO Marinduque',
+            contactInfo: {
+               phone: '(042) 332-1234',
+               address: 'Provincial Capitol, Boac, Marinduque',
+               email: 'psto.marinduque@dost.gov.ph'
+            },
             province: 'Marinduque',
-            contactPerson: 'Dr. Maria Santos',
-            email: 'psto.marinduque@dost.gov.ph',
-            phone: '(042) 332-1234',
-            address: 'Provincial Capitol, Boac, Marinduque',
             status: 'active'
          },
          {
-            name: 'PSTO Occidental Mindoro',
-            region: 'MIMAROPA',
+            pstoId: 'PSTO-OCM-001',
+            userId: new mongoose.Types.ObjectId(),
+            programId: new mongoose.Types.ObjectId(),
+            officeName: 'PSTO Occidental Mindoro',
+            contactInfo: {
+               phone: '(043) 457-8901',
+               address: 'Provincial Capitol, Mamburao, Occidental Mindoro',
+               email: 'psto.occidental.mindoro@dost.gov.ph'
+            },
             province: 'Occidental Mindoro',
-            contactPerson: 'Engr. Juan Dela Cruz',
-            email: 'psto.occidental.mindoro@dost.gov.ph',
-            phone: '(043) 457-8901',
-            address: 'Provincial Capitol, Mamburao, Occidental Mindoro',
             status: 'active'
          },
          {
-            name: 'PSTO Oriental Mindoro',
-            region: 'MIMAROPA',
+            pstoId: 'PSTO-ORM-001',
+            userId: new mongoose.Types.ObjectId(),
+            programId: new mongoose.Types.ObjectId(),
+            officeName: 'PSTO Oriental Mindoro',
+            contactInfo: {
+               phone: '(043) 288-4567',
+               address: 'Provincial Capitol, Calapan City, Oriental Mindoro',
+               email: 'psto.oriental.mindoro@dost.gov.ph'
+            },
             province: 'Oriental Mindoro',
-            contactPerson: 'Dr. Ana Rodriguez',
-            email: 'psto.oriental.mindoro@dost.gov.ph',
-            phone: '(043) 288-4567',
-            address: 'Provincial Capitol, Calapan City, Oriental Mindoro',
             status: 'active'
          },
          {
-            name: 'PSTO Palawan',
-            region: 'MIMAROPA',
+            pstoId: 'PSTO-PAL-001',
+            userId: new mongoose.Types.ObjectId(),
+            programId: new mongoose.Types.ObjectId(),
+            officeName: 'PSTO Palawan',
+            contactInfo: {
+               phone: '(048) 433-2345',
+               address: 'Provincial Capitol, Puerto Princesa City, Palawan',
+               email: 'psto.palawan@dost.gov.ph'
+            },
             province: 'Palawan',
-            contactPerson: 'Engr. Carlos Mendoza',
-            email: 'psto.palawan@dost.gov.ph',
-            phone: '(048) 433-2345',
-            address: 'Provincial Capitol, Puerto Princesa City, Palawan',
             status: 'active'
          },
          {
-            name: 'PSTO Romblon',
-            region: 'MIMAROPA',
+            pstoId: 'PSTO-ROM-001',
+            userId: new mongoose.Types.ObjectId(),
+            programId: new mongoose.Types.ObjectId(),
+            officeName: 'PSTO Romblon',
+            contactInfo: {
+               phone: '(042) 567-8901',
+               address: 'Provincial Capitol, Romblon, Romblon',
+               email: 'psto.romblon@dost.gov.ph'
+            },
             province: 'Romblon',
-            contactPerson: 'Dr. Sofia Garcia',
-            email: 'psto.romblon@dost.gov.ph',
-            phone: '(042) 567-8901',
-            address: 'Provincial Capitol, Romblon, Romblon',
             status: 'active'
          }
       ];

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProponentDashboard, ProponentRegistrationForm, EnterpriseProfile } from '../Components';
 import { ProgramSelection } from '../../../Component/ProgramSelection';
-import { MultiStepForm } from '../../../Component/ProgramApplication';
+import { MultiStepForm, ApplicationStatusTracker } from '../../../Component/ProgramApplication';
 import { Button, Card, Modal } from '../../../Component/UI';
 
 const ProponentMainPage = ({ onNavigateToProfile }) => {
@@ -12,6 +12,7 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
    const [showProgramSelection, setShowProgramSelection] = useState(false);
    const [showApplicationForm, setShowApplicationForm] = useState(false);
    const [selectedProgram, setSelectedProgram] = useState(null);
+   const [applications, setApplications] = useState([]);
 
    // Debug modal state changes
    useEffect(() => {
@@ -98,6 +99,13 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
       checkAuth();
    }, []);
 
+   // Fetch applications when user data is available
+   useEffect(() => {
+      if (userData) {
+         fetchApplications();
+      }
+   }, [userData]);
+
 
    const handleRegistrationSuccess = () => {
       setShowRegistrationForm(false);
@@ -131,6 +139,27 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
    const handleApplicationBack = () => {
       setShowApplicationForm(false);
       setShowProgramSelection(true);
+   };
+
+   // Fetch applications for the proponent
+   const fetchApplications = async () => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) return;
+
+         const response = await fetch('http://localhost:4000/api/programs/setup/my-applications', {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            setApplications(data.applications || []);
+         }
+      } catch (error) {
+         console.error('Error fetching applications:', error);
+      }
    };
 
    const handleApplicationSubmit = async (applicationData) => {
@@ -222,10 +251,56 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
                         onBack={handleProgramBack}
                      />
                   ) : (
-                     <ProponentDashboard 
-                        userData={userData} 
-                        onOpenProgramSelection={() => setShowProgramSelection(true)}
-                     />
+                     <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                           <h1 className="text-2xl font-bold text-gray-900">Proponent Dashboard</h1>
+                           <div className="flex space-x-3">
+                              <Button
+                                 onClick={() => setShowProgramSelection(true)}
+                                 className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                 New Application
+                              </Button>
+                           </div>
+                        </div>
+
+                        {applications.length > 0 && (
+                           <div className="space-y-4">
+                              <h2 className="text-lg font-semibold text-gray-900">Your Applications</h2>
+                              {applications.map((application) => (
+                                 <Card key={application._id} className="p-4">
+                                    <div className="flex justify-between items-start">
+                                       <div>
+                                          <h3 className="font-medium text-gray-900">
+                                             {application.programName} Application
+                                          </h3>
+                                          <p className="text-sm text-gray-600">
+                                             Submitted: {new Date(application.createdAt).toLocaleDateString()}
+                                          </p>
+                                       </div>
+                                       <ApplicationStatusTracker application={application} />
+                                    </div>
+                                 </Card>
+                              ))}
+                           </div>
+                        )}
+
+                        {applications.length === 0 && (
+                           <Card className="p-8 text-center">
+                              <div className="text-gray-500">
+                                 <div className="text-4xl mb-4">📝</div>
+                                 <h3 className="text-lg font-medium mb-2">No Applications Yet</h3>
+                                 <p className="mb-4">Start by creating your first program application</p>
+                                 <Button
+                                    onClick={() => setShowProgramSelection(true)}
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                 >
+                                    Create Application
+                                 </Button>
+                              </div>
+                           </Card>
+                        )}
+                     </div>
                   )}
                </div>
             </div>

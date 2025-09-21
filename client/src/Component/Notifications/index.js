@@ -3,3 +3,4 @@ export { default as NotificationCenter } from './NotificationCenter';
 export { default as NotificationDropdown } from './NotificationDropdown';
 export { default as NotificationToast } from './NotificationToast';
 export { default as NotificationProvider, useNotifications } from './NotificationProvider';
+export { default as ProponentNotificationCenter } from './ProponentNotificationCenter';

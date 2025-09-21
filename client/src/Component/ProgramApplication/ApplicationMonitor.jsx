@@ -79,35 +79,53 @@ const ApplicationMonitor = () => {
       return matchesStatus && matchesSearch;
    });
 
-   // Get status badge color - Program Application style
+   // Get status badge color - Program Application style (Updated for DOST PMNS workflow)
    const getStatusColor = (status) => {
       switch (status) {
+         case 'pending': return isDarkMode ? 'bg-yellow-900/90 text-yellow-200 border border-yellow-700/60' : 'bg-yellow-50 text-yellow-800 border border-yellow-200';
+         case 'under_review': return isDarkMode ? 'bg-blue-900/90 text-blue-200 border border-blue-700/60' : 'bg-blue-50 text-blue-800 border border-blue-200';
+         case 'psto_approved': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
+         case 'psto_rejected': return isDarkMode ? 'bg-red-900/90 text-red-200 border border-red-700/60' : 'bg-red-50 text-red-800 border border-red-200';
+         case 'tna_scheduled': return isDarkMode ? 'bg-blue-900/90 text-blue-200 border border-blue-700/60' : 'bg-blue-50 text-blue-800 border border-blue-200';
+         case 'tna_conducted': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
+         case 'tna_report_submitted': return isDarkMode ? 'bg-blue-900/90 text-blue-200 border border-blue-700/60' : 'bg-blue-50 text-blue-800 border border-blue-200';
+         case 'dost_mimaropa_approved': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
+         case 'dost_mimaropa_rejected': return isDarkMode ? 'bg-red-900/90 text-red-200 border border-red-700/60' : 'bg-red-50 text-red-800 border border-red-200';
+         case 'returned': return isDarkMode ? 'bg-yellow-900/90 text-yellow-200 border border-yellow-700/60' : 'bg-yellow-50 text-yellow-800 border border-yellow-200';
          case 'approved': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
          case 'rejected': return isDarkMode ? 'bg-red-900/90 text-red-200 border border-red-700/60' : 'bg-red-50 text-red-800 border border-red-200';
-         case 'returned': return isDarkMode ? 'bg-yellow-900/90 text-yellow-200 border border-yellow-700/60' : 'bg-yellow-50 text-yellow-800 border border-yellow-200';
-         case 'pending': return isDarkMode ? 'bg-blue-900/90 text-blue-200 border border-blue-700/60' : 'bg-blue-50 text-blue-800 border border-blue-200';
          default: return isDarkMode ? 'bg-gray-900/90 text-gray-200 border border-gray-700/60' : 'bg-gray-50 text-gray-800 border border-gray-200';
       }
    };
 
-   // Get PSTO status badge color - Program Application style
+   // Get PSTO status badge color - Program Application style (Updated for DOST PMNS workflow)
    const getPSTOStatusColor = (status) => {
       switch (status) {
          case 'approved': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
          case 'rejected': return isDarkMode ? 'bg-red-900/90 text-red-200 border border-red-700/60' : 'bg-red-50 text-red-800 border border-red-200';
          case 'returned': return isDarkMode ? 'bg-yellow-900/90 text-yellow-200 border border-yellow-700/60' : 'bg-yellow-50 text-yellow-800 border border-yellow-200';
          case 'pending': return isDarkMode ? 'bg-blue-900/90 text-blue-200 border border-blue-700/60' : 'bg-blue-50 text-blue-800 border border-blue-200';
+         case 'psto_approved': return isDarkMode ? 'bg-green-900/90 text-green-200 border border-green-700/60' : 'bg-green-50 text-green-800 border border-green-200';
+         case 'psto_rejected': return isDarkMode ? 'bg-red-900/90 text-red-200 border border-red-700/60' : 'bg-red-50 text-red-800 border border-red-200';
          default: return isDarkMode ? 'bg-gray-900/90 text-gray-200 border border-gray-700/60' : 'bg-gray-50 text-gray-800 border border-gray-200';
       }
    };
 
-   // Get status bar color for top border - Program Application style
+   // Get status bar color for top border - Program Application style (Updated for DOST PMNS workflow)
    const getStatusBarColor = (status) => {
       switch (status) {
+         case 'pending': return 'bg-gradient-to-r from-yellow-500 to-yellow-600';
+         case 'under_review': return 'bg-gradient-to-r from-blue-500 to-blue-600';
+         case 'psto_approved': return 'bg-gradient-to-r from-green-500 to-green-600';
+         case 'psto_rejected': return 'bg-gradient-to-r from-red-500 to-red-600';
+         case 'tna_scheduled': return 'bg-gradient-to-r from-blue-500 to-blue-600';
+         case 'tna_conducted': return 'bg-gradient-to-r from-green-500 to-green-600';
+         case 'tna_report_submitted': return 'bg-gradient-to-r from-blue-500 to-blue-600';
+         case 'dost_mimaropa_approved': return 'bg-gradient-to-r from-green-500 to-green-600';
+         case 'dost_mimaropa_rejected': return 'bg-gradient-to-r from-red-500 to-red-600';
+         case 'returned': return 'bg-gradient-to-r from-yellow-500 to-yellow-600';
          case 'approved': return 'bg-gradient-to-r from-green-500 to-green-600';
          case 'rejected': return 'bg-gradient-to-r from-red-500 to-red-600';
-         case 'returned': return 'bg-gradient-to-r from-yellow-500 to-yellow-600';
-         case 'pending': return 'bg-gradient-to-r from-blue-500 to-blue-600';
          default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
       }
    };
@@ -1070,9 +1088,17 @@ const ApplicationMonitor = () => {
                   >
                      <option value="all">All Status</option>
                      <option value="pending">Pending</option>
+                     <option value="under_review">Under Review</option>
+                     <option value="psto_approved">PSTO Approved</option>
+                     <option value="psto_rejected">PSTO Rejected</option>
+                     <option value="tna_scheduled">TNA Scheduled</option>
+                     <option value="tna_conducted">TNA Conducted</option>
+                     <option value="tna_report_submitted">TNA Report Submitted</option>
+                     <option value="dost_mimaropa_approved">DOST MIMAROPA Approved</option>
+                     <option value="dost_mimaropa_rejected">DOST MIMAROPA Rejected</option>
+                     <option value="returned">Returned</option>
                      <option value="approved">Approved</option>
                      <option value="rejected">Rejected</option>
-                     <option value="returned">Returned</option>
                   </select>
                   
                   {/* Refresh Button - Program Application Style */}
@@ -1090,13 +1116,17 @@ const ApplicationMonitor = () => {
                </div>
             </div>
             
-            {/* Program Application Style Stats Cards */}
-            <div className="mt-4 grid grid-cols-4 gap-2">
+            {/* Program Application Style Stats Cards - Updated for DOST PMNS workflow */}
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
                {[
                   { label: 'Total', count: applications.length, color: 'blue' },
-                  { label: 'Pending', count: applications.filter(app => app.status === 'pending').length, color: 'blue' },
-                  { label: 'Approved', count: applications.filter(app => app.status === 'approved').length, color: 'green' },
-                  { label: 'Rejected', count: applications.filter(app => app.status === 'rejected').length, color: 'red' }
+                  { label: 'Pending', count: applications.filter(app => app.status === 'pending' || app.status === 'under_review').length, color: 'yellow' },
+                  { label: 'PSTO Approved', count: applications.filter(app => app.status === 'psto_approved').length, color: 'green' },
+                  { label: 'TNA Scheduled', count: applications.filter(app => app.status === 'tna_scheduled').length, color: 'blue' },
+                  { label: 'TNA Conducted', count: applications.filter(app => app.status === 'tna_conducted').length, color: 'green' },
+                  { label: 'TNA Report Submitted', count: applications.filter(app => app.status === 'tna_report_submitted').length, color: 'blue' },
+                  { label: 'DOST Approved', count: applications.filter(app => app.status === 'dost_mimaropa_approved').length, color: 'green' },
+                  { label: 'Rejected', count: applications.filter(app => app.status === 'psto_rejected' || app.status === 'dost_mimaropa_rejected').length, color: 'red' }
                ].map((stat, index) => (
                   <div key={index} className={`p-2 rounded-lg border transition-colors duration-300 ${
                      isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200'
@@ -1105,11 +1135,13 @@ const ApplicationMonitor = () => {
                         <div className={`p-1 rounded-lg ${
                            stat.color === 'blue' ? (isDarkMode ? 'bg-gradient-to-br from-blue-900 to-blue-800' : 'bg-gradient-to-br from-blue-50 to-blue-100') :
                            stat.color === 'green' ? (isDarkMode ? 'bg-gradient-to-br from-green-900 to-green-800' : 'bg-gradient-to-br from-green-50 to-green-100') :
+                           stat.color === 'yellow' ? (isDarkMode ? 'bg-gradient-to-br from-yellow-900 to-yellow-800' : 'bg-gradient-to-br from-yellow-50 to-yellow-100') :
                            (isDarkMode ? 'bg-gradient-to-br from-red-900 to-red-800' : 'bg-gradient-to-br from-red-50 to-red-100')
                         }`}>
                            <svg className={`w-3 h-3 ${
                               stat.color === 'blue' ? 'text-blue-600' :
                               stat.color === 'green' ? 'text-green-600' :
+                              stat.color === 'yellow' ? 'text-yellow-600' :
                               'text-red-600'
                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />

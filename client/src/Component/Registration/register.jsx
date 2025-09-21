@@ -223,7 +223,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
       showConfirmation(
          'Create Proponent Account',
-         `Are you sure you want to create a proponent account for ${formData.firstName} ${formData.lastName}? You will be able to access your dashboard immediately.`,
+         `Are you sure you want to create a proponent account for ${formData.firstName} ${formData.lastName}? Your account will be pending activation by your local PSTO.`,
          'info',
          'Create Account',
          () => performRegistration()
@@ -262,7 +262,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
 
          if (response.ok) {
             console.log('Proponent account created successfully:', data);
-            showSuccess('Proponent account created successfully! You can now login and access your dashboard immediately.');
+            showSuccess('Proponent account created successfully! Your account is pending activation by your local PSTO. You will be notified once activated.');
             
             // Reset form
             setFormData({
@@ -335,7 +335,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                Register as Proponent
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-gray-600 px-4 sm:px-0">
-               Create a proponent account to access DOST programs. You will be automatically assigned to your local PSTO based on your province.
+               Create a proponent account to access DOST programs. Your account will be assigned to your local PSTO and requires activation before you can login.
             </p>
          </div>
 
@@ -475,7 +475,7 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }) => {
                   <div className="space-y-3 sm:space-y-4">
                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
                         <p className="text-xs sm:text-sm text-gray-600">
-                           You will use these credentials to login and access your dashboard immediately.
+                           You will use these credentials to login once your account is activated by your local PSTO.
                         </p>
                         <button
                            type="button"

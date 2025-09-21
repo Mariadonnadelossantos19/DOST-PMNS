@@ -35,6 +35,44 @@ router.get('/setup/:id/download/:fileType', auth, setupController.downloadFile);
 router.get('/setup/:id/view/:fileType', auth, setupController.viewFile);
 router.get('/setup/stats/overview', auth, setupController.getApplicationStats);
 
+// Test endpoint for debugging
+router.get('/test', (req, res) => {
+   res.json({ message: 'Server is working', timestamp: new Date() });
+});
+
+// Test endpoint to check if application exists
+router.get('/setup/:id/test', async (req, res) => {
+   try {
+      const { id } = req.params;
+      const SETUPApplication = require('../models/SETUPApplication');
+      const application = await SETUPApplication.findById(id);
+      
+      if (!application) {
+         return res.json({ 
+            exists: false, 
+            message: 'Application not found',
+            id: id 
+         });
+      }
+      
+      res.json({ 
+         exists: true, 
+         application: {
+            id: application._id,
+            proponentId: application.proponentId,
+            pstoStatus: application.pstoStatus,
+            status: application.status,
+            currentStage: application.currentStage
+         }
+      });
+   } catch (error) {
+      res.status(500).json({ 
+         error: error.message,
+         stack: error.stack 
+      });
+   }
+});
+
 // GIA Program Routes
 router.post('/gia/submit', auth, upload.fields([
    { name: 'researchProposal', maxCount: 1 },
@@ -80,6 +118,7 @@ router.get('/psto/applications', auth, setupController.getPSTOApplications);
 router.get('/psto/applications/:id', auth, setupController.getPSTOApplicationById);
 router.get('/psto/applications/:id/test', auth, setupController.testApplicationAccess);
 router.put('/psto/applications/:id/review', auth, setupController.reviewApplication);
+router.put('/psto/applications/:id/validate', auth, setupController.validateApplication);
 router.put('/psto/applications/:id/forward-to-dost-mimaropa', auth, setupController.forwardToDostMimaropa);
 router.delete('/psto/applications/:id', auth, setupController.deleteApplication);
 router.get('/psto/applications/:id/download/:fileType', auth, setupController.downloadFile);

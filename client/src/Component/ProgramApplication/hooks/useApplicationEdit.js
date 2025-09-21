@@ -94,31 +94,38 @@ const useApplicationEdit = () => {
          }
 
          // First update the application data
-         await updateApplication(applicationId, formData);
+         const updateResult = await updateApplication(applicationId, formData);
          
          // Then upload any new documents
          if (files && Object.keys(files).length > 0) {
             await uploadDocuments(applicationId, files);
          }
 
-         // Finally, resubmit the application
-         const resubmitUrl = API_ENDPOINTS.SETUP_APPLICATION_RESUBMIT(applicationId);
-         console.log('Resubmitting application with URL:', resubmitUrl);
-         const response = await fetch(resubmitUrl, {
-            method: 'POST',
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
+         // Check if resubmit is needed based on current status
+         if (updateResult.data && updateResult.data.pstoStatus === 'returned') {
+            // Only resubmit if the application is in 'returned' status
+            const resubmitUrl = API_ENDPOINTS.SETUP_APPLICATION_RESUBMIT(applicationId);
+            console.log('Resubmitting application with URL:', resubmitUrl);
+            const response = await fetch(resubmitUrl, {
+               method: 'POST',
+               headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+               }
+            });
+
+            if (!response.ok) {
+               throw new Error(`Failed to resubmit application: ${response.status} ${response.statusText}`);
             }
-         });
 
-         if (!response.ok) {
-            throw new Error(`Failed to resubmit application: ${response.status} ${response.statusText}`);
+            const data = await response.json();
+            console.log('Application resubmitted successfully:', data);
+            return data;
+         } else {
+            // Application is already in correct status, no resubmit needed
+            console.log('Application updated successfully, no resubmit needed');
+            return updateResult;
          }
-
-         const data = await response.json();
-         console.log('Application resubmitted successfully:', data);
-         return data;
       } catch (err) {
          console.error('Error resubmitting application:', err);
          setError(err.message);

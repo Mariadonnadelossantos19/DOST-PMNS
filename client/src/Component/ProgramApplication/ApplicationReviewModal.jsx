@@ -12,7 +12,8 @@ const ApplicationReviewModal = ({
    setReviewComments, 
    reviewApplication,
    getStatusColor,
-   formatDate 
+   formatDate,
+   handleForwardToDostMimaropa
 }) => {
    const [showTNAGenerator, setShowTNAGenerator] = useState(false);
 
@@ -58,36 +59,13 @@ const ApplicationReviewModal = ({
       }
    };
 
-   // Handle forward to DOST MIMAROPA
-   const handleForwardToDostMimaropa = async () => {
-      if (window.confirm('Are you sure you want to forward this application to DOST MIMAROPA for approval?')) {
-         try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(API_ENDPOINTS.FORWARD_TO_DOST_MIMAROPA(selectedApplication._id), {
-               method: 'PUT',
-               headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-               }
-            });
-
-            if (!response.ok) {
-               throw new Error('Failed to forward application');
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-               alert('Application forwarded to DOST MIMAROPA successfully!');
-               setSelectedApplication(null); // Close the modal
-               window.location.reload(); // Refresh the page
-            } else {
-               throw new Error(result.message || 'Failed to forward application');
-            }
-         } catch (error) {
-            console.error('Error forwarding application:', error);
-            alert('Error forwarding application: ' + error.message);
-         }
+   // Handle schedule TNA for approved applications
+   const handleScheduleTNA = () => {
+      if (window.confirm('This application has been approved. You can now schedule a Technology Needs Assessment (TNA). Would you like to proceed to TNA scheduling?')) {
+         // Close the modal and trigger TNA scheduling
+         setSelectedApplication(null);
+         // This would typically navigate to TNA scheduling or open TNA modal
+         alert('Please use the TNA Management section to schedule the assessment.');
       }
    };
    
@@ -915,7 +893,9 @@ const ApplicationReviewModal = ({
                   <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
                      {/* Left side - Forward button (only for approved applications) */}
                      <div>
-                        {selectedApplication.pstoStatus === 'approved' && (
+                        {selectedApplication.pstoStatus === 'approved' && 
+                         selectedApplication.tnaConducted && 
+                         selectedApplication.tnaReportSubmitted && (
                            <button
                               onClick={handleForwardToDostMimaropa}
                               className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center space-x-2"
@@ -927,6 +907,25 @@ const ApplicationReviewModal = ({
                                  {selectedApplication.forwardedToDostMimaropa ? 'Re-forward to DOST MIMAROPA' : 'Forward to DOST MIMAROPA'}
                               </span>
                            </button>
+                        )}
+                        
+                        {/* Show workflow status message when TNA is not ready */}
+                        {selectedApplication.pstoStatus === 'approved' && 
+                         (!selectedApplication.tnaConducted || !selectedApplication.tnaReportSubmitted) && (
+                           <div className="px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <div className="flex items-center">
+                                 <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                 </svg>
+                                 <div className="text-sm text-yellow-800">
+                                    <strong>Next Step:</strong> {
+                                       !selectedApplication.tnaConducted 
+                                          ? 'Schedule and conduct TNA assessment'
+                                          : 'Upload TNA report to forward to DOST MIMAROPA'
+                                    }
+                                 </div>
+                              </div>
+                           </div>
                         )}
                      </div>
 
