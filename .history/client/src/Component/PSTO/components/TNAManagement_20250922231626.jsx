@@ -396,11 +396,7 @@ const TNAManagement = ({ currentUser }) => {
    // Calculate statistics
    const stats = {
       totalApplications: applications.length,
-      readyForTNA: applications.filter(app => {
-         const isApproved = app.status === 'psto_approved';
-         const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
-         return isApproved && !hasTNA;
-      }).length,
+      readyForTNA: applications.filter(app => app.status === 'psto_approved').length,
       totalTNAs: tnas.length,
       scheduledTNAs: tnas.filter(tna => tna.status === 'scheduled').length,
       inProgressTNAs: tnas.filter(tna => tna.status === 'in_progress').length,
@@ -541,24 +537,14 @@ const TNAManagement = ({ currentUser }) => {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                   <p className="text-sm text-gray-500 mt-2">Loading applications...</p>
                </div>
-            ) : applications.filter(app => {
-               // Only show applications that are approved AND don't have TNAs scheduled
-               const isApproved = app.status === 'psto_approved';
-               const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
-               return isApproved && !hasTNA;
-            }).length === 0 ? (
+            ) : applications.filter(app => app.status === 'psto_approved').length === 0 ? (
                <div className="text-center py-8">
                   <p className="text-gray-500">No applications ready for TNA scheduling</p>
                </div>
             ) : (
                <div className="space-y-4">
                   {applications
-                     .filter(app => {
-                        // Only show applications that are approved AND don't have TNAs scheduled
-                        const isApproved = app.status === 'psto_approved';
-                        const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
-                        return isApproved && !hasTNA;
-                     })
+                     .filter(app => app.status === 'psto_approved')
                      .map((application) => (
                         <div key={application._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                            <div className="flex justify-between items-start">

@@ -206,9 +206,9 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          console.error('Error parsing user data from localStorage:', error);
       }
       
-      // Return null if no data found (fallback handled by caller)
-      console.log('No user data found in localStorage');
-      return null;
+      // Fallback to sample user if no data found
+      console.log('No user data found, using sample user');
+      return sampleUser;
    };
 
    // Clear localStorage to force using sample user with correct ID
@@ -237,17 +237,15 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       console.log('Set up sample user with mock auth token');
    };
 
-   // Check if there's real user data in localStorage first
-   const hasRealUserData = localStorage.getItem('userData') && localStorage.getItem('isLoggedIn') === 'true';
+   // Only set up sample user if no real user data exists
+   const currentUser = getUserData();
    
-   let currentUser;
-   if (hasRealUserData) {
-      console.log('Using real user data from localStorage');
-      currentUser = getUserData();
-   } else {
-      console.log('No real user data found, setting up sample user');
+   // If no user data found, set up sample user
+   if (!currentUser || currentUser.role === 'proponent' && currentUser.userId === '68ceb300289e363622ed1d64') {
       setupSampleUser();
-      currentUser = getUserData();
+      // Re-get user data after setting up sample
+      const updatedUser = getUserData();
+      console.log('Using sample user:', updatedUser);
    }
    
    // Debug: Log the current user data
@@ -256,17 +254,6 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
    const handleLogout = () => {
       showInfo('Logging out...');
       onLogout();
-   };
-
-   // Navigation handler with user role logic
-   const handleNavigate = (path) => {
-      console.log('Navigating to:', path);
-      // For DOST MIMAROPA users, keep the full path with leading slash
-      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         onNavigate(path);
-      } else {
-         onNavigate(path.replace('/', ''));
-      }
    };
 
    const handleProjectUpdate = (projectId, updates) => {
@@ -400,7 +387,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          <UnifiedLayout
             user={currentUser}
             onLogout={handleLogout}
-            onNavigate={handleNavigate}
+            onNavigate={onNavigate}
             currentPath={currentPage}
          >
             <UnifiedPSTODashboard currentUser={currentUser} currentPage={currentPage} />
@@ -413,7 +400,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
-         onNavigate={handleNavigate}
+         onNavigate={onNavigate}
       >
          {renderContent()}
       </MainLayout>

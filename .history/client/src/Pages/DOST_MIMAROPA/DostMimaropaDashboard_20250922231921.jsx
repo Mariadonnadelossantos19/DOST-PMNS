@@ -5,7 +5,6 @@ import { API_ENDPOINTS } from '../../config/api';
 import ApplicationReviewModal from '../../Component/ProgramApplication/ApplicationReviewModal';
 import PSTOApplicationsList from './components/PSTOApplicationsList';
 import DostMimaropaReviewModal from './components/DostMimaropaReviewModal';
-import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 
 const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const { isDarkMode } = useDarkMode();
@@ -277,7 +276,26 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             );
 
          case '/tna-management':
-            return <TNAManagement currentUser={{ role: 'dost_mimaropa' }} />;
+            return (
+               <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
+                     <h1 className="text-3xl font-bold mb-2">TNA Reports Review</h1>
+                     <p className="text-purple-100">Review Technology Needs Assessment reports</p>
+                  </div>
+                  
+                  <PSTOApplicationsList
+                     applications={tnaReports}
+                     loading={loading}
+                     error={error}
+                     onRefresh={fetchTNAReports}
+                     onViewDetails={(app) => {
+                        setSelectedApplication(app);
+                        setReviewStatus(app.status || '');
+                        setReviewComments(app.comments || '');
+                     }}
+                  />
+               </div>
+            );
 
          case '/proponent-management':
             return (

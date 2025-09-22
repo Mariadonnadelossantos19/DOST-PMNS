@@ -398,8 +398,8 @@ const uploadTNAReport = async (req, res) => {
 
       // Handle file upload
       let reportData = {};
-      if (req.file) {
-         const file = req.file;
+      if (req.files && req.files.reportFile) {
+         const file = req.files.reportFile[0];
          reportData = {
             filename: file.filename,
             originalName: file.originalname,
@@ -518,25 +518,10 @@ const downloadTNAReport = async (req, res) => {
       }
 
       if (!fs.existsSync(filePath)) {
-         console.log('File not found at constructed path:', filePath);
-         console.log('TNA report data:', tna.tnaReport);
-         
-         // Try using the stored path as fallback
-         if (tna.tnaReport.path && fs.existsSync(tna.tnaReport.path)) {
-            console.log('Using stored path as fallback:', tna.tnaReport.path);
-            filePath = tna.tnaReport.path;
-         } else {
-            console.log('Stored path also does not exist:', tna.tnaReport.path);
-            return res.status(404).json({
-               success: false,
-               message: 'Report file not found on server. The file may have been deleted or moved.',
-               debug: {
-                  expectedPath: filePath,
-                  storedPath: tna.tnaReport.path,
-                  filename: tna.tnaReport.filename
-               }
-            });
-         }
+         return res.status(404).json({
+            success: false,
+            message: 'Report file not found on server'
+         });
       }
 
       // Set headers for file download

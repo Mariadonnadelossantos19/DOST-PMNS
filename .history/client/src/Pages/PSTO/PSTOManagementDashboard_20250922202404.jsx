@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { usePSTOData } from '../../hooks/usePSTOData';
 import { 
    Card, 
    Button, 
    DataTable, 
    StatusBadge, 
+   Modal, 
    TabNavigation
 } from '../../Component/UI';
+import TNASchedulerForm from '../../Component/PSTO/components/TNASchedulerForm';
+import PendingActivations from '../../Component/PSTO/PendingActivations';
 import PageLayout from '../../Component/Layouts/PageLayout';
 import ApplicationReviewModal from '../../Component/ProgramApplication/ApplicationReviewModal';
 
+/**
+ * PSTO Management Dashboard
+ * Comprehensive management interface for all PSTO workflows
+ * Handles: Applications → Validation → TNA Scheduling → Monitoring
+ */
 const PSTOManagementDashboard = ({ currentUser }) => {
    const [applications, setApplications] = useState([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState(null);
    const [selectedApplication, setSelectedApplication] = useState(null);
-   const [activeTab, setActiveTab] = useState('all');
+   const [showTNAModal, setShowTNAModal] = useState(false);
+   const [activeTab, setActiveTab] = useState('overview');
    
    // ApplicationReviewModal states
    const [reviewStatus, setReviewStatus] = useState('');
@@ -40,7 +50,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          }
       } catch (error) {
          console.error('Error fetching applications:', error);
-         setError(`Network error: ${error.message}`);
+         setError('Failed to fetch applications. Please check your connection and try again.');
       } finally {
          setLoading(false);
       }
@@ -53,25 +63,18 @@ const PSTOManagementDashboard = ({ currentUser }) => {
    // Define table columns for applications
    const applicationColumns = [
       {
-         key: 'applicationId',
-         header: 'Application ID',
+         key: 'programName',
+         header: 'Program',
          render: (value, row) => (
-            <div className="font-mono text-sm">
-               <div className="font-semibold text-gray-900">{value || row._id?.slice(-8)}</div>
-               <div className="text-xs text-gray-500">{row.programName} Application</div>
+            <div>
+               <div className="font-medium text-gray-900">{value} Application</div>
+               <div className="text-sm text-gray-500">Enterprise: {row.enterpriseName}</div>
             </div>
          )
       },
       {
-         key: 'enterpriseName',
-         header: 'Enterprise Name',
-         render: (value) => (
-            <div className="font-medium text-gray-900">{value}</div>
-         )
-      },
-      {
          key: 'proponentId',
-         header: 'Contact Person',
+         header: 'Proponent',
          render: (value) => (
             <div>
                <div className="font-medium text-gray-900">{value?.firstName} {value?.lastName}</div>
@@ -81,30 +84,32 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          )
       },
       {
-         key: 'businessActivity',
-         header: 'Business Activity',
-         render: (value) => (
-            <div className="max-w-xs">
-               <div className="text-sm text-gray-900 truncate" title={value}>
-                  {value || 'Not specified'}
-               </div>
-            </div>
-         )
+         key: 'status',
+         header: 'Status',
+         render: (value) => <StatusBadge status={value} />
       },
       {
          key: 'createdAt',
          header: 'Submitted',
-         render: (value) => (
-            <div className="text-sm">
-               <div className="font-medium text-gray-900">{new Date(value).toLocaleDateString()}</div>
-               <div className="text-xs text-gray-500">{new Date(value).toLocaleTimeString()}</div>
-            </div>
-         )
+         render: (value) => new Date(value).toLocaleDateString()
       },
       {
-         key: 'status',
-         header: 'Status',
-         render: (value) => <StatusBadge status={value} />
+         key: 'pstoStatus',
+         header: 'PSTO Review',
+         render: (value, application) => {
+            // Show PSTO review status, but if main status is psto_approved, show that
+            if (application.status === 'psto_approved') {
+               return <StatusBadge status="approved" />;
+            } else if (application.status === 'psto_rejected') {
+               return <StatusBadge status="rejected" />;
+            } else if (value === 'returned') {
+               return <StatusBadge status="returned" />;
+            } else if (value) {
+               return <StatusBadge status={value} />;
+            } else {
+               return <span className="text-gray-400">Not Reviewed</span>;
+            }
+         }
       }
    ];
 
@@ -117,7 +122,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          >
             View
          </Button>
-
+         
          {(application.status === 'pending' || application.status === 'under_review') && !application.pstoStatus && (
             <Button
                onClick={() => handleValidateApplication(application)}
@@ -127,7 +132,17 @@ const PSTOManagementDashboard = ({ currentUser }) => {
                Review
             </Button>
          )}
-
+         
+         {application.status === 'psto_approved' && (
+            <Button
+               onClick={() => handleScheduleTNA(application)}
+               variant="primary"
+               size="sm"
+            >
+               Schedule TNA
+            </Button>
+         )}
+         
          {application.pstoStatus === 'returned' && (
             <Button
                onClick={() => handleValidateApplication(application)}
@@ -146,6 +161,40 @@ const PSTOManagementDashboard = ({ currentUser }) => {
       setReviewComments(application.pstoComments || '');
    };
 
+   const handleScheduleTNA = (application) => {
+      setSelectedApplication(application);
+      setShowTNAModal(true);
+   };
+
+   const handleTNAScheduled = async (tnaData) => {
+      try {
+         setLoading(true);
+         const response = await fetch('http://localhost:4000/api/tna/schedule', {
+            method: 'POST',
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tnaData)
+         });
+
+         if (response.ok) {
+            alert('TNA scheduled successfully!');
+            setShowTNAModal(false);
+            setSelectedApplication(null);
+            fetchApplications(); // Refresh the list
+         } else {
+            const errorData = await response.json();
+            alert(`Failed to schedule TNA: ${errorData.message}`);
+         }
+      } catch (error) {
+         console.error('Error scheduling TNA:', error);
+         alert('Error scheduling TNA. Please try again.');
+      } finally {
+         setLoading(false);
+      }
+   };
+
    const handleViewDetails = (application) => {
       setSelectedApplication(application);
       setReviewStatus(application.pstoStatus || '');
@@ -155,34 +204,34 @@ const PSTOManagementDashboard = ({ currentUser }) => {
    const handleForwardToDostMimaropa = async (application) => {
       try {
          setLoading(true);
-
+         
          // First, check if TNA exists and is completed
          const tnaResponse = await fetch(`http://localhost:4000/api/tna/list?applicationId=${application._id}`, {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
          });
-
+         
          if (tnaResponse.ok) {
             const tnaData = await tnaResponse.json();
             const tna = tnaData.data?.find(t => t.applicationId === application._id);
-
+            
             if (!tna) {
                alert('TNA must be scheduled and completed before forwarding to DOST MIMAROPA');
                return;
             }
-
+            
             if (tna.status !== 'completed') {
                alert('TNA must be completed before forwarding to DOST MIMAROPA');
                return;
             }
-
+            
             if (!tna.tnaReport || !tna.tnaReport.filename) {
                alert('TNA report must be uploaded before forwarding to DOST MIMAROPA');
                return;
             }
          }
-
+         
          // Forward to DOST MIMAROPA
          const response = await fetch(`http://localhost:4000/api/tna/${application._id}/submit-to-dost`, {
             method: 'POST',
@@ -191,7 +240,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
                'Content-Type': 'application/json'
             }
          });
-
+         
          if (response.ok) {
             alert('Application successfully forwarded to DOST MIMAROPA!');
             setSelectedApplication(null);
@@ -207,6 +256,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          setLoading(false);
       }
    };
+
 
    // Helper functions for ApplicationReviewModal
    const getStatusColor = (status) => {
@@ -284,6 +334,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
       }
    };
 
+
    // Calculate statistics
    const stats = {
       total: applications.length,
@@ -295,11 +346,6 @@ const PSTOManagementDashboard = ({ currentUser }) => {
 
    // Minimalist tab configuration - Simplified
    const tabs = [
-      {
-         id: 'all',
-         label: 'All',
-         count: stats.total
-      },
       {
          id: 'pending',
          label: 'Pending',
@@ -325,8 +371,6 @@ const PSTOManagementDashboard = ({ currentUser }) => {
    // Filter applications based on active tab
    const getFilteredApplications = () => {
       switch (activeTab) {
-         case 'all':
-            return applications;
          case 'pending':
             return applications.filter(app => app.status === 'pending' || app.status === 'under_review');
          case 'approved':
@@ -343,10 +387,10 @@ const PSTOManagementDashboard = ({ currentUser }) => {
    return (
       <PageLayout
          title="PSTO Management Dashboard"
-         subtitle="Manage applications that submitted by the proponents"
+         subtitle="Manage applications and TNA activities"
          actions={
-            <Button
-               variant="outline"
+            <Button 
+               variant="outline" 
                onClick={fetchApplications}
                size="sm"
             >
@@ -387,13 +431,14 @@ const PSTOManagementDashboard = ({ currentUser }) => {
 
          {/* Tab Content */}
          <div className="bg-white rounded-lg border border-gray-200">
-            {['all', 'pending', 'approved', 'returned', 'rejected'].includes(activeTab) && (
+            {['pending', 'approved', 'returned', 'rejected'].includes(activeTab) && (
                <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
                      <h3 className="text-lg font-medium text-gray-900">
                         {tabs.find(tab => tab.id === activeTab)?.label} Applications
                      </h3>
                   </div>
+
                   <DataTable
                      data={getFilteredApplications()}
                      columns={applicationColumns}
@@ -419,6 +464,28 @@ const PSTOManagementDashboard = ({ currentUser }) => {
                handleForwardToDostMimaropa={handleForwardToDostMimaropa}
             />
          )}
+
+         {/* TNA Scheduling Modal */}
+         {showTNAModal && selectedApplication && (
+            <Modal
+               isOpen={showTNAModal}
+               onClose={() => {
+                  setShowTNAModal(false);
+                  setSelectedApplication(null);
+               }}
+               title="Schedule TNA"
+            >
+               <TNASchedulerForm
+                  application={selectedApplication}
+                  onSchedule={handleTNAScheduled}
+                  onCancel={() => {
+                     setShowTNAModal(false);
+                     setSelectedApplication(null);
+                  }}
+               />
+            </Modal>
+         )}
+
       </PageLayout>
    );
 };

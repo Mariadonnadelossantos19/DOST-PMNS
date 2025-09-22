@@ -396,11 +396,7 @@ const TNAManagement = ({ currentUser }) => {
    // Calculate statistics
    const stats = {
       totalApplications: applications.length,
-      readyForTNA: applications.filter(app => {
-         const isApproved = app.status === 'psto_approved';
-         const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
-         return isApproved && !hasTNA;
-      }).length,
+      readyForTNA: applications.filter(app => app.status === 'psto_approved').length,
       totalTNAs: tnas.length,
       scheduledTNAs: tnas.filter(tna => tna.status === 'scheduled').length,
       inProgressTNAs: tnas.filter(tna => tna.status === 'in_progress').length,

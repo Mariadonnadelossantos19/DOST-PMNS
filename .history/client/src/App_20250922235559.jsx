@@ -206,9 +206,9 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          console.error('Error parsing user data from localStorage:', error);
       }
       
-      // Return null if no data found (fallback handled by caller)
-      console.log('No user data found in localStorage');
-      return null;
+      // Fallback to sample user if no data found
+      console.log('No user data found, using sample user');
+      return sampleUser;
    };
 
    // Clear localStorage to force using sample user with correct ID
@@ -256,17 +256,6 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
    const handleLogout = () => {
       showInfo('Logging out...');
       onLogout();
-   };
-
-   // Navigation handler with user role logic
-   const handleNavigate = (path) => {
-      console.log('Navigating to:', path);
-      // For DOST MIMAROPA users, keep the full path with leading slash
-      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         onNavigate(path);
-      } else {
-         onNavigate(path.replace('/', ''));
-      }
    };
 
    const handleProjectUpdate = (projectId, updates) => {
@@ -400,7 +389,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          <UnifiedLayout
             user={currentUser}
             onLogout={handleLogout}
-            onNavigate={handleNavigate}
+            onNavigate={onNavigate}
             currentPath={currentPage}
          >
             <UnifiedPSTODashboard currentUser={currentUser} currentPage={currentPage} />
@@ -413,7 +402,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
-         onNavigate={handleNavigate}
+         onNavigate={onNavigate}
       >
          {renderContent()}
       </MainLayout>

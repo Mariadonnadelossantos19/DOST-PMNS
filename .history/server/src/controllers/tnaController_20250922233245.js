@@ -398,8 +398,8 @@ const uploadTNAReport = async (req, res) => {
 
       // Handle file upload
       let reportData = {};
-      if (req.file) {
-         const file = req.file;
+      if (req.files && req.files.reportFile) {
+         const file = req.files.reportFile[0];
          reportData = {
             filename: file.filename,
             originalName: file.originalname,
@@ -476,8 +476,7 @@ const downloadTNAReport = async (req, res) => {
          id: tna._id,
          status: tna.status,
          programName: tna.programName,
-         proponentId: tna.proponentId,
-         tnaReport: tna.tnaReport
+         proponentId: tna.proponentId
       });
 
       // Check if report exists
@@ -503,40 +502,15 @@ const downloadTNAReport = async (req, res) => {
          }
       }
 
-      // Use the same path construction as upload middleware
-      const uploadsDir = path.join(__dirname, '../../uploads');
-      const filePath = path.join(uploadsDir, tna.tnaReport.filename);
-      console.log('Uploads directory:', uploadsDir);
-      console.log('Uploads directory exists:', fs.existsSync(uploadsDir));
+      const filePath = path.join(__dirname, '../../uploads', tna.tnaReport.filename);
       console.log('File path:', filePath);
       console.log('File exists:', fs.existsSync(filePath));
-      
-      // List files in uploads directory for debugging
-      if (fs.existsSync(uploadsDir)) {
-         const files = fs.readdirSync(uploadsDir);
-         console.log('Files in uploads directory:', files);
-      }
 
       if (!fs.existsSync(filePath)) {
-         console.log('File not found at constructed path:', filePath);
-         console.log('TNA report data:', tna.tnaReport);
-         
-         // Try using the stored path as fallback
-         if (tna.tnaReport.path && fs.existsSync(tna.tnaReport.path)) {
-            console.log('Using stored path as fallback:', tna.tnaReport.path);
-            filePath = tna.tnaReport.path;
-         } else {
-            console.log('Stored path also does not exist:', tna.tnaReport.path);
-            return res.status(404).json({
-               success: false,
-               message: 'Report file not found on server. The file may have been deleted or moved.',
-               debug: {
-                  expectedPath: filePath,
-                  storedPath: tna.tnaReport.path,
-                  filename: tna.tnaReport.filename
-               }
-            });
-         }
+         return res.status(404).json({
+            success: false,
+            message: 'Report file not found on server'
+         });
       }
 
       // Set headers for file download

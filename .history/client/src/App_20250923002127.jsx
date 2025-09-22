@@ -400,7 +400,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          <UnifiedLayout
             user={currentUser}
             onLogout={handleLogout}
-            onNavigate={handleNavigate}
+            onNavigate={onNavigate}
             currentPath={currentPage}
          >
             <UnifiedPSTODashboard currentUser={currentUser} currentPage={currentPage} />
@@ -413,7 +413,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
-         onNavigate={handleNavigate}
+         onNavigate={onNavigate}
       >
          {renderContent()}
       </MainLayout>

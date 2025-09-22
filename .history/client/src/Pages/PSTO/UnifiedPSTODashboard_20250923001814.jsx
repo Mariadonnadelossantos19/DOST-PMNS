@@ -181,10 +181,12 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       <DocumentValidation currentUser={currentUser} />
    );
 
-   // Render TNA management content
-   const renderTNAManagement = () => (
-      <TNAManagement currentUser={currentUser} />
-   );
+   // Render TNA management content - Redirect to applications with approved filter
+   const renderTNAManagement = () => {
+      // Redirect to applications tab with approved filter
+      setCurrentView('applications');
+      return null;
+   };
 
    // Render TNA reports content
    const renderTNAReports = () => (
@@ -289,7 +291,6 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       overview: renderOverview,
       applications: renderApplications,
       management: renderManagement,
-      'tna-management': renderTNAManagement,
       'document-validation': renderDocumentValidation,
       'tna-reports': renderTNAReports,
       proponents: renderProponents,

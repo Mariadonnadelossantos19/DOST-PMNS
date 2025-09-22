@@ -413,7 +413,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
-         onNavigate={handleNavigate}
+         onNavigate={onNavigate}
       >
          {renderContent()}
       </MainLayout>

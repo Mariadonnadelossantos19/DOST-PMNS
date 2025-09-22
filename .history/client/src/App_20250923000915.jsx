@@ -258,17 +258,6 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       onLogout();
    };
 
-   // Navigation handler with user role logic
-   const handleNavigate = (path) => {
-      console.log('Navigating to:', path);
-      // For DOST MIMAROPA users, keep the full path with leading slash
-      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         onNavigate(path);
-      } else {
-         onNavigate(path.replace('/', ''));
-      }
-   };
-
    const handleProjectUpdate = (projectId, updates) => {
       showSuccess(`Project updated successfully!`);
       console.log('Project update:', projectId, updates);
@@ -400,7 +389,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          <UnifiedLayout
             user={currentUser}
             onLogout={handleLogout}
-            onNavigate={handleNavigate}
+            onNavigate={onNavigate}
             currentPath={currentPage}
          >
             <UnifiedPSTODashboard currentUser={currentUser} currentPage={currentPage} />
@@ -413,7 +402,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          user={currentUser} 
          onLogout={handleLogout}
          onNavigateToProfile={proponentNavigateToProfile}
-         onNavigate={handleNavigate}
+         onNavigate={onNavigate}
       >
          {renderContent()}
       </MainLayout>
@@ -439,7 +428,12 @@ function App() {
    // Navigation handler
    const handleNavigate = (path) => {
       console.log('Navigating to:', path);
-      setCurrentPage(path.replace('/', ''));
+      // For DOST MIMAROPA users, keep the full path with leading slash
+      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
+         setCurrentPage(path);
+      } else {
+         setCurrentPage(path.replace('/', ''));
+      }
    };
 
    // Debug current page

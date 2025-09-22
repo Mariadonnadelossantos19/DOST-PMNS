@@ -289,7 +289,6 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       overview: renderOverview,
       applications: renderApplications,
       management: renderManagement,
-      'tna-management': renderTNAManagement,
       'document-validation': renderDocumentValidation,
       'tna-reports': renderTNAReports,
       proponents: renderProponents,

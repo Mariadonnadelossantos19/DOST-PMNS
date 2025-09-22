@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePSTOData } from '../../hooks/usePSTOData';
 import { 
    Card, 
    Button, 
@@ -9,6 +10,11 @@ import {
 import PageLayout from '../../Component/Layouts/PageLayout';
 import ApplicationReviewModal from '../../Component/ProgramApplication/ApplicationReviewModal';
 
+/**
+ * PSTO Management Dashboard
+ * Comprehensive management interface for all PSTO workflows
+ * Handles: Applications → Validation → Monitoring
+ */
 const PSTOManagementDashboard = ({ currentUser }) => {
    const [applications, setApplications] = useState([]);
    const [loading, setLoading] = useState(false);
@@ -40,7 +46,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          }
       } catch (error) {
          console.error('Error fetching applications:', error);
-         setError(`Network error: ${error.message}`);
+         setError('Failed to fetch applications. Please check your connection and try again.');
       } finally {
          setLoading(false);
       }
@@ -56,9 +62,11 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          key: 'applicationId',
          header: 'Application ID',
          render: (value, row) => (
-            <div className="font-mono text-sm">
-               <div className="font-semibold text-gray-900">{value || row._id?.slice(-8)}</div>
-               <div className="text-xs text-gray-500">{row.programName} Application</div>
+            <div className="flex items-center space-x-2">
+               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+               <span className="font-mono text-sm font-bold text-gray-900">
+                  {value || row._id?.slice(-8)}
+               </span>
             </div>
          )
       },
@@ -66,17 +74,34 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          key: 'enterpriseName',
          header: 'Enterprise Name',
          render: (value) => (
-            <div className="font-medium text-gray-900">{value}</div>
+            <div className="flex items-center space-x-2">
+               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+               </div>
+               <span className="font-semibold text-gray-900 text-sm truncate max-w-40" title={value}>
+                  {value}
+               </span>
+            </div>
          )
       },
       {
          key: 'proponentId',
          header: 'Contact Person',
          render: (value) => (
-            <div>
-               <div className="font-medium text-gray-900">{value?.firstName} {value?.lastName}</div>
-               <div className="text-sm text-gray-500">{value?.email}</div>
-               <div className="text-sm text-gray-500">{value?.province}</div>
+            <div className="flex items-center space-x-3">
+               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 font-semibold text-sm">
+                     {value?.firstName?.charAt(0)}{value?.lastName?.charAt(0)}
+                  </span>
+               </div>
+               <div>
+                  <div className="font-semibold text-gray-900 text-sm">
+                     {value?.firstName} {value?.lastName}
+                  </div>
+                  <div className="text-xs text-gray-500">{value?.province}</div>
+               </div>
             </div>
          )
       },
@@ -84,10 +109,15 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          key: 'businessActivity',
          header: 'Business Activity',
          render: (value) => (
-            <div className="max-w-xs">
-               <div className="text-sm text-gray-900 truncate" title={value}>
-                  {value || 'Not specified'}
+            <div className="flex items-center space-x-2">
+               <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                  <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
                </div>
+               <span className="text-sm text-gray-700 font-medium truncate max-w-32" title={value}>
+                  {value || 'Not specified'}
+               </span>
             </div>
          )
       },
@@ -95,9 +125,20 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          key: 'createdAt',
          header: 'Submitted',
          render: (value) => (
-            <div className="text-sm">
-               <div className="font-medium text-gray-900">{new Date(value).toLocaleDateString()}</div>
-               <div className="text-xs text-gray-500">{new Date(value).toLocaleTimeString()}</div>
+            <div className="flex items-center space-x-2">
+               <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center">
+                  <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+               </div>
+               <div className="text-sm">
+                  <div className="font-semibold text-gray-900">
+                     {new Date(value).toLocaleDateString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                     {new Date(value).toLocaleTimeString()}
+                  </div>
+               </div>
             </div>
          )
       },
@@ -114,27 +155,40 @@ const PSTOManagementDashboard = ({ currentUser }) => {
             onClick={() => handleViewDetails(application)}
             variant="outline"
             size="sm"
+            className="flex items-center space-x-1 hover:bg-blue-50 hover:border-blue-300"
          >
-            View
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span>View</span>
          </Button>
-
+         
          {(application.status === 'pending' || application.status === 'under_review') && !application.pstoStatus && (
             <Button
                onClick={() => handleValidateApplication(application)}
                variant="primary"
                size="sm"
+               className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
             >
-               Review
+               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               <span>Review</span>
             </Button>
          )}
-
+         
          {application.pstoStatus === 'returned' && (
             <Button
                onClick={() => handleValidateApplication(application)}
                variant="outline"
                size="sm"
+               className="flex items-center space-x-1 hover:bg-yellow-50 hover:border-yellow-300"
             >
-               Re-review
+               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+               </svg>
+               <span>Re-review</span>
             </Button>
          )}
       </div>
@@ -146,6 +200,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
       setReviewComments(application.pstoComments || '');
    };
 
+
    const handleViewDetails = (application) => {
       setSelectedApplication(application);
       setReviewStatus(application.pstoStatus || '');
@@ -155,34 +210,34 @@ const PSTOManagementDashboard = ({ currentUser }) => {
    const handleForwardToDostMimaropa = async (application) => {
       try {
          setLoading(true);
-
+         
          // First, check if TNA exists and is completed
          const tnaResponse = await fetch(`http://localhost:4000/api/tna/list?applicationId=${application._id}`, {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
          });
-
+         
          if (tnaResponse.ok) {
             const tnaData = await tnaResponse.json();
             const tna = tnaData.data?.find(t => t.applicationId === application._id);
-
+            
             if (!tna) {
                alert('TNA must be scheduled and completed before forwarding to DOST MIMAROPA');
                return;
             }
-
+            
             if (tna.status !== 'completed') {
                alert('TNA must be completed before forwarding to DOST MIMAROPA');
                return;
             }
-
+            
             if (!tna.tnaReport || !tna.tnaReport.filename) {
                alert('TNA report must be uploaded before forwarding to DOST MIMAROPA');
                return;
             }
          }
-
+         
          // Forward to DOST MIMAROPA
          const response = await fetch(`http://localhost:4000/api/tna/${application._id}/submit-to-dost`, {
             method: 'POST',
@@ -191,7 +246,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
                'Content-Type': 'application/json'
             }
          });
-
+         
          if (response.ok) {
             alert('Application successfully forwarded to DOST MIMAROPA!');
             setSelectedApplication(null);
@@ -207,6 +262,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          setLoading(false);
       }
    };
+
 
    // Helper functions for ApplicationReviewModal
    const getStatusColor = (status) => {
@@ -284,6 +340,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
       }
    };
 
+
    // Calculate statistics
    const stats = {
       total: applications.length,
@@ -293,7 +350,7 @@ const PSTOManagementDashboard = ({ currentUser }) => {
       rejected: applications.filter(app => app.status === 'psto_rejected').length
    };
 
-   // Minimalist tab configuration - Simplified
+   // Tab configuration with All tab
    const tabs = [
       {
          id: 'all',
@@ -345,8 +402,8 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          title="PSTO Management Dashboard"
          subtitle="Manage applications that submitted by the proponents"
          actions={
-            <Button
-               variant="outline"
+            <Button 
+               variant="outline" 
                onClick={fetchApplications}
                size="sm"
             >
@@ -386,20 +443,25 @@ const PSTOManagementDashboard = ({ currentUser }) => {
          </div>
 
          {/* Tab Content */}
-         <div className="bg-white rounded-lg border border-gray-200">
+         <div className="bg-black rounded-lg border border-gray-200 overflow-hidden">
             {['all', 'pending', 'approved', 'returned', 'rejected'].includes(activeTab) && (
-               <div className="p-6">
+               <div className="p-4">
                   <div className="flex justify-between items-center mb-4">
-                     <h3 className="text-lg font-medium text-gray-900">
+                     <h3 className="text-lg font-medium text-white">
                         {tabs.find(tab => tab.id === activeTab)?.label} Applications
                      </h3>
                   </div>
-                  <DataTable
-                     data={getFilteredApplications()}
-                     columns={applicationColumns}
-                     actions={getApplicationActions}
-                     emptyMessage={`No ${tabs.find(tab => tab.id === activeTab)?.label.toLowerCase()} applications found.`}
-                  />
+
+                  <div className="overflow-x-auto">
+                     <div className="min-w-full">
+                        <DataTable
+                           data={getFilteredApplications()}
+                           columns={applicationColumns}
+                           actions={getApplicationActions}
+                           emptyMessage={`No ${tabs.find(tab => tab.id === activeTab)?.label.toLowerCase()} applications found.`}
+                        />
+                     </div>
+                  </div>
                </div>
             )}
          </div>
@@ -419,6 +481,8 @@ const PSTOManagementDashboard = ({ currentUser }) => {
                handleForwardToDostMimaropa={handleForwardToDostMimaropa}
             />
          )}
+
+
       </PageLayout>
    );
 };
