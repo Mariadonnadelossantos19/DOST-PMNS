@@ -591,8 +591,7 @@ const TNAManagement = ({ currentUser }) => {
             </div>
          </div>
 
-         {/* Applications Ready for TNA - Only show for PSTO users */}
-         {currentUser?.role !== 'dost_mimaropa' && (
+         {/* Applications Ready for TNA */}
          <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
                Applications Ready for TNA Scheduling
@@ -656,7 +655,6 @@ const TNAManagement = ({ currentUser }) => {
                </div>
             )}
          </Card>
-         )}
 
          {/* TNAs Display */}
          <Card className="p-6">

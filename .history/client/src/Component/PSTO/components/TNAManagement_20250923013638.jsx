@@ -656,7 +656,6 @@ const TNAManagement = ({ currentUser }) => {
                </div>
             )}
          </Card>
-         )}
 
          {/* TNAs Display */}
          <Card className="p-6">

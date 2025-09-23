@@ -407,8 +407,8 @@ const TNAManagement = ({ currentUser }) => {
 
    // Calculate statistics
    const stats = {
-      totalApplications: currentUser?.role === 'dost_mimaropa' ? 0 : applications.length,
-      readyForTNA: currentUser?.role === 'dost_mimaropa' ? 0 : applications.filter(app => {
+      totalApplications: applications.length,
+      readyForTNA: applications.filter(app => {
          const isApproved = app.status === 'psto_approved';
          const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
          return isApproved && !hasTNA;
@@ -419,11 +419,7 @@ const TNAManagement = ({ currentUser }) => {
       completedTNAs: tnas.filter(tna => tna.status === 'completed').length,
       reportsUploaded: tnas.filter(tna => tna.tnaReport).length,
       pendingReports: tnas.filter(tna => tna.status === 'completed' && !tna.tnaReport).length,
-      forwardedToDost: tnas.filter(tna => tna.status === 'forwarded_to_dost_mimaropa').length,
-      // DOST MIMAROPA specific stats
-      awaitingReview: currentUser?.role === 'dost_mimaropa' ? tnas.filter(tna => tna.status === 'forwarded_to_dost_mimaropa').length : 0,
-      approvedByDost: currentUser?.role === 'dost_mimaropa' ? tnas.filter(tna => tna.status === 'dost_mimaropa_approved').length : 0,
-      rejectedByDost: currentUser?.role === 'dost_mimaropa' ? tnas.filter(tna => tna.status === 'dost_mimaropa_rejected').length : 0
+      forwardedToDost: tnas.filter(tna => tna.status === 'forwarded_to_dost_mimaropa').length
    };
 
    const filteredTNAs = getFilteredAndSortedTNAs();
@@ -451,87 +447,42 @@ const TNAManagement = ({ currentUser }) => {
 
          {/* Statistics Dashboard */}
          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {currentUser?.role === 'dost_mimaropa' ? (
-               // DOST MIMAROPA specific stats
-               <>
-                  <StatCard
-                     title="Awaiting Review"
-                     value={stats.awaitingReview}
-                     color="from-yellow-50 to-yellow-100 text-yellow-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                  />
-                  <StatCard
-                     title="Approved by DOST"
-                     value={stats.approvedByDost}
-                     color="from-green-50 to-green-100 text-green-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                  />
-                  <StatCard
-                     title="Rejected by DOST"
-                     value={stats.rejectedByDost}
-                     color="from-red-50 to-red-100 text-red-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>}
-                  />
-                  <StatCard
-                     title="Total Reports"
-                     value={stats.totalTNAs}
-                     color="from-purple-50 to-purple-100 text-purple-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
-                  />
-                  <StatCard
-                     title="With Reports"
-                     value={stats.reportsUploaded}
-                     color="from-blue-50 to-blue-100 text-blue-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" /></svg>}
-                  />
-                  <StatCard
-                     title="Completed"
-                     value={stats.completedTNAs}
-                     color="from-green-50 to-green-100 text-green-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                  />
-               </>
-            ) : (
-               // PSTO specific stats
-               <>
-                  <StatCard
-                     title="Total Applications"
-                     value={stats.totalApplications}
-                     color="from-blue-50 to-blue-100 text-blue-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-                  />
-                  <StatCard
-                     title="Ready for TNA"
-                     value={stats.readyForTNA}
-                     color="from-yellow-50 to-yellow-100 text-yellow-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                  />
-                  <StatCard
-                     title="Total TNAs"
-                     value={stats.totalTNAs}
-                     color="from-purple-50 to-purple-100 text-purple-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
-                  />
-                  <StatCard
-                     title="Completed"
-                     value={stats.completedTNAs}
-                     color="from-green-50 to-green-100 text-green-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                  />
-                  <StatCard
-                     title="Reports Uploaded"
-                     value={stats.reportsUploaded}
-                     color="from-blue-50 to-blue-100 text-blue-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" /></svg>}
-                  />
-                  <StatCard
-                     title="Forwarded to DOST"
-                     value={stats.forwardedToDost}
-                     color="from-indigo-50 to-indigo-100 text-indigo-900"
-                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>}
-                  />
-               </>
-            )}
+            <StatCard
+               title="Total Applications"
+               value={stats.totalApplications}
+               color="from-blue-50 to-blue-100 text-blue-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+            />
+            <StatCard
+               title="Ready for TNA"
+               value={stats.readyForTNA}
+               color="from-yellow-50 to-yellow-100 text-yellow-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            />
+            <StatCard
+               title="Total TNAs"
+               value={stats.totalTNAs}
+               color="from-purple-50 to-purple-100 text-purple-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
+            />
+            <StatCard
+               title="Completed"
+               value={stats.completedTNAs}
+               color="from-green-50 to-green-100 text-green-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            />
+            <StatCard
+               title="Reports Uploaded"
+               value={stats.reportsUploaded}
+               color="from-blue-50 to-blue-100 text-blue-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" /></svg>}
+            />
+            <StatCard
+               title="Forwarded to DOST"
+               value={stats.forwardedToDost}
+               color="from-indigo-50 to-indigo-100 text-indigo-900"
+               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>}
+            />
          </div>
 
          {/* Controls Bar */}
@@ -591,8 +542,7 @@ const TNAManagement = ({ currentUser }) => {
             </div>
          </div>
 
-         {/* Applications Ready for TNA - Only show for PSTO users */}
-         {currentUser?.role !== 'dost_mimaropa' && (
+         {/* Applications Ready for TNA */}
          <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
                Applications Ready for TNA Scheduling
@@ -656,7 +606,6 @@ const TNAManagement = ({ currentUser }) => {
                </div>
             )}
          </Card>
-         )}
 
          {/* TNAs Display */}
          <Card className="p-6">
