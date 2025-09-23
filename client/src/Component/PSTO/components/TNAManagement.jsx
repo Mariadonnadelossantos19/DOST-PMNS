@@ -8,6 +8,14 @@ const TNAManagement = ({ currentUser }) => {
    const [loading, setLoading] = useState(false);
    const [selectedApplication, setSelectedApplication] = useState(null);
    const [showScheduler, setShowScheduler] = useState(false);
+   // Scheduler form states to submit schedule data to the backend
+   const [scheduledDate, setScheduledDate] = useState('');
+   const [scheduledTime, setScheduledTime] = useState('');
+   const [location, setLocation] = useState('');
+   const [assessmentTeam, setAssessmentTeam] = useState('');
+   const [contactPerson, setContactPerson] = useState('');
+   const [contactPhone, setContactPhone] = useState('');
+   const [notes, setNotes] = useState('');
    
    // Enhanced UI states
    const [viewMode, setViewMode] = useState('grid');
@@ -72,6 +80,7 @@ const TNAManagement = ({ currentUser }) => {
    // Fetch existing TNAs
    const fetchTNAs = async () => {
       try {
+         setLoading(true);
          // Use different endpoint based on user role
          const endpoint = currentUser?.role === 'dost_mimaropa' 
             ? 'http://localhost:4000/api/tna/dost-mimaropa/reports'
@@ -86,20 +95,38 @@ const TNAManagement = ({ currentUser }) => {
          if (response.ok) {
             const data = await response.json();
             setTnas(data.data || []);
+         } else {
+            const errorText = await response.text();
+            console.error('Error fetching TNAs:', response.status, errorText);
+            alert(`Failed to load TNAs (${response.status}). Please check your access.`);
+            setTnas([]);
          }
       } catch (error) {
          console.error('Error fetching TNAs:', error);
+      }
+      finally {
+         setLoading(false);
       }
    };
 
    useEffect(() => {
       fetchApplications();
       fetchTNAs();
-   }, []);
+   }, [currentUser?.role]);
 
    const handleScheduleTNA = (application) => {
       setSelectedApplication(application);
       setShowScheduler(true);
+      // Reset scheduler form fields when opening the modal
+      setScheduledDate('');
+      setScheduledTime('');
+      setLocation('');
+      setAssessmentTeam('');
+      // Pre-fill contact person using proponent name, phone left for user input
+      const defaultContact = `${application.proponentId?.firstName || ''} ${application.proponentId?.lastName || ''}`.trim();
+      setContactPerson(defaultContact);
+      setContactPhone('');
+      setNotes('');
    };
 
    const handleTNAScheduled = async (tnaData) => {
@@ -114,6 +141,13 @@ const TNAManagement = ({ currentUser }) => {
          });
 
          if (response.ok) {
+            const resJson = await response.json().catch(() => null);
+            const created = resJson?.data || resJson;
+
+            if (created) {
+               setTnas(prev => [created, ...prev]);
+            }
+
             alert('TNA scheduled successfully!');
             setShowScheduler(false);
             setSelectedApplication(null);
@@ -140,6 +174,13 @@ const TNAManagement = ({ currentUser }) => {
          });
 
          if (response.ok) {
+            const resJson = await response.json().catch(() => null);
+            const updated = resJson?.data || resJson;
+
+            if (updated) {
+               setTnas(prev => prev.map(t => t._id === updated._id ? updated : t));
+            }
+
             alert('TNA marked as completed successfully!');
             fetchTNAs();
          } else {
@@ -164,6 +205,13 @@ const TNAManagement = ({ currentUser }) => {
          });
 
          if (response.ok) {
+            const resJson = await response.json().catch(() => null);
+            const updated = resJson?.data || resJson;
+
+            if (updated) {
+               setTnas(prev => prev.map(t => t._id === updated._id ? updated : t));
+            }
+
             alert('TNA marked as in progress successfully!');
             fetchTNAs();
          } else {
@@ -301,6 +349,11 @@ const TNAManagement = ({ currentUser }) => {
          });
 
          if (response.ok) {
+            const resJson = await response.json().catch(() => null);
+            const updated = resJson?.data || resJson;
+            if (updated) {
+               setTnas(prev => prev.map(t => t._id === updated._id ? updated : t));
+            }
             alert('TNA successfully forwarded to DOST MIMAROPA!');
             fetchTNAs();
          } else {
@@ -902,6 +955,14 @@ const TNAManagement = ({ currentUser }) => {
                onClose={() => {
                   setShowScheduler(false);
                   setSelectedApplication(null);
+               // Clear scheduler form fields on close
+               setScheduledDate('');
+               setScheduledTime('');
+               setLocation('');
+               setAssessmentTeam('');
+               setContactPerson('');
+               setContactPhone('');
+               setNotes('');
                }}
                title="Schedule Technology Needs Assessment"
             >
@@ -915,6 +976,8 @@ const TNAManagement = ({ currentUser }) => {
                         <input
                            type="date"
                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
                         />
                      </div>
                      <div>
@@ -922,6 +985,8 @@ const TNAManagement = ({ currentUser }) => {
                         <input
                            type="time"
                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={scheduledTime}
+                        onChange={(e) => setScheduledTime(e.target.value)}
                         />
                      </div>
                      <div>
@@ -930,6 +995,8 @@ const TNAManagement = ({ currentUser }) => {
                            type="text"
                            placeholder="Enter location"
                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                         />
                      </div>
                      <div>
@@ -938,27 +1005,97 @@ const TNAManagement = ({ currentUser }) => {
                            type="text"
                            placeholder="Enter assessor names (comma separated)"
                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={assessmentTeam}
+                        onChange={(e) => setAssessmentTeam(e.target.value)}
                         />
                      </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                     <input
+                        type="text"
+                        placeholder="Enter contact person"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={contactPerson}
+                        onChange={(e) => setContactPerson(e.target.value)}
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                     <input
+                        type="text"
+                        placeholder="Enter contact phone"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                     <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Optional notes about the schedule"
+                        rows={3}
+                     />
+                  </div>
                   </div>
                   <div className="flex justify-end space-x-3 mt-6">
                      <Button
                         onClick={() => {
                            setShowScheduler(false);
                            setSelectedApplication(null);
+                        setScheduledDate('');
+                        setScheduledTime('');
+                        setLocation('');
+                        setAssessmentTeam('');
+                        setContactPerson('');
+                        setContactPhone('');
+                        setNotes('');
                         }}
                         variant="outline"
                      >
                         Cancel
                      </Button>
                      <Button
-                        onClick={() => {
-                           // Handle TNA scheduling
-                           alert('TNA scheduled successfully!');
-                           setShowScheduler(false);
-                           setSelectedApplication(null);
-                           fetchTNAs();
-                        }}
+                     onClick={async () => {
+                        // Basic validation before submitting the schedule
+                        if (!scheduledDate || !scheduledTime || !location || !contactPerson) {
+                           alert('Please provide date, time, location, and contact person.');
+                           return;
+                        }
+
+                        // Map comma-separated names to assessor objects required by backend
+                        const assessors = (assessmentTeam || '')
+                           .split(',')
+                           .map(n => n.trim())
+                           .filter(Boolean)
+                           .map(name => ({ name, position: 'Member', department: 'PSTO' }));
+
+                        const payload = {
+                           applicationId: selectedApplication._id,
+                           proponentId: selectedApplication.proponentId?._id || selectedApplication.proponentId,
+                           programName: selectedApplication.programName,
+                           scheduledDate,
+                           scheduledTime,
+                           location,
+                           contactPerson,
+                           contactPhone,
+                           notes,
+                           assessors
+                        };
+
+                        await handleTNAScheduled(payload);
+                        // Refresh applications so newly scheduled items are removed from the list
+                        fetchApplications();
+                        // Clear form after submission
+                        setScheduledDate('');
+                        setScheduledTime('');
+                        setLocation('');
+                        setAssessmentTeam('');
+                        setContactPerson('');
+                        setContactPhone('');
+                        setNotes('');
+                     }}
                         className="bg-blue-600 hover:bg-blue-700"
                      >
                         Schedule TNA

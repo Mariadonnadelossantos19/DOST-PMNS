@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { InteractiveDashboard } from '../../Component/Interactive';
 import { useDarkMode } from '../../Component/Context';
 import { API_ENDPOINTS } from '../../config/api';
 import ApplicationReviewModal from '../../Component/ProgramApplication/ApplicationReviewModal';
 import PSTOApplicationsList from './components/PSTOApplicationsList';
 import DostMimaropaReviewModal from './components/DostMimaropaReviewModal';
+import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 
 const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
@@ -16,13 +17,18 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const [selectedApplication, setSelectedApplication] = useState(null);
    const [reviewStatus, setReviewStatus] = useState('');
    const [reviewComments, setReviewComments] = useState('');
+   // Deprecated TNA review UI (now handled by TNAManagement)
+   const detectIsTnaView = useCallback(() => (
+      currentPath === '/tna-management' || (typeof window !== 'undefined' && window.location.pathname.includes('tna-management'))
+   ), [currentPath]);
+   const [activeView, setActiveView] = useState(detectIsTnaView() ? '/tna-management' : currentPath);
 
    // Fetch applications for DOST MIMAROPA review
    const fetchApplications = async () => {
       try {
          setLoading(true);
          setError('');
-         const token = localStorage.getItem('authToken');
+         const token = localStorage.getItem('authToken');    
          
          if (!token) {
             throw new Error('Please login first');
@@ -96,6 +102,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
          
          if (result.success) {
             setTnaReports(result.data || []);
+                                                                                                                                                                                                                                                                                                                              console.log('[DOST TNA] fetched reports:', (result.data || []).length);
          } else {
             throw new Error(result.message || 'Failed to fetch TNA reports');
          }
@@ -107,13 +114,25 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
       }
    };
 
+   // Open TNA report in a new tab with auth
+   // openTNAReport handled in TNAManagement for DOST role
+
+   // Open review modal for TNA
+   // openReviewTNA handled in TNAManagement for DOST role
+
+   // Submit review for TNA
+   // submitTnaReview handled in TNAManagement for DOST role
+
    useEffect(() => {
-      if (currentPath === '/application-management') {
+      console.log('[DOST Dashboard] currentPath:', currentPath, 'url:', typeof window !== 'undefined' ? window.location.pathname : '');
+      const isTnaManagement = detectIsTnaView();
+      setActiveView(isTnaManagement ? '/tna-management' : currentPath);
+      if (!isTnaManagement && currentPath === '/application-management') {
          fetchApplications();
-      } else if (currentPath === '/tna-management') {
+      } else if (isTnaManagement) {
          fetchTNAReports();
       }
-   }, [currentPath]);
+   }, [currentPath, detectIsTnaView]);
 
    // Review application function
    const reviewApplication = async (applicationId) => {
@@ -185,7 +204,8 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
 
    // Render different sections based on currentPath
    const renderContent = () => {
-      switch (currentPath) {
+      const isTnaManagement = activeView === '/tna-management';
+      switch (isTnaManagement ? '/tna-management' : activeView) {
          case '/dashboard':
             return (
                <div className="space-y-6">
@@ -260,6 +280,9 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
                   <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white">
                      <h1 className="text-3xl font-bold mb-2">Application Management</h1>
                      <p className="text-green-100">Review and manage submitted applications</p>
+                     <div className="mt-4 flex gap-2">
+                        <Button variant="outline" onClick={() => { setActiveView('/tna-management'); fetchTNAReports(); }}>Go to TNA Management</Button>
+                     </div>
                   </div>
                   
                   <PSTOApplicationsList
@@ -362,7 +385,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
                   </div>
                </div>
             );
-      }
+      }                                                                             
    };
 
    return (

@@ -137,8 +137,8 @@ const scheduleTNA = async (req, res) => {
    }
 };
 
-// List TNAs
-const listTNAs = async (req, res) => {
+   // List TNAs
+   const listTNAs = async (req, res) => {
    try {
       const { applicationId, status, proponentId } = req.query;
       const pstoId = req.user.id;
@@ -158,17 +158,23 @@ const listTNAs = async (req, res) => {
          query.proponentId = proponentId;
       }
 
-      // For PSTO users, filter by province
-      if (req.user.role === 'psto') {
-         const psto = await PSTO.findOne({ userId: pstoId });
-         if (psto) {
-            query['proponentId.province'] = psto.province;
+         // For PSTO users, filter by province via proponent IDs (cannot query populated fields)
+         if (req.user.role === 'psto') {
+            const psto = await PSTO.findOne({ userId: pstoId });
+            if (psto && psto.province) {
+               const proponentsInProvince = await mongoose.model('User')
+                  .find({ role: 'proponent', province: psto.province })
+                  .select('_id');
+               const proponentIds = proponentsInProvince.map(p => p._id);
+               query.proponentId = query.proponentId
+                  ? query.proponentId
+                  : { $in: proponentIds };
+            }
          }
-      }
 
       console.log('TNA query:', query);
 
-      const tnas = await TNA.find(query)
+         const tnas = await TNA.find(query)
          .populate('applicationId', 'applicationId programName enterpriseName businessActivity status')
          .populate('proponentId', 'firstName lastName email province phone')
          .populate('scheduledBy', 'firstName lastName')
