@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { API_ENDPOINTS } from '../../config/api';
 import { useDarkMode } from '../Context';
 import useApplicationEdit from './hooks/useApplicationEdit';
+import ApplicationHeader from './components/ApplicationHeader';
 
 const ApplicationMonitor = () => {
    const { isDarkMode } = useDarkMode();
@@ -13,25 +14,48 @@ const ApplicationMonitor = () => {
    const [searchTerm, setSearchTerm] = useState('');
    const [isEditMode, setIsEditMode] = useState(false);
    const [editFormData, setEditFormData] = useState({});
+   const [sortBy, setSortBy] = useState('newest');
+   const [viewMode, setViewMode] = useState('grid');
+   const [showFilters, setShowFilters] = useState(false);
    const { resubmitApplication } = useApplicationEdit();
 
-   // Fetch user's applications
+   // Fetch user's applications with better error handling
    const fetchApplications = async () => {
       try {
          setLoading(true);
+         setError('');
+         
          const token = localStorage.getItem('authToken');
+         const userData = localStorage.getItem('userData');
          
          console.log('Fetching applications...');
          console.log('API Endpoint:', API_ENDPOINTS.SETUP_MY_APPLICATIONS);
          console.log('Token:', token ? 'Present' : 'Missing');
+         console.log('User Data:', userData ? 'Present' : 'Missing');
          
          if (!token) {
             throw new Error('Please login first');
          }
 
+         if (!userData) {
+            throw new Error('User data not found. Please login again.');
+         }
+
+         // Parse user data to check user role
+         let parsedUserData;
+         try {
+            parsedUserData = JSON.parse(userData);
+            console.log('User Role:', parsedUserData.role);
+            console.log('User Type:', parsedUserData.userType);
+         } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
+         }
+
          const response = await fetch(API_ENDPOINTS.SETUP_MY_APPLICATIONS, {
+            method: 'GET',
             headers: {
-               'Authorization': `Bearer ${token}`
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
             }
          });
 
@@ -45,8 +69,21 @@ const ApplicationMonitor = () => {
                localStorage.removeItem('userData');
                window.location.reload();
                return;
+            } else if (response.status === 403) {
+               // Try to get more details about the 403 error
+               let errorDetails = '';
+               try {
+                  const errorResponse = await response.json();
+                  errorDetails = errorResponse.message || 'Access denied';
+                  console.error('403 Error Details:', errorResponse);
+               } catch {
+                  errorDetails = 'Access denied. You may not have permission to view applications.';
+               }
+               
+               throw new Error(`403 Forbidden: ${errorDetails}. Please ensure you are logged in as a proponent and have submitted applications.`);
+            } else {
+               throw new Error(`Failed to fetch applications: ${response.status} ${response.statusText}`);
             }
-            throw new Error(`Failed to fetch applications: ${response.status} ${response.statusText}`);
          }
 
          const result = await response.json();
@@ -69,15 +106,35 @@ const ApplicationMonitor = () => {
       fetchApplications();
    }, []);
 
-   // Filter applications based on status and search term
-   const filteredApplications = applications.filter(application => {
-      const matchesStatus = filterStatus === 'all' || application.status === filterStatus;
-      const matchesSearch = searchTerm === '' || 
-         application.applicationId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         application.enterpriseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         application.contactPerson.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesStatus && matchesSearch;
-   });
+   // Enhanced filtering and sorting with useMemo for performance
+   const filteredAndSortedApplications = useMemo(() => {
+      let filtered = applications.filter(application => {
+         const matchesStatus = filterStatus === 'all' || application.status === filterStatus;
+         const matchesSearch = searchTerm === '' || 
+            application.applicationId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            application.enterpriseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            application.contactPerson.toLowerCase().includes(searchTerm.toLowerCase());
+         return matchesStatus && matchesSearch;
+      });
+
+      // Sort applications
+      filtered.sort((a, b) => {
+         switch (sortBy) {
+            case 'newest':
+               return new Date(b.createdAt) - new Date(a.createdAt);
+            case 'oldest':
+               return new Date(a.createdAt) - new Date(b.createdAt);
+            case 'status':
+               return a.status.localeCompare(b.status);
+            case 'enterprise':
+               return a.enterpriseName.localeCompare(b.enterpriseName);
+            default:
+               return 0;
+         }
+      });
+
+      return filtered;
+   }, [applications, filterStatus, searchTerm, sortBy]);
 
    // Get status badge color - Program Application style (Updated for DOST PMNS workflow)
    const getStatusColor = (status) => {
@@ -1002,25 +1059,47 @@ const ApplicationMonitor = () => {
 
    if (error) {
       return (
-         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex">
                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="h-6 w-6 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                </div>
                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error Loading Applications</h3>
+                  <h3 className="text-lg font-medium text-red-800">Error Loading Applications</h3>
                   <div className="mt-2 text-sm text-red-700">
                      <p>{error}</p>
                   </div>
-                  <div className="mt-3">
-                     <button
-                        onClick={fetchApplications}
-                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                     >
-                        Retry
-                     </button>
+                  <div className="mt-4 space-y-2">
+                     <div className="text-sm text-red-600">
+                        <p><strong>Possible solutions:</strong></p>
+                        <ul className="list-disc list-inside mt-1 space-y-1">
+                           <li>Make sure you are logged in as a proponent</li>
+                           <li>Check if you have submitted any applications</li>
+                           <li>Verify your account has the correct permissions</li>
+                           <li>Contact support if the issue persists</li>
+                        </ul>
+                     </div>
+                     <div className="flex space-x-3">
+                        <button
+                           onClick={fetchApplications}
+                           className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                        >
+                           Retry
+                        </button>
+                        <button
+                           onClick={() => {
+                              localStorage.removeItem('authToken');
+                              localStorage.removeItem('isLoggedIn');
+                              localStorage.removeItem('userData');
+                              window.location.reload();
+                           }}
+                           className="px-4 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+                        >
+                           Logout & Login Again
+                        </button>
+                     </div>
                   </div>
                </div>
             </div>
@@ -1032,6 +1111,18 @@ const ApplicationMonitor = () => {
       <div className={`space-y-4 transition-colors duration-300 ${
          isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
+         {/* Application Header Component */}
+         <ApplicationHeader 
+            isDarkMode={isDarkMode}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
+            filterStatus={filterStatus}
+            searchTerm={searchTerm}
+            onRefresh={fetchApplications}
+         />
+         
          {/* Program Application Style Header */}
          <div className={`rounded-lg p-4 transition-colors duration-300 ${
             isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-600/40' : 'bg-gradient-to-br from-white to-gray-50 border-blue-200/60'
@@ -1075,6 +1166,22 @@ const ApplicationMonitor = () => {
                         }`}
                      />
                   </div>
+                  
+                  {/* Sort By */}
+                  <select
+                     value={sortBy}
+                     onChange={(e) => setSortBy(e.target.value)}
+                     className={`px-2 py-1.5 border rounded text-xs transition-colors duration-300 focus:outline-none focus:ring-1 focus:ring-blue-500/20 ${
+                        isDarkMode 
+                           ? 'bg-gray-700 border-gray-600 text-white' 
+                           : 'bg-white border-gray-300 text-gray-900'
+                     }`}
+                  >
+                     <option value="newest">Newest First</option>
+                     <option value="oldest">Oldest First</option>
+                     <option value="status">By Status</option>
+                     <option value="enterprise">By Enterprise</option>
+                  </select>
                   
                   {/* Status Filter */}
                   <select
@@ -1162,7 +1269,7 @@ const ApplicationMonitor = () => {
          </div>
 
          {/* Applications List */}
-         {filteredApplications.length === 0 ? (
+         {filteredAndSortedApplications.length === 0 ? (
             <div className={`text-center py-12 rounded-lg border transition-colors duration-300 ${
                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
             }`}>
@@ -1188,8 +1295,8 @@ const ApplicationMonitor = () => {
                </p>
             </div>
          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {filteredApplications.map((application) => (
+            <div className={`space-y-4 ${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}`}>
+               {filteredAndSortedApplications.map((application) => (
                   <div key={application._id} className={`group rounded-lg border shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1 ${
                      isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-gray-600' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-gray-300'
                   }`}>
