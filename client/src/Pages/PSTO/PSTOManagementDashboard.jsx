@@ -90,9 +90,16 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          key: 'applicationId',
          header: 'Application ID',
          render: (value, row) => (
-            <div className="font-mono text-sm">
-               <div className="font-semibold text-gray-900">{value || row._id?.slice(-8)}</div>
-               <div className="text-xs text-gray-500">{row.programName} Application</div>
+            <div className="flex items-center space-x-3">
+               <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+               </div>
+               <div>
+                  <div className="font-bold text-gray-900 text-sm">{value || row._id?.slice(-8)}</div>
+                  <div className="text-xs text-gray-500">SETUP Application</div>
+               </div>
             </div>
          )
       },
@@ -100,7 +107,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          key: 'enterpriseName',
          header: 'Enterprise Name',
          render: (value) => (
-            <div className="font-medium text-gray-900">{value}</div>
+            <div className="font-semibold text-gray-900 text-sm">{value}</div>
          )
       },
       {
@@ -108,9 +115,9 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          header: 'Contact Person',
          render: (value) => (
             <div>
-               <div className="font-medium text-gray-900">{value?.firstName} {value?.lastName}</div>
-               <div className="text-sm text-gray-500">{value?.email}</div>
-               <div className="text-sm text-gray-500">{value?.province}</div>
+               <div className="font-medium text-gray-900 text-sm">{value?.firstName} {value?.lastName}</div>
+               <div className="text-xs text-gray-500">{value?.email}</div>
+               <div className="text-xs text-gray-500">{value?.province}</div>
             </div>
          )
       },
@@ -127,27 +134,47 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
       },
       {
          key: 'createdAt',
-         header: 'Submitted',
+         header: 'Date Submitted',
          render: (value) => (
             <div className="text-sm">
-               <div className="font-medium text-gray-900">{new Date(value).toLocaleDateString()}</div>
-               <div className="text-xs text-gray-500">{new Date(value).toLocaleTimeString()}</div>
+               <div className="font-medium text-gray-900">{new Date(value).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+               })}</div>
+               <div className="text-xs text-gray-500">{new Date(value).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+               })}</div>
             </div>
          )
       },
       {
          key: 'status',
          header: 'Status',
-         render: (value) => <StatusBadge status={value} />
+         render: (value, row) => (
+            <div className="flex flex-col space-y-1">
+               <StatusBadge status={value} />
+               {row.pstoStatus && (
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                     row.pstoStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                     row.pstoStatus === 'returned' ? 'bg-yellow-100 text-yellow-800' :
+                     row.pstoStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                     'bg-gray-100 text-gray-800'
+                  }`}>
+                     PSTO: {row.pstoStatus.toUpperCase()}
+                  </span>
+               )}
+            </div>
+         )
       }
    ];
 
    const getApplicationActions = (application) => (
-      <div className="flex space-x-2">
+      <div className="flex items-center space-x-2">
          <Button
             onClick={() => handleViewDetails(application)}
-            variant="outline"
-            size="sm"
+            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-all duration-200"
          >
             View
          </Button>
@@ -155,8 +182,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          {(application.status === 'pending' || application.status === 'under_review') && !application.pstoStatus && (
             <Button
                onClick={() => handleValidateApplication(application)}
-               variant="primary"
-               size="sm"
+               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm"
             >
                Review
             </Button>
@@ -165,8 +191,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          {application.pstoStatus === 'returned' && (
             <Button
                onClick={() => handleValidateApplication(application)}
-               variant="outline"
-               size="sm"
+               className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm"
             >
                Re-review
             </Button>
@@ -417,131 +442,177 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
    }, [applications, activeTab, searchTerm, sortConfig]);
 
    return (
-      <PageLayout
-         title="Application Management"
-         subtitle="Manage applications that submitted by the proponents"
-         actions={
-            <Button
-               variant="outline"
-               onClick={fetchApplications}
-               size="sm"
-            >
-               Refresh
-            </Button>
-         }
-         loading={loading}
-         error={error}
-      >
-         {/* Enhanced Statistics Cards */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
-               <div className="flex items-center justify-between">
-                  <div>
-                     <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-                     <div className="text-sm text-gray-500">Total Applications</div>
-                  </div>
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <div className="space-y-6">
+         {/* Header */}
+         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-8 text-white">
+            <div className="flex items-center justify-between">
+               <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                      </svg>
+                  </div>
+                  <div>
+                     <h1 className="text-3xl font-bold">Application Management</h1>
+                     <p className="text-blue-100 mt-1">
+                        Review and manage applications submitted by proponents
+                     </p>
+                  </div>
+               </div>
+               <div className="text-right">
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-blue-100 text-sm">Total Applications</p>
+               </div>
+            </div>
+         </div>
+         {/* Statistics Cards */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
+               <div className="p-6">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+                        <div className="text-sm font-medium text-gray-600 mt-1">Total Applications</div>
+                     </div>
+                     <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm">
+                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                     </div>
                   </div>
                </div>
             </Card>
-            <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
-               <div className="flex items-center justify-between">
-                  <div>
-                     <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-                     <div className="text-sm text-gray-500">Pending Review</div>
-                  </div>
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                     <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                     </svg>
-                  </div>
-               </div>
-            </Card>
-            <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
-               <div className="flex items-center justify-between">
-                  <div>
-                     <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-                     <div className="text-sm text-gray-500">Approved</div>
-                  </div>
-                  <div className="p-2 bg-green-100 rounded-lg">
-                     <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                     </svg>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
+               <div className="p-6">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
+                        <div className="text-sm font-medium text-gray-600 mt-1">Pending Review</div>
+                     </div>
+                     <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-sm">
+                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                     </div>
                   </div>
                </div>
             </Card>
-            <Card className="p-4 hover:shadow-lg transition-shadow duration-200">
-               <div className="flex items-center justify-between">
-                  <div>
-                     <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-                     <div className="text-sm text-gray-500">Rejected</div>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
+               <div className="p-6">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <div className="text-3xl font-bold text-green-600">{stats.approved}</div>
+                        <div className="text-sm font-medium text-gray-600 mt-1">Approved</div>
+                     </div>
+                     <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm">
+                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                     </div>
                   </div>
-                  <div className="p-2 bg-red-100 rounded-lg">
-                     <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                     </svg>
+               </div>
+            </Card>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
+               <div className="p-6">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <div className="text-3xl font-bold text-red-600">{stats.rejected}</div>
+                        <div className="text-sm font-medium text-gray-600 mt-1">Rejected</div>
+                     </div>
+                     <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-sm">
+                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                     </div>
                   </div>
                </div>
             </Card>
          </div>
 
-         {/* Search and Filter Controls */}
-         <Card className="p-4 mb-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-               <div className="flex-1 max-w-md">
-                  <div className="relative">
-                     <input
-                        type="text"
-                        placeholder="Search applications..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     />
-                     <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                     </svg>
+         {/* Combined Search, Filters, and Tabs */}
+         <Card className="border-0 shadow-sm">
+            <div className="p-6">
+               <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+                  {/* Left Section: Search */}
+                  <div className="flex-1 max-w-md">
+                     <div className="relative">
+                        <input
+                           type="text"
+                           placeholder="Search applications..."
+                           value={searchTerm}
+                           onChange={(e) => setSearchTerm(e.target.value)}
+                           className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
+                        />
+                        <svg className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                     </div>
                   </div>
-               </div>
-               <div className="flex items-center space-x-2">
-                  <select
-                     value={`${sortConfig.key}-${sortConfig.direction}`}
-                     onChange={(e) => {
-                        const [key, direction] = e.target.value.split('-');
-                        setSortConfig({ key, direction });
-                     }}
-                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                     <option value="createdAt-desc">Newest First</option>
-                     <option value="createdAt-asc">Oldest First</option>
-                     <option value="enterpriseName-asc">Enterprise A-Z</option>
-                     <option value="enterpriseName-desc">Enterprise Z-A</option>
-                  </select>
+
+                  {/* Middle Section: Status Filter Tabs */}
+                  <div className="flex flex-wrap gap-2">
+                     {tabs.map((tab) => (
+                        <button
+                           key={tab.id}
+                           onClick={() => setActiveTab(tab.id)}
+                           className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${
+                              activeTab === tab.id
+                                 ? 'bg-blue-600 text-white shadow-md'
+                                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                           }`}
+                        >
+                           <span>{tab.label}</span>
+                           <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                              activeTab === tab.id 
+                                 ? 'bg-blue-500 text-white' 
+                                 : 'bg-gray-200 text-gray-600'
+                           }`}>
+                              {tab.count}
+                           </span>
+                        </button>
+                     ))}
+                  </div>
+
+                  {/* Right Section: Sort and Stats */}
+                  <div className="flex items-center space-x-4">
+                     <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{filteredAndSortedApplications.length}</p>
+                        <p className="text-xs text-gray-500">
+                           {activeTab === 'all' ? 'Total Applications' : `${tabs.find(tab => tab.id === activeTab)?.label} Applications`}
+                           {searchTerm && ` matching "${searchTerm}"`}
+                        </p>
+                     </div>
+                     <select
+                        value={`${sortConfig.key}-${sortConfig.direction}`}
+                        onChange={(e) => {
+                           const [key, direction] = e.target.value.split('-');
+                           setSortConfig({ key, direction });
+                        }}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
+                     >
+                        <option value="createdAt-desc">Newest First</option>
+                        <option value="createdAt-asc">Oldest First</option>
+                        <option value="enterpriseName-asc">Enterprise A-Z</option>
+                        <option value="enterpriseName-desc">Enterprise Z-A</option>
+                     </select>
+                  </div>
                </div>
             </div>
          </Card>
 
-         {/* Tab Navigation */}
-         <Card className="mb-6">
-            <TabNavigation
-               tabs={tabs}
-               activeTab={activeTab}
-               onTabChange={setActiveTab}
-            />
-         </Card>
-
          {/* Applications Table */}
-         <Card className="overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
+         <Card className="border-0 shadow-lg">
+            <div className="p-6 border-b border-gray-200 bg-gray-50">
                <div className="flex justify-between items-center">
                   <div>
-                     <h3 className="text-lg font-semibold text-gray-900">
+                     <h3 className="text-xl font-bold text-gray-900">
                         {tabs.find(tab => tab.id === activeTab)?.label} Applications
                      </h3>
-                     <p className="text-sm text-gray-500 mt-1">
-                        {filteredAndSortedApplications.length} of {applications.length} applications
+                     <p className="text-sm text-gray-600 mt-1">
+                        Showing {filteredAndSortedApplications.length} of {applications.length} applications
                         {searchTerm && ` matching "${searchTerm}"`}
                      </p>
                   </div>
@@ -550,6 +621,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                      variant="outline"
                      size="sm"
                      disabled={loading}
+                     className="bg-white hover:bg-gray-50 border-gray-300 shadow-sm"
                   >
                      {loading ? (
                         <div className="flex items-center space-x-2">
@@ -567,17 +639,41 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                   </Button>
                </div>
             </div>
-            <div className="overflow-x-auto">
-               <DataTable
-                  data={filteredAndSortedApplications}
-                  columns={applicationColumns}
-                  actions={getApplicationActions}
-                  emptyMessage={searchTerm 
-                     ? `No applications found matching "${searchTerm}"` 
-                     : `No ${tabs.find(tab => tab.id === activeTab)?.label.toLowerCase()} applications found.`
-                  }
-               />
-            </div>
+            
+            {loading ? (
+               <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                     <p className="text-gray-500">Loading applications...</p>
+                  </div>
+               </div>
+            ) : error ? (
+               <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                     <div className="p-3 bg-red-100 rounded-full w-fit mx-auto mb-4">
+                        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                     </div>
+                     <p className="text-red-600 font-medium">{error}</p>
+                     <Button onClick={fetchApplications} className="mt-4" size="sm">
+                        Try Again
+                     </Button>
+                  </div>
+               </div>
+            ) : (
+               <div className="overflow-x-auto">
+                  <DataTable
+                     data={filteredAndSortedApplications}
+                     columns={applicationColumns}
+                     actions={getApplicationActions}
+                     emptyMessage={searchTerm 
+                        ? `No applications found matching "${searchTerm}"` 
+                        : `No ${tabs.find(tab => tab.id === activeTab)?.label.toLowerCase()} applications found.`
+                     }
+                  />
+               </div>
+            )}
          </Card>
 
          {/* Application Review Modal */}
@@ -595,7 +691,22 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                handleForwardToDostMimaropa={handleForwardToDostMimaropa}
             />
          )}
-      </PageLayout>
+         {/* Application Review Modal */}
+         {selectedApplication && (
+            <ApplicationReviewModal
+               selectedApplication={selectedApplication}
+               setSelectedApplication={setSelectedApplication}
+               reviewStatus={reviewStatus}
+               setReviewStatus={setReviewStatus}
+               reviewComments={reviewComments}
+               setReviewComments={setReviewComments}
+               reviewApplication={reviewApplication}
+               getStatusColor={getStatusColor}
+               formatDate={formatDate}
+               handleForwardToDostMimaropa={handleForwardToDostMimaropa}
+            />
+         )}
+      </div>
    );
 });
 
