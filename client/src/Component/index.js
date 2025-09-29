@@ -11,7 +11,6 @@ export * from './LandingPage';
 // UI Components
 export * from './UI';
 
-
 // Notification Components
 export * from './Notifications';
 
@@ -25,6 +24,3 @@ export * from './UserManagement';
 
 // PSTO Components
 export * from './PSTO';
-
-// Services Components
-export * from './Services';

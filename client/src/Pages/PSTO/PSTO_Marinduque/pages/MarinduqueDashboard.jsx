@@ -1,5 +1,5 @@
 import React from 'react';
-import BasePSTODashboard from '../../../../Component/PSTO/BasePSTODashboard';
+import UnifiedPSTODashboard from '../../UnifiedPSTODashboard';
 
 /**
  * Marinduque PSTO Dashboard
@@ -55,10 +55,9 @@ const MarinduqueDashboard = ({ currentUser }) => {
    };
                   
                   return (
-      <BasePSTODashboard
-         province="Marinduque"
+      <UnifiedPSTODashboard
          currentUser={currentUser}
-         provinceData={marinduqueData}
+         currentPage="dashboard"
       />
    );
 };
