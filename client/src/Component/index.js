@@ -11,8 +11,6 @@ export * from './LandingPage';
 // UI Components
 export * from './UI';
 
-// Project Management Components
-export * from './ProjectManagement';
 
 // Notification Components
 export * from './Notifications';

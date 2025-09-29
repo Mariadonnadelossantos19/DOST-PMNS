@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Input, Modal, Alert } from '../../../Component/UI';
-import ProjectCard from '../../../Component/ProjectManagement/ProjectCard';
-import TaskList from '../../../Component/ProjectManagement/TaskList';
+// Note: ProjectCard and TaskList removed as they're not needed for DOST-PMNS
 import { UserManagement } from '../../../Component/UserManagement';
 import { InteractiveDashboard } from '../../../Component/Interactive';
 import axios from 'axios';
@@ -250,44 +249,26 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
    const renderProjects = () => (
       <div className="space-y-6">
          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">All Projects</h2>
-            <Button>Add Project</Button>
+            <h2 className="text-2xl font-bold text-gray-900">System Projects</h2>
          </div>
          
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map(project => (
-               <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onSelect={() => console.log('Project selected:', project.id)}
-                  onUpdate={(updates) => {
-                     console.log('Project update:', project.id, updates);
-                  }}
-               />
-            ))}
-         </div>
+         <Card className="p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Project Management</h3>
+            <p className="text-gray-600">System-wide project overview and management will be available here.</p>
+         </Card>
       </div>
    );
 
    const renderTasks = () => (
       <div className="space-y-6">
          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">All Tasks</h2>
-            <Button>Add Task</Button>
+            <h2 className="text-2xl font-bold text-gray-900">System Tasks</h2>
          </div>
          
-         <TaskList
-            tasks={tasks}
-            onUpdate={(taskId, updates) => {
-               console.log('Task update:', taskId, updates);
-            }}
-            onCreate={(task) => {
-               console.log('Task created:', task);
-            }}
-            onDelete={(taskId) => {
-               console.log('Task deleted:', taskId);
-            }}
-         />
+         <Card className="p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Task Management</h3>
+            <p className="text-gray-600">System-wide task tracking and management will be available here.</p>
+         </Card>
       </div>
    );
 
