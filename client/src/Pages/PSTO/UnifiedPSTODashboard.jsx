@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usePSTOData } from '../../hooks/usePSTOData';
-import { InteractiveDashboard } from '../../Component/Interactive';
 import { Card, Button, DataTable, StatusBadge } from '../../Component/UI';
 import { TNAManagement, DocumentValidation, TNAReportUpload } from '../../Component/PSTO/components';
 import ProponentManagement from '../../Component/PSTO/ProponentManagement';
@@ -13,20 +12,13 @@ import PSTOManagementDashboard from './PSTOManagementDashboard';
  * Eliminates redundancy with global navigation
  */
 const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
-   const [loading, setLoading] = useState(false);
-   const [error, setError] = useState(null);
-
    // Use the custom hook for data management
    const {
       proponents,
       pendingProponents,
       applications,
       loading: dataLoading,
-      pendingLoading,
-      applicationsLoading,
-      error: dataError,
-      activateProponent,
-      reviewApplication
+      error: dataError
    } = usePSTOData(currentUser.province);
 
    // Calculate statistics
@@ -39,20 +31,6 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       approvedApplications: applications.filter(app => app.status === 'psto_approved').length
    };
 
-   // Interactive user stats
-   const userStats = {
-      totalEnrollments: stats.totalProponents,
-      approvedApplications: stats.approvedApplications,
-      avgProcessingTime: 15,
-      todayProcessed: 8,
-      accuracyRate: 94,
-      communitiesHelped: 23,
-      timeSaved: 67,
-      completedTna: 7,
-      perfectStreak: 15,
-      helpfulActions: 3,
-      dailyProcessed: 8
-   };
 
    // Define table columns for applications
    const applicationColumns = [
@@ -121,11 +99,6 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
          {/* Statistics Cards */}
          <PSTOStats stats={stats} />
 
-         {/* Interactive Dashboard */}
-         <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Interactive Dashboard</h3>
-            <InteractiveDashboard userStats={userStats} />
-         </Card>
 
          {/* Recent Applications */}
          <Card className="p-6">
@@ -234,7 +207,7 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
    );
 
    // Get current view based on currentPage prop or URL hash
-   const getCurrentView = () => {
+   const getCurrentView = useCallback(() => {
       // Use currentPage prop first (from sidebar navigation)
       if (currentPage === 'management') {
          return 'management';
@@ -255,14 +228,14 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       // Fallback to URL hash
       const hash = window.location.hash.replace('#', '');
       return hash || 'overview';
-   };
+   }, [currentPage]);
 
    const [currentView, setCurrentView] = useState(getCurrentView);
 
    // Listen for currentPage changes and hash changes
    useEffect(() => {
       setCurrentView(getCurrentView());
-   }, [currentPage]);
+   }, [currentPage, getCurrentView]);
 
    useEffect(() => {
       const handleRouteChange = () => {
@@ -276,7 +249,7 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
          window.removeEventListener('hashchange', handleRouteChange);
          window.removeEventListener('popstate', handleRouteChange);
       };
-   }, [currentPage]);
+   }, [currentPage, getCurrentView]);
 
    // Render management content
    const renderManagement = () => {
