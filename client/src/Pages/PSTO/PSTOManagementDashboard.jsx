@@ -442,40 +442,40 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
    }, [applications, activeTab, searchTerm, sortConfig]);
 
    return (
-      <div className="space-y-6">
+      <div className="space-y-4">
          {/* Header */}
-         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-8 text-white">
+         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md p-4 text-white">
             <div className="flex items-center justify-between">
-               <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                      </svg>
                   </div>
                   <div>
-                     <h1 className="text-3xl font-bold">Application Management</h1>
-                     <p className="text-blue-100 mt-1">
+                     <h1 className="text-xl font-bold">Application Management</h1>
+                     <p className="text-blue-100 text-sm">
                         Review and manage applications submitted by proponents
                      </p>
                   </div>
                </div>
                <div className="text-right">
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-blue-100 text-sm">Total Applications</p>
+                  <p className="text-xl font-bold">{stats.total}</p>
+                  <p className="text-blue-100 text-xs">Total Applications</p>
                </div>
             </div>
          </div>
          {/* Statistics Cards */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
-               <div className="p-6">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="hover:shadow-md transition-shadow duration-200 bg-white">
+               <div className="p-4">
                   <div className="flex items-center justify-between">
                      <div>
-                        <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-                        <div className="text-sm font-medium text-gray-600 mt-1">Total Applications</div>
+                        <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+                        <div className="text-sm text-gray-600">Total Applications</div>
                      </div>
-                     <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="p-2 bg-blue-500 rounded-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                      </div>
@@ -483,15 +483,15 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                </div>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
-               <div className="p-6">
+            <Card className="hover:shadow-md transition-shadow duration-200 bg-white">
+               <div className="p-4">
                   <div className="flex items-center justify-between">
                      <div>
-                        <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-                        <div className="text-sm font-medium text-gray-600 mt-1">Pending Review</div>
+                        <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                        <div className="text-sm text-gray-600">Pending Review</div>
                      </div>
-                     <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-sm">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="p-2 bg-yellow-500 rounded-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                      </div>
@@ -499,15 +499,15 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                </div>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
-               <div className="p-6">
+            <Card className="hover:shadow-md transition-shadow duration-200 bg-white">
+               <div className="p-4">
                   <div className="flex items-center justify-between">
                      <div>
-                        <div className="text-3xl font-bold text-green-600">{stats.approved}</div>
-                        <div className="text-sm font-medium text-gray-600 mt-1">Approved</div>
+                        <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+                        <div className="text-sm text-gray-600">Approved</div>
                      </div>
-                     <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="p-2 bg-green-500 rounded-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                      </div>
@@ -515,15 +515,15 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                </div>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:scale-[1.02] bg-white">
-               <div className="p-6">
+            <Card className="hover:shadow-md transition-shadow duration-200 bg-white">
+               <div className="p-4">
                   <div className="flex items-center justify-between">
                      <div>
-                        <div className="text-3xl font-bold text-red-600">{stats.rejected}</div>
-                        <div className="text-sm font-medium text-gray-600 mt-1">Rejected</div>
+                        <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+                        <div className="text-sm text-gray-600">Rejected</div>
                      </div>
-                     <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-sm">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="p-2 bg-red-500 rounded-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                      </div>
@@ -533,9 +533,9 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          </div>
 
          {/* Combined Search, Filters, and Tabs */}
-         <Card className="border-0 shadow-sm">
-            <div className="p-6">
-               <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+         <Card className="shadow-sm">
+            <div className="p-4">
+               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                   {/* Left Section: Search */}
                   <div className="flex-1 max-w-md">
                      <div className="relative">
@@ -544,9 +544,9 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                            placeholder="Search applications..."
                            value={searchTerm}
                            onChange={(e) => setSearchTerm(e.target.value)}
-                           className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
+                           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
-                        <svg className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                      </div>
@@ -558,14 +558,14 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                         <button
                            key={tab.id}
                            onClick={() => setActiveTab(tab.id)}
-                           className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${
+                           className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center ${
                               activeTab === tab.id
-                                 ? 'bg-blue-600 text-white shadow-md'
-                                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                 ? 'bg-blue-600 text-white'
+                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                            }`}
                         >
                            <span>{tab.label}</span>
-                           <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                           <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-medium ${
                               activeTab === tab.id 
                                  ? 'bg-blue-500 text-white' 
                                  : 'bg-gray-200 text-gray-600'
@@ -577,11 +577,11 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                   </div>
 
                   {/* Right Section: Sort and Stats */}
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
                      <div className="text-right">
                         <p className="text-sm font-medium text-gray-900">{filteredAndSortedApplications.length}</p>
                         <p className="text-xs text-gray-500">
-                           {activeTab === 'all' ? 'Total Applications' : `${tabs.find(tab => tab.id === activeTab)?.label} Applications`}
+                           {activeTab === 'all' ? 'Applications' : `${tabs.find(tab => tab.id === activeTab)?.label}`}
                            {searchTerm && ` matching "${searchTerm}"`}
                         </p>
                      </div>
@@ -591,7 +591,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                            const [key, direction] = e.target.value.split('-');
                            setSortConfig({ key, direction });
                         }}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                      >
                         <option value="createdAt-desc">Newest First</option>
                         <option value="createdAt-asc">Oldest First</option>
@@ -604,14 +604,14 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          </Card>
 
          {/* Applications Table */}
-         <Card className="border-0 shadow-lg">
-            <div className="p-6 border-b border-gray-200 bg-gray-50">
+         <Card className="shadow-sm">
+            <div className="p-4 border-b border-gray-200">
                <div className="flex justify-between items-center">
                   <div>
-                     <h3 className="text-xl font-bold text-gray-900">
+                     <h3 className="text-lg font-semibold text-gray-900">
                         {tabs.find(tab => tab.id === activeTab)?.label} Applications
                      </h3>
-                     <p className="text-sm text-gray-600 mt-1">
+                     <p className="text-sm text-gray-500 mt-1">
                         Showing {filteredAndSortedApplications.length} of {applications.length} applications
                         {searchTerm && ` matching "${searchTerm}"`}
                      </p>
@@ -621,15 +621,15 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                      variant="outline"
                      size="sm"
                      disabled={loading}
-                     className="bg-white hover:bg-gray-50 border-gray-300 shadow-sm"
+                     className="text-sm"
                   >
                      {loading ? (
                         <div className="flex items-center space-x-2">
-                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                           <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
                            <span>Refreshing...</span>
                         </div>
                      ) : (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                            </svg>
