@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, DataTable, Modal, Input, Textarea } from '../UI';
 
 const ProponentManagement = ({ currentUser }) => {
    const [proponents, setProponents] = useState([]);
    const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
    const [selectedProponent, setSelectedProponent] = useState(null);
    const [showModal, setShowModal] = useState(false);
    const [modalAction, setModalAction] = useState(''); // 'activate', 'deactivate', 'reset-password'
@@ -13,7 +14,7 @@ const ProponentManagement = ({ currentUser }) => {
    const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'pending', 'inactive'
 
    // Fetch all proponents for the PSTO's province
-   const fetchProponents = async () => {
+   const fetchProponents = useCallback(async () => {
       try {
          setLoading(true);
          console.log('Fetching all proponents for province:', currentUser.province);
@@ -70,7 +71,7 @@ const ProponentManagement = ({ currentUser }) => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [currentUser]);
 
    // Activate proponent account
    const activateProponent = async (proponentId) => {
@@ -234,7 +235,7 @@ const ProponentManagement = ({ currentUser }) => {
 
    useEffect(() => {
       fetchProponents();
-   }, []);
+   }, [fetchProponents]);
 
    // Define table columns
    const columns = [

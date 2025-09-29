@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, DataTable } from '../UI';
 
-const PendingActivations = ({ currentUser }) => {
+const PendingActivations = () => {
    const [pendingProponents, setPendingProponents] = useState([]);
    const [pendingLoading, setPendingLoading] = useState(false);
    const [activatingId, setActivatingId] = useState(null);
@@ -132,7 +132,7 @@ const PendingActivations = ({ currentUser }) => {
       {
          key: 'status',
          header: 'Status',
-         render: (proponent) => (
+         render: () => (
             <Badge className="bg-yellow-100 text-yellow-800">
                PENDING
             </Badge>

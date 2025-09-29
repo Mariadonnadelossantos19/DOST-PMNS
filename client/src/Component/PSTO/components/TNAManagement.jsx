@@ -112,7 +112,7 @@ const TNAManagement = ({ currentUser }) => {
    useEffect(() => {
       fetchApplications();
       fetchTNAs();
-   }, [currentUser?.role]);
+   }, [currentUser?.role, fetchApplications, fetchTNAs]);
 
    const handleScheduleTNA = (application) => {
       setSelectedApplication(application);
