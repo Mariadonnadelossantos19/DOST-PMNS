@@ -25,7 +25,21 @@ const APP_CONFIG = {
 const AppContent = ({ onLogout, currentPage, onNavigate }) => {
    // Get current user from localStorage
    const userData = localStorage.getItem('userData');
-   const currentUser = userData ? JSON.parse(userData) : null;
+   let currentUser = null;
+   
+   if (userData) {
+      try {
+         const parsedData = JSON.parse(userData);
+         // Handle both old format (with user nested) and new format (direct user)
+         currentUser = parsedData.user || parsedData;
+      } catch (error) {
+         console.error('Error parsing user data:', error);
+         currentUser = null;
+      }
+   }
+   
+   // Debug: Log the current user data
+   console.log('App.jsx - Current user from localStorage:', currentUser);
 
    // Navigation handlers
    const handleNavigate = (path) => {
@@ -181,10 +195,11 @@ function App() {
    // Debug current page
    console.log('Current page:', currentPage);
 
-   const handleLoginSuccess = (userData) => {
+   const handleLoginSuccess = (loginData) => {
       // Save login state to localStorage
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userData', JSON.stringify(userData));
+      // Store only the user object, not the entire login response
+      localStorage.setItem('userData', JSON.stringify(loginData.user));
       setShowDashboard(true);
       setCurrentPage('dashboard');
    };
