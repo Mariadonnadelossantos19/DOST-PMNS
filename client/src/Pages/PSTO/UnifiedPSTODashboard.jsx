@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePSTOData } from '../../hooks/usePSTOData';
 import { Card, Button, DataTable, StatusBadge } from '../../Component/UI';
 import { TNAManagement, DocumentValidation, TNAReportUpload } from '../../Component/PSTO/components';
@@ -7,11 +7,21 @@ import PSTOStats from '../../Component/PSTO/PSTOStats';
 import PSTOManagementDashboard from './PSTOManagementDashboard';
 
 /**
- * Unified PSTO Dashboard
- * Uses sidebar navigation instead of internal tabs
- * Eliminates redundancy with global navigation
+ * Unified PSTO Dashboard - Main Container Component
+ * 
+ * PURPOSE: Acts as the main router/container for all PSTO views
+ * 
+ * STRUCTURE:
+ * - Overview: Dashboard stats + recent applications
+ * - Applications/Management: Full PSTOManagementDashboard component
+ * - TNA Management: TNA scheduling and management
+ * - Document Validation: Document review interface
+ * - TNA Reports: Report upload interface
+ * - Proponents: Proponent listing and management
+ * 
+ * NAVIGATION: Uses sidebar navigation instead of internal tabs
  */
-const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
+const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard' }) => {
    // Use the custom hook for data management
    const {
       proponents,
@@ -21,19 +31,19 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       error: dataError
    } = usePSTOData(currentUser.province);
 
-   // Calculate statistics
-   const stats = {
+   // Memoized statistics to prevent unnecessary re-renders
+   const stats = useMemo(() => ({
       totalProponents: proponents.length,
       activeProponents: proponents.filter(p => p.status === 'active').length,
       pendingActivations: pendingProponents.length,
       totalApplications: applications.length,
       pendingApplications: applications.filter(app => app.status === 'pending').length,
       approvedApplications: applications.filter(app => app.status === 'psto_approved').length
-   };
+   }), [proponents, pendingProponents, applications]);
 
 
-   // Define table columns for applications
-   const applicationColumns = [
+   // Memoized table columns for applications
+   const applicationColumns = useMemo(() => [
       {
          key: 'programName',
          header: 'Program',
@@ -64,9 +74,9 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
          header: 'Submitted',
          render: (value) => new Date(value).toLocaleDateString()
       }
-   ];
+   ], []);
 
-   const getApplicationActions = (application) => (
+   const getApplicationActions = useCallback((application) => (
       <div className="flex space-x-2">
          <Button
             onClick={() => {
@@ -91,14 +101,13 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
             </Button>
          )}
       </div>
-   );
+   ), []);
 
    // Render overview content
-   const renderOverview = () => (
+   const renderOverview = useCallback(() => (
       <div className="space-y-6">
          {/* Statistics Cards */}
          <PSTOStats stats={stats} />
-
 
          {/* Recent Applications */}
          <Card className="p-6">
@@ -121,51 +130,30 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
             />
          </Card>
       </div>
-   );
+   ), [stats, applications, applicationColumns, getApplicationActions]);
 
-   // Render applications content
-   const renderApplications = () => (
-      <div className="space-y-6">
-         <div className="flex justify-between items-center">
-            <div>
-               <h2 className="text-2xl font-bold text-gray-900">Applications</h2>
-               <p className="text-gray-600">Manage and review submitted applications</p>
-            </div>
-            <Button
-               onClick={() => {
-                  window.location.hash = '#document-validation';
-               }}
-            >
-               Document Validation
-            </Button>
-         </div>
-
-         <DataTable
-            data={applications}
-            columns={applicationColumns}
-            actions={getApplicationActions}
-            emptyMessage="No applications found"
-         />
-      </div>
-   );
+   // Render applications content - Enhanced with full management functionality
+   const renderApplications = useCallback(() => {
+      return <PSTOManagementDashboard currentUser={currentUser} />;
+   }, [currentUser]);
 
    // Render document validation content
-   const renderDocumentValidation = () => (
+   const renderDocumentValidation = useCallback(() => (
       <DocumentValidation currentUser={currentUser} />
-   );
+   ), [currentUser]);
 
    // Render TNA management content
-   const renderTNAManagement = () => (
+   const renderTNAManagement = useCallback(() => (
       <TNAManagement currentUser={currentUser} />
-   );
+   ), [currentUser]);
 
    // Render TNA reports content
-   const renderTNAReports = () => (
+   const renderTNAReports = useCallback(() => (
       <TNAReportUpload currentUser={currentUser} />
-   );
+   ), [currentUser]);
 
    // Render proponents content
-   const renderProponents = () => (
+   const renderProponents = useCallback(() => (
       <div className="space-y-6">
          <div className="flex justify-between items-center">
             <div>
@@ -199,12 +187,12 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
             </div>
          </Card>
       </div>
-   );
+   ), [proponents]);
 
    // Render proponent management content
-   const renderProponentManagement = () => (
+   const renderProponentManagement = useCallback(() => (
       <ProponentManagement currentUser={currentUser} />
-   );
+   ), [currentUser]);
 
    // Get current view based on currentPage prop or URL hash
    const getCurrentView = useCallback(() => {
@@ -230,16 +218,18 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       return hash || 'overview';
    }, [currentPage]);
 
-   const [currentView, setCurrentView] = useState(getCurrentView);
+   const [currentView, setCurrentView] = useState(() => getCurrentView());
 
-   // Listen for currentPage changes and hash changes
+   // Listen for currentPage changes
    useEffect(() => {
       setCurrentView(getCurrentView());
-   }, [currentPage, getCurrentView]);
+   }, [getCurrentView]);
 
+   // Listen for hash changes (only set up once)
    useEffect(() => {
       const handleRouteChange = () => {
-         setCurrentView(getCurrentView());
+         const newView = getCurrentView();
+         setCurrentView(newView);
       };
 
       window.addEventListener('hashchange', handleRouteChange);
@@ -249,16 +239,15 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
          window.removeEventListener('hashchange', handleRouteChange);
          window.removeEventListener('popstate', handleRouteChange);
       };
-   }, [currentPage, getCurrentView]);
+   }, [getCurrentView]); // Include getCurrentView dependency
 
-   // Render management content
-   const renderManagement = () => {
-      console.log('Rendering management view');
+   // Render management content - Same as applications for now
+   const renderManagement = useCallback(() => {
       return <PSTOManagementDashboard currentUser={currentUser} />;
-   };
+   }, [currentUser]);
 
-   // View mapping
-   const viewRenderers = {
+   // Memoized view mapping to prevent object recreation
+   const viewRenderers = useMemo(() => ({
       overview: renderOverview,
       applications: renderApplications,
       management: renderManagement,
@@ -267,20 +256,14 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
       'tna-reports': renderTNAReports,
       proponents: renderProponents,
       'proponent-management': renderProponentManagement
-   };
+   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderProponents, renderProponentManagement]);
 
-   const renderContent = () => {
-      console.log('UnifiedPSTODashboard - currentPage:', currentPage);
-      console.log('UnifiedPSTODashboard - currentView:', currentView);
-      console.log('UnifiedPSTODashboard - available views:', Object.keys(viewRenderers));
-      
+   const renderContent = useCallback(() => {
       const renderer = viewRenderers[currentView];
       if (renderer) {
-         console.log('Rendering view:', currentView);
          return renderer();
       }
 
-      console.log('View not found:', currentView);
       return (
          <div className="p-6 text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">View Not Found</h3>
@@ -289,7 +272,7 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
             <p className="text-xs text-gray-400 mt-1">Available views: {Object.keys(viewRenderers).join(', ')}</p>
          </div>
       );
-   };
+   }, [currentView, viewRenderers]);
 
    if (dataLoading) {
       return (
@@ -317,6 +300,6 @@ const UnifiedPSTODashboard = ({ currentUser, currentPage = 'dashboard' }) => {
          {renderContent()}
       </div>
    );
-};
+});
 
 export default UnifiedPSTODashboard;

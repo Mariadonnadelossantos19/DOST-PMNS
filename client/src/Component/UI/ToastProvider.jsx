@@ -32,13 +32,30 @@ export const ToastProvider = ({ children }) => {
    const showWarning = (message, duration) => addToast(message, 'warning', duration);
    const showInfo = (message, duration) => addToast(message, 'info', duration);
 
+   // Generic showToast function that maps types to specific functions
+   const showToast = (message, type = 'success', duration) => {
+      switch (type) {
+         case 'success':
+            return showSuccess(message, duration);
+         case 'error':
+            return showError(message, duration);
+         case 'warning':
+            return showWarning(message, duration);
+         case 'info':
+            return showInfo(message, duration);
+         default:
+            return showSuccess(message, duration);
+      }
+   };
+
    const value = {
       addToast,
       removeToast,
       showSuccess,
       showError,
       showWarning,
-      showInfo
+      showInfo,
+      showToast
    };
 
    return (
