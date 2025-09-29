@@ -24,7 +24,8 @@ const APP_CONFIG = {
 // Main App Content Component
 const AppContent = ({ onLogout, currentPage, onNavigate }) => {
    // Get current user from localStorage
-   const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+   const userData = localStorage.getItem('userData');
+   const currentUser = userData ? JSON.parse(userData) : null;
 
    // Navigation handlers
    const handleNavigate = (path) => {

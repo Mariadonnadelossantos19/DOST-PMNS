@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const NotificationsPage = ({ currentUser }) => {
    const [notifications, setNotifications] = useState([]);
@@ -6,10 +6,26 @@ const NotificationsPage = ({ currentUser }) => {
    const [error, setError] = useState(null);
 
    // Fetch notifications
-   const fetchNotifications = async () => {
+   const fetchNotifications = useCallback(async () => {
       try {
          setLoading(true);
-         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${currentUser.userId || currentUser._id || currentUser.id}`, {
+         
+         // Debug: Log current user to see what's available
+         console.log('NotificationsPage - currentUser:', currentUser);
+         
+         // Get user ID from various possible sources
+         const userId = currentUser?.userId || currentUser?._id || currentUser?.id;
+         
+         if (!userId) {
+            console.error('No user ID found in currentUser:', currentUser);
+            setError('User not authenticated');
+            setLoading(false);
+            return;
+         }
+         
+         console.log('Fetching notifications for user ID:', userId);
+         
+         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${userId}`, {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
@@ -19,7 +35,9 @@ const NotificationsPage = ({ currentUser }) => {
             const data = await response.json();
             setNotifications(data.notifications || []);
          } else {
-            setError('Failed to fetch notifications');
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            setError(`Failed to fetch notifications: ${response.status}`);
          }
       } catch (err) {
          setError('Error fetching notifications');
@@ -27,7 +45,7 @@ const NotificationsPage = ({ currentUser }) => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [currentUser]);
 
    // Mark notification as read
    const markAsRead = async (notificationId) => {
@@ -75,10 +93,24 @@ const NotificationsPage = ({ currentUser }) => {
 
    // Fetch notifications on component mount
    useEffect(() => {
-      fetchNotifications();
-   }, []);
+      if (currentUser) {
+         fetchNotifications();
+      }
+   }, [currentUser, fetchNotifications]);
 
    const unreadCount = notifications.filter(n => !n.isRead).length;
+
+   // Early return if no currentUser
+   if (!currentUser) {
+      return (
+         <div className="p-6">
+            <div className="text-center">
+               <h2 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h2>
+               <p className="text-gray-600">Please log in to view your notifications.</p>
+            </div>
+         </div>
+      );
+   }
 
    return (
       <div className="p-6">
