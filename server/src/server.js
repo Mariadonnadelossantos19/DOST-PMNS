@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
-const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const programRoutes = require('./routes/programRoutes');
 const tnaRoutes = require('./routes/tnaRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -33,7 +32,6 @@ app.use('/uploads', (req, res, next) => {
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/programs', programRoutes);
 app.use('/api/tna', tnaRoutes);
 app.use('/api/notifications', notificationRoutes);

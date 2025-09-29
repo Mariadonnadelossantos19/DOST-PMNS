@@ -1,4 +1,4 @@
-const ProgramApplication = require('../models/ProgramApplication');
+const SETUPApplication = require('../models/SETUPApplication');
 const User = require('../models/User');
 const PSTO = require('../models/PSTO');
 const multer = require('multer');
@@ -108,7 +108,7 @@ exports.submitApplication = async (req, res) => {
       }
       
       // Create application
-      const application = new ProgramApplication({
+      const application = new SETUPApplication({
          proponentId,
          programCode: applicationData.programCode,
          programName: applicationData.programName,
@@ -180,7 +180,7 @@ exports.submitApplication = async (req, res) => {
 exports.getApplicationsByProponent = async (req, res) => {
    try {
       const proponentId = req.user.id;
-      const applications = await ProgramApplication.find({ proponentId })
+      const applications = await SETUPApplication.find({ proponentId })
          .populate('assignedPSTO', 'name location')
          .sort({ submittedAt: -1 });
       
@@ -202,7 +202,7 @@ exports.getApplicationsByProponent = async (req, res) => {
 exports.getApplicationById = async (req, res) => {
    try {
       const { applicationId } = req.params;
-      const application = await ProgramApplication.findById(applicationId)
+      const application = await SETUPApplication.findById(applicationId)
          .populate('proponentId', 'firstName lastName email')
          .populate('assignedPSTO', 'name location')
          .populate('reviewedBy', 'firstName lastName email');
@@ -237,7 +237,7 @@ exports.getAllApplications = async (req, res) => {
       if (status) filter.status = status;
       if (programCode) filter.programCode = programCode;
       
-      const applications = await ProgramApplication.find(filter)
+      const applications = await SETUPApplication.find(filter)
          .populate('proponentId', 'firstName lastName email')
          .populate('assignedPSTO', 'name location')
          .populate('reviewedBy', 'firstName lastName email')
@@ -245,7 +245,7 @@ exports.getAllApplications = async (req, res) => {
          .limit(limit * 1)
          .skip((page - 1) * limit);
       
-      const total = await ProgramApplication.countDocuments(filter);
+      const total = await SETUPApplication.countDocuments(filter);
       
       res.json({
          success: true,
@@ -273,7 +273,7 @@ exports.updateApplicationStatus = async (req, res) => {
       const { status, reviewComments } = req.body;
       const reviewerId = req.user.id;
       
-      const application = await ProgramApplication.findById(applicationId);
+      const application = await SETUPApplication.findById(applicationId);
       if (!application) {
          return res.status(404).json({
             success: false,
@@ -310,7 +310,7 @@ exports.downloadFile = async (req, res) => {
    try {
       const { applicationId, fileType } = req.params;
       
-      const application = await ProgramApplication.findById(applicationId);
+      const application = await SETUPApplication.findById(applicationId);
       if (!application) {
          return res.status(404).json({
             success: false,
@@ -360,7 +360,7 @@ exports.downloadFile = async (req, res) => {
 // Get application statistics
 exports.getApplicationStats = async (req, res) => {
    try {
-      const stats = await ProgramApplication.aggregate([
+      const stats = await SETUPApplication.aggregate([
          {
             $group: {
                _id: '$status',
@@ -369,7 +369,7 @@ exports.getApplicationStats = async (req, res) => {
          }
       ]);
       
-      const programStats = await ProgramApplication.aggregate([
+      const programStats = await SETUPApplication.aggregate([
          {
             $group: {
                _id: '$programCode',

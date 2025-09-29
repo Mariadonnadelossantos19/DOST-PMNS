@@ -366,7 +366,7 @@ const ProponentManagement = ({ currentUser }) => {
                {loading ? 'Refreshing...' : 'Refresh'}
             </Button>
          </div>
-
+      
          {/* Filter Tabs */}
          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex space-x-4">

@@ -31,11 +31,6 @@ export const API_ENDPOINTS = {
    SSCP_MY_APPLICATIONS: `${API_BASE_URL}/programs/sscp/my-applications`,
    PROGRAM_SUBMIT: (programCode) => `${API_BASE_URL}/programs/${programCode}/submit`,
    
-   // Enrollment endpoints
-   ENROLLMENTS: `${API_BASE_URL}/enrollments`,
-   ENROLLMENT_CREATE: `${API_BASE_URL}/enrollments/create`,
-   ENROLLMENT_STATS: `${API_BASE_URL}/enrollments/stats`,
-   ENROLLMENT_BY_PROPONENT: (proponentId) => `${API_BASE_URL}/enrollments/proponent/${proponentId}`,
    
    // Proponent requests
    PROPONENT_REQUESTS: `${API_BASE_URL}/proponent-requests`,

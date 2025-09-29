@@ -7,6 +7,17 @@ const setupApplicationSchema = new mongoose.Schema({
       unique: true,
       required: true
    },
+   programCode: {
+      type: String,
+      required: true,
+      enum: ['SETUP', 'GIA', 'CEST', 'SSCP'],
+      default: 'SETUP'
+   },
+   programName: {
+      type: String,
+      required: true,
+      default: 'Small Enterprise Technology Upgrading Program'
+   },
    
    // Proponent Information
    proponentId: {
@@ -136,36 +147,60 @@ const setupApplicationSchema = new mongoose.Schema({
       required: true
    },
    
+   // Program-Specific Fields (conditional based on programCode)
    // SETUP Specific Fields
    technologyNeeds: {
       type: String,
-      required: true
+      required: function() { return this.programCode === 'SETUP'; }
    },
    currentTechnologyLevel: {
       type: String,
-      required: true,
-      enum: ['Basic', 'Intermediate', 'Advanced']
+      enum: ['Basic', 'Intermediate', 'Advanced'],
+      required: function() { return this.programCode === 'SETUP'; }
    },
    desiredTechnologyLevel: {
       type: String,
-      required: true,
-      enum: ['Basic', 'Intermediate', 'Advanced']
+      enum: ['Basic', 'Intermediate', 'Advanced'],
+      required: function() { return this.programCode === 'SETUP'; }
    },
    expectedOutcomes: {
       type: String,
-      required: true
+      required: function() { return this.programCode === 'SETUP'; }
    },
    
-   // General Agreement
+   // GIA Specific Fields
+   innovationType: {
+      type: String,
+      enum: ['Product', 'Process', 'Service', 'Marketing'],
+      required: function() { return this.programCode === 'GIA'; }
+   },
+   innovationDescription: {
+      type: String,
+      required: function() { return this.programCode === 'GIA'; }
+   },
+   
+   // CEST Specific Fields
+   testingRequirements: {
+      type: String,
+      required: function() { return this.programCode === 'CEST'; }
+   },
+   
+   // SSCP Specific Fields
+   consultancyNeeds: {
+      type: String,
+      required: function() { return this.programCode === 'SSCP'; }
+   },
+   
+   // General Agreement (for programs that require it)
    generalAgreement: {
       accepted: {
          type: Boolean,
-         required: true,
+         required: function() { return ['SETUP'].includes(this.programCode); },
          default: false
       },
       acceptedAt: {
          type: Date,
-         required: true
+         required: function() { return this.generalAgreement?.accepted; }
       },
       ipAddress: {
          type: String
@@ -182,15 +217,15 @@ const setupApplicationSchema = new mongoose.Schema({
       },
       signatoryName: {
          type: String,
-         required: true
+         required: function() { return this.generalAgreement?.accepted; }
       },
       position: {
          type: String,
-         required: true
+         required: function() { return this.generalAgreement?.accepted; }
       },
       signedDate: {
          type: Date,
-         required: true
+         required: function() { return this.generalAgreement?.accepted; }
       }
    },
    
@@ -375,11 +410,11 @@ const setupApplicationSchema = new mongoose.Schema({
    timestamps: true
 });
 
-// Generate unique application ID
+// Generate unique application ID based on program code
 setupApplicationSchema.pre('save', async function(next) {
    if (this.isNew) {
-      const count = await this.constructor.countDocuments();
-      this.applicationId = `SETUP-${String(count + 1).padStart(6, '0')}`;
+      const count = await this.constructor.countDocuments({ programCode: this.programCode });
+      this.applicationId = `${this.programCode}-${String(count + 1).padStart(6, '0')}`;
    }
    next();
 });
@@ -390,14 +425,22 @@ setupApplicationSchema.pre('save', function(next) {
    next();
 });
 
-// Validate general agreement acceptance
+// Validate general agreement acceptance for programs that require it
 setupApplicationSchema.pre('save', function(next) {
-   if (this.isNew && !this.generalAgreement.accepted) {
-      const error = new Error('General agreement must be accepted before submission');
-      error.name = 'ValidationError';
-      return next(error);
+   if (this.isNew && ['SETUP'].includes(this.programCode)) {
+      if (!this.generalAgreement?.accepted) {
+         const error = new Error('General agreement must be accepted before submission');
+         error.name = 'ValidationError';
+         return next(error);
+      }
    }
    next();
 });
+
+// Index for better query performance
+setupApplicationSchema.index({ programCode: 1, status: 1 });
+setupApplicationSchema.index({ proponentId: 1 });
+setupApplicationSchema.index({ createdAt: -1 });
+setupApplicationSchema.index({ applicationId: 1 });
 
 module.exports = mongoose.model('SETUPApplication', setupApplicationSchema);
