@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Register } from './Component';
-import { MainLayout, ProjectDashboard, LandingPage, NotificationProvider, useNotifications } from './Component';
+import { LandingPage } from './Component';
+import { MainLayout, NotificationProvider } from './Component';
 import UnifiedLayout from './Component/Layouts/UnifiedLayout';
 import UnifiedPSTODashboard from './Pages/PSTO/UnifiedPSTODashboard';
 import { ToastProvider } from './Component/UI';
@@ -12,294 +12,35 @@ import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
 import NotificationsPage from './Pages/NotificationsPage';
 import ResetPassword from './Component/Registration/ResetPassword';
-import PSTODashboard from './Pages/PSTO/PSTODashboard';
 import './App.css';
 
-// Sample data for demonstration
-const sampleProjects = [
-   {
-      id: 1,
-      name: 'Website Redesign',
-      description: 'Complete redesign of the company website with modern UI/UX',
-      status: 'active',
-      priority: 'high',
-      startDate: '2024-01-15',
-      endDate: '2024-03-15',
-      teamSize: 5,
-      completedTasks: 12,
-      totalTasks: 25,
-      createdAt: '2024-01-10',
-      teamMembers: [
-         { name: 'John Doe' },
-         { name: 'Jane Smith' },
-         { name: 'Mike Johnson' },
-         { name: 'Sarah Wilson' }
-      ]
-   },
-   {
-      id: 2,
-      name: 'Mobile App Development',
-      description: 'Development of a new mobile application for iOS and Android',
-      status: 'in progress',
-      priority: 'medium',
-      startDate: '2024-02-01',
-      endDate: '2024-06-01',
-      teamSize: 8,
-      completedTasks: 8,
-      totalTasks: 40,
-      createdAt: '2024-01-25',
-      teamMembers: [
-         { name: 'Alex Brown' },
-         { name: 'Emma Davis' },
-         { name: 'Chris Lee' }
-      ]
-   },
-   {
-      id: 3,
-      name: 'Database Migration',
-      description: 'Migration of legacy database to new cloud infrastructure',
-      status: 'completed',
-      priority: 'high',
-      startDate: '2023-12-01',
-      endDate: '2024-01-31',
-      teamSize: 3,
-      completedTasks: 15,
-      totalTasks: 15,
-      createdAt: '2023-11-20',
-      teamMembers: [
-         { name: 'David Miller' },
-         { name: 'Lisa Garcia' }
-      ]
-   }
-];
-
-const sampleTasks = [
-   {
-      id: 1,
-      title: 'Design Homepage Layout',
-      description: 'Create wireframes and mockups for the new homepage',
-      status: 'completed',
-      priority: 'high',
-      assignee: 'John Doe',
-      dueDate: '2024-01-20',
-      projectId: 1,
-      projectName: 'Website Redesign'
-   },
-   {
-      id: 2,
-      title: 'Implement User Authentication',
-      description: 'Set up secure user login and registration system',
-      status: 'in-progress',
-      priority: 'high',
-      assignee: 'Jane Smith',
-      dueDate: '2024-02-15',
-      projectId: 2,
-      projectName: 'Mobile App Development'
-   },
-   {
-      id: 3,
-      title: 'Database Schema Design',
-      description: 'Design the new database schema for the application',
-      status: 'todo',
-      priority: 'medium',
-      assignee: 'Mike Johnson',
-      dueDate: '2024-02-28',
-      projectId: 1,
-      projectName: 'Website Redesign'
-   },
-   {
-      id: 4,
-      title: 'API Integration',
-      description: 'Integrate third-party APIs for payment processing',
-      status: 'todo',
-      priority: 'medium',
-      assignee: 'Alex Brown',
-      dueDate: '2024-03-10',
-      projectId: 2,
-      projectName: 'Mobile App Development'
-   },
-   {
-      id: 5,
-      title: 'Performance Optimization',
-      description: 'Optimize database queries and application performance',
-      status: 'completed',
-      priority: 'low',
-      assignee: 'David Miller',
-      dueDate: '2024-01-25',
-      projectId: 3,
-      projectName: 'Database Migration'
-   }
-];
-
-const sampleUser = {
-   name: 'John Doe',
-   role: 'proponent',
-   userId: '68ceb300289e363622ed1d64', // Use the user ID that has notifications in database
-   _id: '68ceb300289e363622ed1d64', // Also add _id for compatibility
-   id: '68ceb300289e363622ed1d64', // Also add id for compatibility
-   firstName: 'John',
-   lastName: 'Doe',
-   email: 'john.doe@example.com',
-   province: 'Marinduque',
-   avatar: null
+// Application configuration
+const APP_CONFIG = {
+   name: 'DOST-PMNS',
+   version: '2.0',
+   description: 'Project Management & Notification System'
 };
 
-function AppContent({ onLogout, currentPage, onNavigate }) {
-   const { showSuccess, showInfo } = useNotifications();
+// Main App Content Component
+const AppContent = ({ onLogout, currentPage, onNavigate }) => {
+   // Get current user from localStorage
+   const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
 
-   // Helper function to extract province from PSTO userId
-   const extractProvinceFromUserId = (userId) => {
-      if (userId && userId.startsWith('PSTO_')) {
-         const province = userId.replace('PSTO_', '');
-         // Convert to proper case for matching
-         switch (province) {
-            case 'Marinduque':
-               return 'Marinduque';
-            case 'OccidentalMindoro':
-               return 'Occidental Mindoro';
-            case 'OrientalMindoro':
-               return 'Oriental Mindoro';
-            case 'Romblon':
-               return 'Romblon';
-            case 'Palawan':
-               return 'Palawan';
-            default:
-               return province;
-         }
-      }
-      return undefined;
-   };
-
-   // Get user data from localStorage or use sample user as fallback
-   const getUserData = () => {
-      try {
-         const storedUserData = localStorage.getItem('userData');
-         console.log('Stored user data from localStorage:', storedUserData);
-         
-         if (storedUserData) {
-            const parsedData = JSON.parse(storedUserData);
-            console.log('Parsed user data:', parsedData);
-            
-            // Extract user data from the response object
-            const userData = parsedData.user || parsedData;
-            console.log('Extracted user data:', userData);
-            
-            // Transform user data to match expected format
-            const transformedUser = {
-               name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User',
-               role: userData.role || 'user',
-               userId: userData.userId || userData.id || userData._id || 'No ID',
-               _id: userData._id || userData.userId || userData.id || 'No ID',
-               id: userData.id || userData.userId || userData._id || 'No ID',
-               firstName: userData.firstName,
-               lastName: userData.lastName,
-               email: userData.email,
-               province: userData.province || (userData.role === 'psto' ? extractProvinceFromUserId(userData.userId) : undefined),
-               department: userData.department,
-               position: userData.position,
-               avatar: userData.avatar
-            };
-            console.log('Transformed user data:', transformedUser);
-            return transformedUser;
-         }
-      } catch (error) {
-         console.error('Error parsing user data from localStorage:', error);
-      }
-      
-      // Return null if no data found (fallback handled by caller)
-      console.log('No user data found in localStorage');
-      return null;
-   };
-
-   // Clear localStorage to force using sample user with correct ID
-   const clearUserData = () => {
-      localStorage.removeItem('userData');
-      localStorage.removeItem('authToken');
-      console.log('Cleared localStorage data');
-   };
-
-   // Set up sample user data and mock auth token
-   const setupSampleUser = () => {
-      // Clear any existing data
-      clearUserData();
-      
-      // Set up sample user data
-      const sampleUserData = {
-         user: sampleUser,
-         token: 'mock-token-for-testing',
-         success: true
-      };
-      
-      localStorage.setItem('userData', JSON.stringify(sampleUserData));
-      localStorage.setItem('authToken', 'mock-token-for-testing');
-      localStorage.setItem('isLoggedIn', 'true');
-      
-      console.log('Set up sample user with mock auth token');
-   };
-
-   // Check if there's real user data in localStorage first
-   const hasRealUserData = localStorage.getItem('userData') && localStorage.getItem('isLoggedIn') === 'true';
-   
-   let currentUser;
-   if (hasRealUserData) {
-      console.log('Using real user data from localStorage');
-      currentUser = getUserData();
-   } else {
-      console.log('No real user data found, setting up sample user');
-      setupSampleUser();
-      currentUser = getUserData();
-   }
-   
-   // Debug: Log the current user data
-   console.log('Current user data:', currentUser);
-
-   const handleLogout = () => {
-      showInfo('Logging out...');
-      onLogout();
-   };
-
-   // Navigation handler with user role logic
+   // Navigation handlers
    const handleNavigate = (path) => {
       console.log('Navigating to:', path);
-      // For DOST MIMAROPA users, keep the full path with leading slash
-      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         onNavigate(path);
-      } else {
-         onNavigate(path.replace('/', ''));
-      }
+      onNavigate(path);
    };
 
-   const handleProjectUpdate = (projectId, updates) => {
-      showSuccess(`Project updated successfully!`);
-      console.log('Project update:', projectId, updates);
+   const handleNavigateToProfile = () => {
+      console.log('Navigate to profile');
    };
 
-   const handleTaskUpdate = (taskId, updates) => {
-      showSuccess(`Task updated successfully!`);
-      console.log('Task update:', taskId, updates);
+   const proponentNavigateToProfile = () => {
+      console.log('Proponent navigate to profile');
    };
 
-   const handleTaskCreate = (task) => {
-      showSuccess(`New task created: ${task.title}`);
-      console.log('Task created:', task);
-   };
-
-   const handleTaskDelete = (taskId) => {
-      showSuccess('Task deleted successfully!');
-      console.log('Task deleted:', taskId);
-   };
-
-   // Navigation function for proponent profile
-   const [proponentNavigateToProfile, setProponentNavigateToProfile] = useState(null);
-
-   // Create a stable navigation function
-   const handleNavigateToProfile = (callback) => {
-      if (callback) {
-         setProponentNavigateToProfile(() => callback);
-      }
-   };
-
-   // Render PSTO dashboard
+   // Render PSTO Dashboard
    const renderPSTODashboard = () => {
       return <UnifiedPSTODashboard currentUser={currentUser} />;
    };
@@ -314,27 +55,21 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
          return renderPSTODashboard();
       } else {
          return (
-            <ProjectDashboard
-               projects={sampleProjects}
-               tasks={sampleTasks}
-               currentUser={currentUser}
-               onProjectUpdate={handleProjectUpdate}
-               onTaskUpdate={handleTaskUpdate}
-               onTaskCreate={handleTaskCreate}
-               onTaskDelete={handleTaskDelete}
-            />
+            <div className="p-6 text-center">
+               <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to {APP_CONFIG.name}</h1>
+               <p className="text-gray-600 mb-4">{APP_CONFIG.description}</p>
+               <p className="text-gray-500">Please contact your administrator for access.</p>
+            </div>
          );
       }
    };
 
-   // Render Applications page - now uses unified PSTO dashboard
+   // Render Applications page
    const renderApplicationsPage = () => {
-      // For PSTO users, redirect to their dashboard which includes applications
       if (currentUser.role === 'psto') {
          return <UnifiedPSTODashboard currentUser={currentUser} />;
       }
       
-      // For other users, show a generic applications page
       return (
          <div className="p-6 text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Applications</h1>
@@ -346,7 +81,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       );
    };
 
-   // Render Management page - comprehensive PSTO management
+   // Render Management page
    const renderManagementPage = () => {
       if (currentUser.role === 'psto') {
          return <UnifiedPSTODashboard currentUser={currentUser} />;
@@ -399,7 +134,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
       return (
          <UnifiedLayout
             user={currentUser}
-            onLogout={handleLogout}
+            onLogout={onLogout}
             onNavigate={handleNavigate}
             currentPath={currentPage}
          >
@@ -411,7 +146,7 @@ function AppContent({ onLogout, currentPage, onNavigate }) {
    return (
       <MainLayout 
          user={currentUser} 
-         onLogout={handleLogout}
+         onLogout={onLogout}
          onNavigateToProfile={proponentNavigateToProfile}
          onNavigate={handleNavigate}
       >
