@@ -148,25 +148,7 @@ const setupApplicationSchema = new mongoose.Schema({
    },
    
    // Program-Specific Fields (conditional based on programCode)
-   // SETUP Specific Fields (now optional since step 5 was removed)
-   technologyNeeds: {
-      type: String,
-      required: false
-   },
-   currentTechnologyLevel: {
-      type: String,
-      enum: ['Basic', 'Intermediate', 'Advanced'],
-      required: false
-   },
-   desiredTechnologyLevel: {
-      type: String,
-      enum: ['Basic', 'Intermediate', 'Advanced'],
-      required: false
-   },
-   expectedOutcomes: {
-      type: String,
-      required: false
-   },
+   // SETUP Specific Fields removed since step 5 was removed from the form
    
    // GIA Specific Fields
    innovationType: {
