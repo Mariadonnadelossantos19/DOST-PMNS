@@ -281,8 +281,15 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
                }
             });
          } else if (currentStep === 6) {
+            console.log('Validating step 6 (Documents)');
+            console.log('formData.letterOfIntent:', formData.letterOfIntent);
+            console.log('letterOfIntent type:', typeof formData.letterOfIntent);
+            
             if (!formData.letterOfIntent) {
+               console.log('Letter of Intent is missing, adding validation error');
                newErrors.letterOfIntent = 'Letter of Intent is required';
+            } else {
+               console.log('Letter of Intent is present');
             }
          }
       } else if (programCode === 'GIA') {
@@ -375,8 +382,14 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
          }
       }
       
+      console.log('Validation errors found:', newErrors);
+      console.log('Number of validation errors:', Object.keys(newErrors).length);
+      
       setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
+      const isValid = Object.keys(newErrors).length === 0;
+      console.log('Validation result:', isValid ? 'PASSED' : 'FAILED');
+      
+      return isValid;
    };
 
    const handleNext = () => {
@@ -556,38 +569,21 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       // Add a small delay to ensure state updates are processed
       setTimeout(() => {
          if (validateCurrentStep()) {
-         // Calculate total workers for SETUP
-         if (formData.programCode === 'SETUP') {
-            const total = parseInt(formData.directWorkers || 0) + 
-                         parseInt(formData.contractWorkers || 0);
-            formData.totalWorkers = total.toString();
-         }
-         
-         const submissionData = {
-            ...formData,
-            programCode: selectedProgram.code,
-            programName: selectedProgram.name,
-            submissionDate: new Date().toISOString(),
-            // Ensure general agreement data is properly formatted
-            generalAgreement: {
-               accepted: formData.generalAgreement.accepted,
-               acceptedAt: new Date().toISOString(),
-               ipAddress: '', // Will be set by backend
-               userAgent: navigator.userAgent,
-               signatoryName: formData.generalAgreement.signatoryName,
-               position: formData.generalAgreement.position,
-               signedDate: new Date(formData.generalAgreement.signedDate).toISOString(),
-               signature: formData.generalAgreement.signatureFile
-            }
-         };
-         
-         console.log('MultiStepForm - Submission data generalAgreement:', submissionData.generalAgreement);
-         console.log('MultiStepForm - formData.generalAgreement:', formData.generalAgreement);
-         console.log('MultiStepForm - generalAgreement.accepted:', formData.generalAgreement?.accepted);
-         console.log('MultiStepForm - generalAgreement type:', typeof formData.generalAgreement);
-         
-         // Submit directly to API
-         submitApplication(submissionData);
+            console.log('Validation passed, submitting application...');
+            
+            const submissionData = {
+               ...formData,
+               programCode: selectedProgram.code,
+               programName: selectedProgram.name,
+               submissionDate: new Date().toISOString()
+            };
+            
+            console.log('MultiStepForm - Submission data:', submissionData);
+            
+            // Submit directly to API
+            submitApplication(submissionData);
+         } else {
+            console.log('Validation failed, cannot submit application');
          }
       }, 100); // 100ms delay to ensure state updates are processed
    };
