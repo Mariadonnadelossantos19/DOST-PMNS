@@ -53,6 +53,23 @@ const scheduleTNA = async (req, res) => {
          });
       }
 
+      // Validate ObjectIds
+      if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+         console.log('Invalid applicationId:', applicationId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid application ID format'
+         });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(proponentId)) {
+         console.log('Invalid proponentId:', proponentId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid proponent ID format'
+         });
+      }
+
       // Get application details
       console.log('Fetching application details...');
       const application = await SETUPApplication.findById(applicationId).populate('proponentId');
@@ -70,19 +87,29 @@ const scheduleTNA = async (req, res) => {
          enterpriseName: application.enterpriseName
       });
 
+      // Validate date
+      const parsedDate = new Date(scheduledDate);
+      if (isNaN(parsedDate.getTime())) {
+         console.log('Invalid date provided:', scheduledDate);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid scheduled date provided'
+         });
+      }
+
       // Create TNA data
       const tnaData = {
          applicationId: applicationId,
          proponentId: proponentId,
          programName: application.programName || 'SETUP',
-         scheduledDate: new Date(scheduledDate),
+         scheduledDate: parsedDate,
          scheduledTime: scheduledTime,
          location: location,
-         contactPerson: contactPerson || application.proponentId?.firstName + ' ' + application.proponentId?.lastName,
+         contactPerson: contactPerson || (application.proponentId?.firstName + ' ' + application.proponentId?.lastName) || 'Not provided',
          position: 'Proponent',
-         phone: contactPhone || application.proponentId?.phone || '',
-         email: application.proponentId?.email || '',
-         assessmentTeam: assessors || [],
+         phone: contactPhone || application.proponentId?.phone || application.contactPersonTel || 'Not provided',
+         email: application.proponentId?.email || application.contactPersonEmail || 'not-provided@example.com',
+         assessmentTeam: Array.isArray(assessors) && assessors.length > 0 ? assessors : [],
          notes: notes || '',
          scheduledBy: pstoId,
          status: 'scheduled'

@@ -27,38 +27,7 @@ export const programs = [
             fileTypes: ['.pdf', '.doc', '.docx'],
             maxSize: '5MB'
          },
-         {
-            id: 'enterpriseProfile',
-            name: 'Enterprise Profile',
-            description: 'Comprehensive profile of the enterprise including business details',
-            required: true,
-            fileTypes: ['.pdf', '.doc', '.docx'],
-            maxSize: '10MB'
-         },
-         {
-            id: 'businessPlan',
-            name: 'Business Plan',
-            description: 'Detailed business plan with financial projections',
-            required: true,
-            fileTypes: ['.pdf', '.doc', '.docx'],
-            maxSize: '10MB'
-         },
-         {
-            id: 'financialStatements',
-            name: 'Financial Statements',
-            description: 'Latest 2 years audited financial statements',
-            required: true,
-            fileTypes: ['.pdf', '.xls', '.xlsx'],
-            maxSize: '5MB'
-         },
-         {
-            id: 'registrationDocuments',
-            name: 'Registration Documents',
-            description: 'SEC/DTI registration and other business permits',
-            required: true,
-            fileTypes: ['.pdf', '.jpg', '.png'],
-            maxSize: '5MB'
-         }
+        
       ]
    },
    {
