@@ -124,11 +124,15 @@ const scheduleTNA = async (req, res) => {
             ? assessors.filter(assessor => assessor.name && assessor.position && assessor.department)
             : [],
          notes: notes || '',
-         scheduledBy: new mongoose.Types.ObjectId(pstoId),
+         scheduledBy: mongoose.Types.ObjectId.isValid(pstoId) ? new mongoose.Types.ObjectId(pstoId) : pstoId,
          status: 'scheduled'
       };
 
       console.log('Creating TNA with data:', tnaData);
+
+      // Verify TNA model is available
+      console.log('TNA model:', typeof TNA);
+      console.log('TNA constructor:', TNA.name);
 
       // Create TNA
       const tna = new TNA(tnaData);
@@ -192,10 +196,18 @@ const scheduleTNA = async (req, res) => {
 
    } catch (error) {
       console.error('Error scheduling TNA:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error details:', {
+         message: error.message,
+         name: error.name,
+         stack: error.stack
+      });
       res.status(500).json({
          success: false,
          message: 'Internal server error',
-         error: error.message
+         error: error.message,
+         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
    }
 };
