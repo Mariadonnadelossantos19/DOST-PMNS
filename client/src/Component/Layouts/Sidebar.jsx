@@ -168,6 +168,16 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          path: '/tna-management'
       },
       {
+         id: 'monitoring',
+         label: 'Application Monitoring',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/monitoring'
+      },
+      {
          id: 'proponent-management',
          label: 'Proponent Management',
          icon: (
