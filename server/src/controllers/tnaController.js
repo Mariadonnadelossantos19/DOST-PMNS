@@ -164,8 +164,8 @@ const scheduleTNA = async (req, res) => {
    }
 };
 
-   // List TNAs
-   const listTNAs = async (req, res) => {
+// List TNAs
+const listTNAs = async (req, res) => {
    try {
       const { applicationId, status, proponentId } = req.query;
       const pstoId = req.user.id;
