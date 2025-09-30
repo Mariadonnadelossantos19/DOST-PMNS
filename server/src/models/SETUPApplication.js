@@ -254,9 +254,29 @@ const setupApplicationSchema = new mongoose.Schema({
 
 // Generate unique application ID based on program code
 setupApplicationSchema.pre('save', async function(next) {
-   if (this.isNew) {
-      const count = await this.constructor.countDocuments({ programCode: this.programCode });
-      this.applicationId = `${this.programCode}-${String(count + 1).padStart(6, '0')}`;
+   if (this.isNew && !this.applicationId) {
+      let isUnique = false;
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (!isUnique && attempts < maxAttempts) {
+         const count = await this.constructor.countDocuments({ programCode: this.programCode });
+         const timestamp = Date.now().toString().slice(-6);
+         const random = Math.random().toString(36).substr(2, 3);
+         this.applicationId = `${this.programCode}-${String(count + 1).padStart(6, '0')}-${timestamp}-${random}`;
+         
+         // Check if this ID already exists
+         const existing = await this.constructor.findOne({ applicationId: this.applicationId });
+         if (!existing) {
+            isUnique = true;
+         }
+         attempts++;
+      }
+      
+      if (!isUnique) {
+         // Fallback to a completely unique ID
+         this.applicationId = `${this.programCode}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
    }
    next();
 });
