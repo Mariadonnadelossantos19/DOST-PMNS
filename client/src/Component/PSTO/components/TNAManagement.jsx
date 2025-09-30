@@ -22,6 +22,7 @@ const TNAManagement = ({ currentUser }) => {
    const [searchTerm, setSearchTerm] = useState('');
    const [statusFilter, setStatusFilter] = useState('all');
    const [sortBy, setSortBy] = useState('createdAt');
+   const [showReadyApplications, setShowReadyApplications] = useState(false);
    
    // TNA Details Modal states
    const [selectedTNA, setSelectedTNA] = useState(null);
@@ -494,28 +495,7 @@ const TNAManagement = ({ currentUser }) => {
 
    return (
       <div className="space-y-6">
-         {/* Header Section */}
-         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-               <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                     </svg>
-                  </div>
-                  <div>
-                     <h1 className="text-2xl font-bold">TNA Management</h1>
-                     <p className="text-purple-100 text-sm">
-                        Manage Technology Needs Assessments and Reports
-                     </p>
-                  </div>
-               </div>
-               <div className="text-right">
-                  <p className="text-3xl font-bold">{stats.totalTNAs}</p>
-                  <p className="text-purple-100 text-sm">Total TNAs</p>
-               </div>
-            </div>
-         </div>
+         
 
          {/* Statistics Dashboard */}
          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -688,6 +668,30 @@ const TNAManagement = ({ currentUser }) => {
                      </div>
                   </div>
 
+                  {/* Show Ready Applications Toggle - Only for PSTO users */}
+                  {currentUser?.role !== 'dost_mimaropa' && (
+                     <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-700">Ready Apps:</span>
+                        <button
+                           onClick={() => setShowReadyApplications(!showReadyApplications)}
+                           className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center space-x-1 ${
+                              showReadyApplications
+                                 ? 'bg-green-600 text-white shadow-sm'
+                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                           }`}
+                        >
+                           <span>{showReadyApplications ? 'Hide' : 'Show'}</span>
+                           <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                              showReadyApplications 
+                                 ? 'bg-green-500 text-white' 
+                                 : 'bg-gray-200 text-gray-700'
+                           }`}>
+                              {stats.readyForTNA}
+                           </span>
+                        </button>
+                     </div>
+                  )}
+
                   {/* Results Count */}
                   <div className="text-right">
                      <p className="text-sm font-medium text-gray-900">{filteredTNAs.length}</p>
@@ -700,8 +704,8 @@ const TNAManagement = ({ currentUser }) => {
             </div>
          </div>
 
-         {/* Applications Ready for TNA - Only show for PSTO users */}
-         {currentUser?.role !== 'dost_mimaropa' && (
+         {/* Applications Ready for TNA - Only show for PSTO users and when toggled on */}
+         {currentUser?.role !== 'dost_mimaropa' && showReadyApplications && (
          <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
                <div className="flex items-center space-x-3">
