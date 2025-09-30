@@ -26,12 +26,20 @@ const setupApplicationSchema = new mongoose.Schema({
       required: true
    },
    
-   // Enterprise Information
+   // Enterprise Information (Step 2 fields)
    enterpriseName: {
       type: String,
       required: true
    },
    contactPerson: {
+      type: String,
+      required: true
+   },
+   contactPersonTel: {
+      type: String,
+      required: true
+   },
+   contactPersonEmail: {
       type: String,
       required: true
    },
@@ -51,104 +59,6 @@ const setupApplicationSchema = new mongoose.Schema({
       enum: ['Owner', 'Manager', 'Director', 'President', 'Other']
    },
    
-   // Contact Details
-   contactPersonTel: {
-      type: String,
-      required: true
-   },
-   factoryTel: {
-      type: String
-   },
-   contactPersonFax: {
-      type: String
-   },
-   factoryFax: {
-      type: String
-   },
-   contactPersonEmail: {
-      type: String,
-      required: true
-   },
-   factoryEmail: {
-      type: String
-   },
-   
-   // Enterprise Details (now optional since step 3 was removed)
-   yearEstablished: {
-      type: Number,
-      required: false
-   },
-   initialCapital: {
-      type: Number,
-      default: 0
-   },
-   organizationType: {
-      type: String,
-      required: false,
-      enum: ['Single proprietorship', 'Cooperative', 'Partnership', 'Corporation']
-   },
-   profitType: {
-      type: String,
-      required: false,
-      enum: ['Profit', 'Non-profit']
-   },
-   registrationNo: {
-      type: String,
-      required: false
-   },
-   yearRegistered: {
-      type: Number,
-      required: false
-   },
-   capitalClassification: {
-      type: String,
-      required: false,
-      enum: ['Micro', 'Small', 'Medium']
-   },
-   employmentClassification: {
-      type: String,
-      required: false,
-      enum: ['Micro', 'Small', 'Medium']
-   },
-   
-   // Employment Details
-   directWorkers: {
-      type: Number,
-      default: 0
-   },
-   productionWorkers: {
-      type: Number,
-      default: 0
-   },
-   nonProductionWorkers: {
-      type: Number,
-      default: 0
-   },
-   contractWorkers: {
-      type: Number,
-      default: 0
-   },
-   totalWorkers: {
-      type: Number,
-      default: 0
-   },
-   
-   // Business Activity (now optional since step 4 was removed)
-   businessActivity: {
-      type: String,
-      required: false
-   },
-   specificProduct: {
-      type: String,
-      required: false
-   },
-   enterpriseBackground: {
-      type: String,
-      required: false
-   },
-   
-   // Program-Specific Fields (conditional based on programCode)
-   // SETUP Specific Fields removed since step 5 was removed from the form
    
    // GIA Specific Fields
    innovationType: {
@@ -173,45 +83,8 @@ const setupApplicationSchema = new mongoose.Schema({
       required: function() { return this.programCode === 'SSCP'; }
    },
    
-   // General Agreement (now optional since step 7 was removed)
-   generalAgreement: {
-      accepted: {
-         type: Boolean,
-         required: false,
-         default: false
-      },
-      acceptedAt: {
-         type: Date,
-         required: false
-      },
-      ipAddress: {
-         type: String
-      },
-      userAgent: {
-         type: String
-      },
-      signature: {
-         filename: String,
-         originalName: String,
-         path: String,
-         size: Number,
-         mimetype: String
-      },
-      signatoryName: {
-         type: String,
-         required: false
-      },
-      position: {
-         type: String,
-         required: false
-      },
-      signedDate: {
-         type: Date,
-         required: false
-      }
-   },
    
-   // File Uploads
+   // File Uploads (Step 6 fields)
    letterOfIntent: {
       filename: String,
       originalName: String,
@@ -225,14 +98,7 @@ const setupApplicationSchema = new mongoose.Schema({
       path: String,
       size: Number,
       mimetype: String
-   },
-   businessPlan: {
-      filename: String,
-      originalName: String,
-      path: String,
-      size: Number,
-      mimetype: String
-   },
+   }, 
    
    // SETUP Process Stages - Correct DOST PMNS Workflow
    currentStage: {
