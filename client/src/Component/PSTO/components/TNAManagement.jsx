@@ -34,15 +34,26 @@ const TNAManagement = ({ currentUser }) => {
    const [recommendations, setRecommendations] = useState('');
    const [isUpdatingReport, setIsUpdatingReport] = useState(false);
 
-   // StatCard component
-   const StatCard = ({ title, value, color, icon }) => (
-      <div className={`bg-gradient-to-br ${color} rounded-xl p-6 border border-opacity-20`}>
+   // Enhanced StatCard component
+   const StatCard = ({ title, value, color, icon, trend }) => (
+      <div className={`bg-gradient-to-br ${color} rounded-xl p-6 border border-opacity-20 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
          <div className="flex items-center justify-between">
-            <div>
-               <p className="text-sm font-medium text-opacity-80 uppercase tracking-wide">{title}</p>
-               <p className="text-2xl font-bold mt-1">{value}</p>
+            <div className="flex-1">
+               <p className="text-sm font-medium text-opacity-80 uppercase tracking-wide mb-2">{title}</p>
+               <div className="flex items-baseline space-x-2">
+                  <p className="text-3xl font-bold">{value}</p>
+                  {trend && (
+                     <div className={`flex items-center text-xs ${trend.type === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                              d={trend.type === 'up' ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} />
+                        </svg>
+                        {trend.value}%
+                     </div>
+                  )}
+               </div>
             </div>
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+            <div className="w-14 h-14 bg-white bg-opacity-25 rounded-xl flex items-center justify-center backdrop-blur-sm">
                {icon}
             </div>
          </div>
@@ -483,7 +494,28 @@ const TNAManagement = ({ currentUser }) => {
 
    return (
       <div className="space-y-6">
-         
+         {/* Header Section */}
+         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+               <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                     </svg>
+                  </div>
+                  <div>
+                     <h1 className="text-2xl font-bold">TNA Management</h1>
+                     <p className="text-purple-100 text-sm">
+                        Manage Technology Needs Assessments and Reports
+                     </p>
+                  </div>
+               </div>
+               <div className="text-right">
+                  <p className="text-3xl font-bold">{stats.totalTNAs}</p>
+                  <p className="text-purple-100 text-sm">Total TNAs</p>
+               </div>
+            </div>
+         </div>
 
          {/* Statistics Dashboard */}
          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -570,58 +602,99 @@ const TNAManagement = ({ currentUser }) => {
             )}
          </div>
 
-         {/* Controls Bar */}
-         <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-               <div className="flex-1">
-                  <Input
-                     type="text"
-                     placeholder="Search TNAs..."
-                     value={searchTerm}
-                     onChange={(e) => setSearchTerm(e.target.value)}
-                     className="w-full"
-                  />
+         {/* Enhanced Controls Bar */}
+         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+               {/* Search Section */}
+               <div className="flex-1 max-w-md">
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                     </div>
+                     <Input
+                        type="text"
+                        placeholder="Search TNAs by enterprise, proponent, or program..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-3 w-full border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                     />
+                  </div>
                </div>
-               <div className="flex gap-4">
-                  <select
-                     value={statusFilter}
-                     onChange={(e) => setStatusFilter(e.target.value)}
-                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                     <option value="all">All Status</option>
-                     <option value="scheduled">Scheduled</option>
-                     <option value="in_progress">In Progress</option>
-                     <option value="completed">Completed</option>
-                     <option value="completed_no_report">Completed (No Report)</option>
-                     <option value="report_uploaded">Report Uploaded</option>
-                     <option value="forwarded_to_dost_mimaropa">Forwarded to DOST</option>
-                  </select>
-                  <select
-                     value={sortBy}
-                     onChange={(e) => setSortBy(e.target.value)}
-                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                     <option value="createdAt">Sort by Date</option>
-                     <option value="scheduledDate">Sort by Scheduled Date</option>
-                     <option value="status">Sort by Status</option>
-                  </select>
-                  <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                     <button
-                        onClick={() => setViewMode('grid')}
-                        className={`px-4 py-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+
+               {/* Filters and Controls */}
+               <div className="flex flex-wrap gap-3 items-center">
+                  {/* Status Filter */}
+                  <div className="flex items-center space-x-2">
+                     <span className="text-sm font-medium text-gray-700">Status:</span>
+                     <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-sm"
                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                        </svg>
-                     </button>
-                     <button
-                        onClick={() => setViewMode('list')}
-                        className={`px-4 py-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                        <option value="all">All Status</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="completed_no_report">Completed (No Report)</option>
+                        <option value="report_uploaded">Report Uploaded</option>
+                        <option value="forwarded_to_dost_mimaropa">Forwarded to DOST</option>
+                     </select>
+                  </div>
+
+                  {/* Sort By */}
+                  <div className="flex items-center space-x-2">
+                     <span className="text-sm font-medium text-gray-700">Sort:</span>
+                     <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-sm"
                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                     </button>
+                        <option value="createdAt">Date Created</option>
+                        <option value="scheduledDate">Scheduled Date</option>
+                        <option value="status">Status</option>
+                     </select>
+                  </div>
+
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center space-x-2">
+                     <span className="text-sm font-medium text-gray-700">View:</span>
+                     <div className="flex bg-gray-100 rounded-xl p-1">
+                        <button
+                           onClick={() => setViewMode('grid')}
+                           className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                              viewMode === 'grid' 
+                                 ? 'bg-purple-600 text-white shadow-sm' 
+                                 : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                           }`}
+                        >
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                           </svg>
+                        </button>
+                        <button
+                           onClick={() => setViewMode('list')}
+                           className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                              viewMode === 'list' 
+                                 ? 'bg-purple-600 text-white shadow-sm' 
+                                 : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                           }`}
+                        >
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                           </svg>
+                        </button>
+                     </div>
+                  </div>
+
+                  {/* Results Count */}
+                  <div className="text-right">
+                     <p className="text-sm font-medium text-gray-900">{filteredTNAs.length}</p>
+                     <p className="text-xs text-gray-500">
+                        {statusFilter === 'all' ? 'Total TNAs' : `${statusFilter.replace('_', ' ')} TNAs`}
+                        {searchTerm && ` matching "${searchTerm}"`}
+                     </p>
                   </div>
                </div>
             </div>
@@ -629,10 +702,25 @@ const TNAManagement = ({ currentUser }) => {
 
          {/* Applications Ready for TNA - Only show for PSTO users */}
          {currentUser?.role !== 'dost_mimaropa' && (
-         <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-               Applications Ready for TNA Scheduling
-            </h3>
+         <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
+               <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-500 rounded-lg">
+                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                  </div>
+                  <div>
+                     <h3 className="text-lg font-semibold text-gray-900">
+                        Applications Ready for TNA Scheduling
+                     </h3>
+                     <p className="text-sm text-green-700">
+                        Approved applications awaiting TNA assessment
+                     </p>
+                  </div>
+               </div>
+            </div>
+            <div className="p-6">
             
             {loading ? (
                <div className="text-center py-4">
@@ -645,8 +733,14 @@ const TNAManagement = ({ currentUser }) => {
                const hasTNA = tnas.some(tna => tna.applicationId === app._id || tna.applicationId?._id === app._id);
                return isApproved && !hasTNA;
             }).length === 0 ? (
-               <div className="text-center py-8">
-                  <p className="text-gray-500">No applications ready for TNA scheduling</p>
+               <div className="text-center py-12">
+                  <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
+                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                     </svg>
+                  </div>
+                  <p className="text-gray-500 font-medium">No applications ready for TNA scheduling</p>
+                  <p className="text-sm text-gray-400 mt-1">Applications will appear here once they are approved by PSTO</p>
                </div>
             ) : (
                <div className="space-y-4">
@@ -691,18 +785,48 @@ const TNAManagement = ({ currentUser }) => {
                      ))}
                </div>
             )}
+            </div>
          </Card>
          )}
 
          {/* TNAs Display */}
-         <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-               Technology Needs Assessments
-            </h3>
+         <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                     <div className="p-2 bg-blue-500 rounded-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                     </div>
+                     <div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                           Technology Needs Assessments
+                        </h3>
+                        <p className="text-sm text-blue-700">
+                           Manage and track TNA progress and reports
+                        </p>
+                     </div>
+                  </div>
+                  <div className="text-right">
+                     <p className="text-2xl font-bold text-blue-600">{filteredTNAs.length}</p>
+                     <p className="text-xs text-blue-500">
+                        {statusFilter === 'all' ? 'Total' : statusFilter.replace('_', ' ')} TNAs
+                     </p>
+                  </div>
+               </div>
+            </div>
+            <div className="p-6">
             
             {filteredTNAs.length === 0 ? (
-               <div className="text-center py-8">
-                  <p className="text-gray-500">No TNAs found matching your criteria</p>
+               <div className="text-center py-12">
+                  <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
+                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                     </svg>
+                  </div>
+                  <p className="text-gray-500 font-medium">No TNAs found matching your criteria</p>
+                  <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filter settings</p>
                </div>
             ) : viewMode === 'grid' ? (
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -991,6 +1115,7 @@ const TNAManagement = ({ currentUser }) => {
                   ))}
                </div>
             )}
+            </div>
          </Card>
 
          {/* TNA Scheduler Modal */}
