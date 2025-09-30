@@ -3,10 +3,9 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import { useDarkMode } from '../Context';
 
-const MainLayout = ({ children, user, onLogout, onNavigateToProfile, onNavigate }) => {
+const MainLayout = ({ children, user, onLogout, onNavigateToProfile, onNavigate, currentPath = '/dashboard' }) => {
    const [sidebarOpen, setSidebarOpen] = useState(false);
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-   const [currentPath] = useState('/dashboard');
    const { isDarkMode } = useDarkMode();
 
    const toggleSidebar = () => {

@@ -164,6 +164,7 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
          onLogout={onLogout}
          onNavigateToProfile={proponentNavigateToProfile}
          onNavigate={handleNavigate}
+         currentPath={`/${currentPage}`}
       >
          {renderContent()}
       </MainLayout>

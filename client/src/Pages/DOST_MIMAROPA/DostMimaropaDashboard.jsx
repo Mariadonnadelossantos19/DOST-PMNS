@@ -128,9 +128,11 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
       console.log('[DOST Dashboard] currentPath:', currentPath, 'url:', typeof window !== 'undefined' ? window.location.pathname : '');
       const isTnaManagement = detectIsTnaView();
       setActiveView(isTnaManagement ? '/tna-management' : currentPath);
-      if (!isTnaManagement && currentPath === '/application-management') {
+      
+      // Fetch data based on the current path
+      if (!isTnaManagement && (currentPath === '/application-management' || currentPath === '/psto-applications-review')) {
          fetchApplications();
-      } else if (isTnaManagement) {
+      } else if (isTnaManagement || currentPath === '/tna-report-review') {
          fetchTNAReports();
       }
    }, [currentPath, detectIsTnaView]);
@@ -164,9 +166,9 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
          setReviewComments('');
          
          // Refresh the appropriate list
-         if (currentPath === '/application-management') {
+         if (currentPath === '/application-management' || currentPath === '/psto-applications-review') {
             fetchApplications();
-         } else if (currentPath === '/tna-management') {
+         } else if (currentPath === '/tna-management' || currentPath === '/tna-report-review') {
             fetchTNAReports();
          }
       } catch (error) {
