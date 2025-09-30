@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, Input, Textarea, TabNavigation } from '../../UI';
 import TNADetailsModal from './TNADetailsModal';
 
@@ -50,7 +50,7 @@ const TNAManagement = ({ currentUser }) => {
    );
 
    // Fetch applications that need TNA scheduling
-   const fetchApplications = async () => {
+   const fetchApplications = useCallback(async () => {
       try {
          setLoading(true);
          
@@ -75,10 +75,10 @@ const TNAManagement = ({ currentUser }) => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [currentUser?.role]);
 
    // Fetch existing TNAs
-   const fetchTNAs = async () => {
+   const fetchTNAs = useCallback(async () => {
       try {
          setLoading(true);
          // Use different endpoint based on user role
@@ -107,7 +107,7 @@ const TNAManagement = ({ currentUser }) => {
       finally {
          setLoading(false);
       }
-   };
+   }, [currentUser?.role]);
 
    useEffect(() => {
       fetchApplications();

@@ -358,6 +358,11 @@ const ProponentManagement = ({ currentUser }) => {
 
    return (
       <div className="space-y-6">
+         {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+               {error}
+            </div>
+         )}
          <div className="flex justify-between items-center">
             <div>
                <h2 className="text-2xl font-bold text-gray-900">Proponent Management</h2>
