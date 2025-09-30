@@ -3,7 +3,7 @@ import SETUPFormSteps from './forms/SETUPFormSteps';
 import GIAFormSteps from './forms/GIAFormSteps';
 import CESTForm from './forms/CESTForm';
 import SSCPForm from './forms/SSCPForm';
-import { ContactInformation, DocumentChecklist } from './components';
+import { ContactInformation } from './components';
 import { API_ENDPOINTS } from '../../config/api';
 import { useDarkMode } from '../Context';
 import { programs } from '../ProgramSelection/data/programsData';
@@ -653,21 +653,6 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
       const programCode = formData.programCode;
       
       if (currentStep > 1) {
-         // Check if this is the documents step
-         const isDocumentsStep = steps[currentStep - 1]?.title === 'Documents';
-         
-         if (isDocumentsStep) {
-            const program = programs.find(p => p.code === programCode);
-            return (
-               <DocumentChecklist
-                  program={program}
-                  uploadedDocuments={uploadedDocuments}
-                  onDocumentUpload={handleDocumentUpload}
-                  onComplete={() => setCurrentStep(prev => prev + 1)}
-               />
-            );
-         }
-         
          if (programCode === 'SETUP') {
             return <SETUPFormSteps formData={formData} errors={errors} handleInputChange={handleInputChange} currentStep={currentStep} onGeneralAgreementChange={handleGeneralAgreementChange} />;
          } else if (programCode === 'GIA') {
