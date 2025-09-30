@@ -211,8 +211,8 @@ const ApplicationReviewModal = ({
                            </p>
                         </div>
                         <div>
-                           <p className="text-xs font-medium text-gray-600">Business Activity</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.businessActivity || 'N/A'}</p>
+                           <p className="text-xs font-medium text-gray-600">Program</p>
+                           <p className="text-sm font-semibold text-gray-900 truncate">SETUP</p>
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Contact Person</p>
@@ -257,69 +257,6 @@ const ApplicationReviewModal = ({
                      </div>
                   </div>
 
-                  {/* General Agreement */}
-                  {selectedApplication.generalAgreement && (
-                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 shadow-sm">
-                        <div className="flex items-center mb-4">
-                           <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                           </div>
-                           <div>
-                              <h4 className="text-lg font-bold text-gray-900">General Agreement & Digital Signature</h4>
-                              <p className="text-sm text-green-600">Legal agreement and digital signature details</p>
-                           </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Agreement Status</p>
-                              <div className="flex items-center mt-1">
-                                 <div className={`w-2 h-2 rounded-full mr-1 ${selectedApplication.generalAgreement.accepted ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                 <p className="text-sm font-semibold text-gray-900">
-                                    {selectedApplication.generalAgreement.accepted ? 'Accepted' : 'Not Accepted'}
-                                 </p>
-                              </div>
-                           </div>
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Signatory Name</p>
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                 {selectedApplication.generalAgreement.signatoryName || 'N/A'}
-                              </p>
-                           </div>
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Position</p>
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                 {selectedApplication.generalAgreement.position || 'N/A'}
-                              </p>
-                           </div>
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Signed Date</p>
-                              <p className="text-sm font-semibold text-gray-900">
-                                 {selectedApplication.generalAgreement.signedDate ? 
-                                    new Date(selectedApplication.generalAgreement.signedDate).toLocaleDateString() : 'N/A'}
-                              </p>
-                           </div>
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Signature File</p>
-                              <div className="mt-1">
-                                 {selectedApplication.generalAgreement.signature ? (
-                                    <a 
-                                       href={`/uploads/${selectedApplication.generalAgreement.signature.filename}`}
-                                       target="_blank"
-                                       rel="noopener noreferrer"
-                                       className="text-blue-600 hover:text-blue-800 underline text-xs"
-                                    >
-                                       View Signature
-                                    </a>
-                                 ) : (
-                                    <p className="text-sm font-semibold text-gray-500">No signature file</p>
-                                 )}
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  )}
 
                   {/* Contact Information */}
                   <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200 shadow-sm">
@@ -362,161 +299,9 @@ const ApplicationReviewModal = ({
                      </div>
                   </div>
 
-                  {/* Business Details */}
-                  <div className="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-5 border border-cyan-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Business Details</h4>
-                           <p className="text-sm text-cyan-600">Company structure and business information</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-4 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Year Established</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.yearEstablished || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Initial Capital</p>
-                           <p className="text-sm font-semibold text-gray-900">₱{selectedApplication.initialCapital?.toLocaleString() || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Organization Type</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.organizationType || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Profit Type</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.profitType || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Registration No</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.registrationNo || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Year Registered</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.yearRegistered || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Capital Classification</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.capitalClassification || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Employment Classification</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.employmentClassification || 'N/A'}</p>
-                        </div>
-                     </div>
-                  </div>
 
-                  {/* Workforce Information */}
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Workforce Information</h4>
-                           <p className="text-sm text-orange-600">Employee details and workforce composition</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-5 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Direct Workers</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.directWorkers || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Production Workers</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.productionWorkers || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Non-Production Workers</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.nonProductionWorkers || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Contract Workers</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.contractWorkers || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Total Workers</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.totalWorkers || 'N/A'}</p>
-                        </div>
-                     </div>
-                  </div>
 
-                  {/* Product Information */}
-                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-5 border border-teal-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Product Information</h4>
-                           <p className="text-sm text-teal-600">Products and services offered by the enterprise</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Specific Product</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.specificProduct || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Enterprise Background</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.enterpriseBackground || 'N/A'}</p>
-                        </div>
-                     </div>
-                  </div>
 
-                  {/* Technology & Project Details */}
-                  <div className="bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-5 border border-green-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Technology & Project Details</h4>
-                           <p className="text-sm text-green-600">Technical requirements and project specifications</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Technology Needs</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.technologyNeeds || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Current Technology Level</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.currentTechnologyLevel || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Desired Technology Level</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.desiredTechnologyLevel || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Expected Outcomes</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.expectedOutcomes || 'N/A'}</p>
-                        </div>
-                        {selectedApplication.projectTitle && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Project Title</p>
-                              <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.projectTitle}</p>
-                           </div>
-                        )}
-                        {selectedApplication.projectDescription && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Project Description</p>
-                              <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.projectDescription}</p>
-                           </div>
-                        )}
-                     </div>
-                  </div>
 
 
                   {/* Application Status & Processing */}
@@ -628,7 +413,7 @@ const ApplicationReviewModal = ({
                         </div>
                         <div>
                            <h4 className="text-lg font-bold text-gray-900">Attached Documents</h4>
-                           <p className="text-sm text-indigo-600">Required documents for PSTO review</p>
+                           <p className="text-sm text-indigo-600">Required document for SETUP program application</p>
                         </div>
                      </div>
                      <div className="space-y-3">
@@ -686,113 +471,6 @@ const ApplicationReviewModal = ({
                            </div>
                         )}
 
-                        {/* Enterprise Profile */}
-                        {selectedApplication.enterpriseProfile?.filename ? (
-                           <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <div className="flex items-center">
-                                 <div className="p-2 bg-green-100 rounded-lg mr-3">
-                                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-semibold text-gray-900">Enterprise Profile</p>
-                                    <p className="text-xs text-gray-500">{selectedApplication.enterpriseProfile.originalName || selectedApplication.enterpriseProfile.filename}</p>
-                                 </div>
-                              </div>
-                              <div className="flex space-x-2">
-                                 <button
-                                    onClick={() => handleViewFile('enterpriseProfile')}
-                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                                    title="View Document"
-                                 >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    View
-                                 </button>
-                                 <button
-                                    onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/enterpriseProfile`, '_blank')}
-                                    className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                                    title="Download Document"
-                                 >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Download
-                                 </button>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
-                              <div className="flex items-center">
-                                 <div className="p-2 bg-gray-200 rounded-lg mr-3">
-                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-semibold text-gray-500">Enterprise Profile</p>
-                                    <p className="text-xs text-gray-400">No document uploaded</p>
-                                 </div>
-                              </div>
-                           </div>
-                        )}
-
-                        {/* Business Plan */}
-                        {selectedApplication.businessPlan?.filename ? (
-                           <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <div className="flex items-center">
-                                 <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-semibold text-gray-900">Business Plan</p>
-                                    <p className="text-xs text-gray-500">{selectedApplication.businessPlan.originalName || selectedApplication.businessPlan.filename}</p>
-                                 </div>
-                              </div>
-                              <div className="flex space-x-2">
-                                 <button
-                                    onClick={() => handleViewFile('businessPlan')}
-                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                                    title="View Document"
-                                 >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    View
-                                 </button>
-                                 <button
-                                    onClick={() => window.open(`/api/programs/setup/${selectedApplication._id}/download/businessPlan`, '_blank')}
-                                    className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                                    title="Download Document"
-                                 >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Download
-                                 </button>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
-                              <div className="flex items-center">
-                                 <div className="p-2 bg-gray-200 rounded-lg mr-3">
-                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-semibold text-gray-500">Business Plan</p>
-                                    <p className="text-xs text-gray-400">No document uploaded</p>
-                                 </div>
-                              </div>
-                           </div>
-                        )}
                      </div>
                   </div>
 
