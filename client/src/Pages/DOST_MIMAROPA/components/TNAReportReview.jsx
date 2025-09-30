@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Badge, Modal, Textarea } from '../../../Component/UI';
+import { 
+   Card, 
+   Button, 
+   Badge, 
+   Modal, 
+   Textarea,
+   DashboardHeader,
+   StatusBadge,
+   StatsCard,
+   Alert
+} from '../../../Component/UI';
 import { API_ENDPOINTS } from '../../../config/api';
 import TNADetailsDisplay from './TNADetailsDisplay';
 
@@ -125,59 +135,85 @@ const TNAReportReview = () => {
       }
    };
 
-   // Get status color
-   const getStatusColor = (status) => {
-      const colors = {
-         'submitted_to_dost': 'blue',
-         'approved': 'green',
-         'rejected': 'red',
-         'returned': 'orange'
-      };
-      return colors[status] || 'gray';
-   };
-
-   // Get application status color
-   const getApplicationStatusColor = (status) => {
-      const colors = {
-         'tna_report_submitted': 'blue',
-         'dost_mimaropa_approved': 'green',
-         'dost_mimaropa_rejected': 'red',
-         'dost_mimaropa_review': 'blue'
-      };
-      return colors[status] || 'gray';
-   };
 
    if (loading) {
       return (
-         <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading TNA reports...</span>
+         <div className="space-y-6">
+            <DashboardHeader
+               title="TNA Report Review"
+               subtitle="Loading TNA reports..."
+               color="blue"
+            />
+            <div className="flex items-center justify-center h-64">
+               <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading TNA reports...</p>
+               </div>
+            </div>
          </div>
       );
    }
 
    if (error) {
       return (
-         <div className="text-center py-8">
-            <div className="text-red-600 mb-4">
-               <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-               </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading TNA Reports</h3>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={fetchTNAReports}>Try Again</Button>
+         <div className="space-y-6">
+            <DashboardHeader
+               title="TNA Report Review"
+               subtitle="Review and approve TNA reports submitted by PSTO offices"
+               color="red"
+            />
+            <Alert
+               type="error"
+               title="Error Loading TNA Reports"
+               message={error}
+               action={
+                  <Button onClick={fetchTNAReports} size="sm">
+                     Try Again
+                  </Button>
+               }
+            />
          </div>
       );
    }
 
    return (
       <div className="space-y-6">
-         <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">TNA Report Review</h2>
-            <Button onClick={fetchTNAReports}>
+         <DashboardHeader
+            title="TNA Report Review"
+            subtitle="Review and approve TNA reports submitted by PSTO offices"
+            color="purple"
+         >
+            <Button onClick={fetchTNAReports} variant="outline" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
+               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+               </svg>
                Refresh
             </Button>
+         </DashboardHeader>
+
+         {/* Stats Cards */}
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+               title="Total Reports"
+               value={tnaReports.length}
+               icon="📊"
+               color="blue"
+               subtitle="Reports submitted for review"
+            />
+            <StatsCard
+               title="Pending Review"
+               value={tnaReports.filter(report => report.status === 'forwarded_to_dost_mimaropa').length}
+               icon="⏳"
+               color="yellow"
+               subtitle="Awaiting DOST review"
+            />
+            <StatsCard
+               title="Reviewed"
+               value={tnaReports.filter(report => ['approved', 'rejected', 'returned'].includes(report.status)).length}
+               icon="✅"
+               color="green"
+               subtitle="Completed reviews"
+            />
          </div>
 
          {/* TNA Reports List */}
@@ -187,21 +223,17 @@ const TNAReportReview = () => {
             </h3>
             
             {tnaReports.length === 0 ? (
-               <div className="text-center py-8">
-                  <p className="text-gray-500">No TNA reports submitted for review</p>
-                  <p className="text-xs text-gray-400 mt-2">
-                     Debug: Check browser console for API response details
-                  </p>
-                  <div className="mt-4 text-left bg-gray-50 p-4 rounded-lg">
-                     <h4 className="text-sm font-medium text-gray-700 mb-2">To see TNA reports here:</h4>
-                     <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
-                        <li>PSTO must approve an application</li>
-                        <li>PSTO schedules a TNA for the approved application</li>
-                        <li>PSTO conducts the TNA and marks it as completed</li>
-                        <li>PSTO uploads a TNA report</li>
-                        <li>PSTO forwards the TNA report to DOST MIMAROPA</li>
-                     </ol>
-                  </div>
+               <div className="space-y-4">
+                  <Alert
+                     type="info"
+                     title="No TNA Reports Available"
+                     message="There are currently no TNA reports submitted for review."
+                  />
+                  <Alert
+                     type="warning"
+                     title="TNA Report Workflow"
+                     message="For TNA reports to appear here, PSTO offices must: (1) Approve applications, (2) Schedule and conduct TNAs, (3) Upload TNA reports, and (4) Forward them to DOST MIMAROPA for review."
+                  />
                </div>
             ) : (
                <div className="space-y-4">
@@ -234,12 +266,14 @@ const TNAReportReview = () => {
                               )}
                            </div>
                            <div className="flex items-center space-x-3">
-                              <Badge color={getStatusColor(report.status)}>
-                                 {report.status.replace('_', ' ')}
-                              </Badge>
-                              <Badge color={getApplicationStatusColor(report.applicationId?.status)}>
-                                 {report.applicationId?.status?.replace('_', ' ')}
-                              </Badge>
+                              <StatusBadge 
+                                 status={report.status}
+                                 size="sm"
+                              />
+                              <StatusBadge 
+                                 status={report.applicationId?.status}
+                                 size="sm"
+                              />
                               <Button
                                  variant="outline"
                                  size="sm"
