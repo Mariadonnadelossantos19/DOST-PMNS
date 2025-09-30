@@ -92,7 +92,7 @@ const TNASchedulerForm = ({ application, onSchedule, onCancel }) => {
       if (validateForm()) {
          const tnaData = {
             applicationId: application._id,
-            proponentId: application.proponentId._id,
+            proponentId: application.proponentId?._id || application.proponentId,
             scheduledDate: scheduleData.scheduledDate,
             scheduledTime: scheduleData.scheduledTime,
             location: scheduleData.location,
@@ -103,6 +103,16 @@ const TNASchedulerForm = ({ application, onSchedule, onCancel }) => {
             status: 'scheduled',
             scheduledBy: 'psto' // This will be set by the backend
          };
+
+         console.log('=== TNA SCHEDULER FORM DEBUG ===');
+         console.log('Application:', application);
+         console.log('TNA Data being sent:', tnaData);
+         console.log('ProponentId details:', {
+            raw: application.proponentId,
+            type: typeof application.proponentId,
+            hasId: application.proponentId?._id,
+            finalValue: application.proponentId?._id || application.proponentId
+         });
 
          onSchedule(tnaData);
       }

@@ -1323,6 +1323,16 @@ const TNAManagement = ({ currentUser }) => {
                            assessors
                         };
 
+                        console.log('=== TNA SCHEDULING FRONTEND DEBUG ===');
+                        console.log('Selected Application:', selectedApplication);
+                        console.log('Payload being sent:', payload);
+                        console.log('ProponentId details:', {
+                           raw: selectedApplication.proponentId,
+                           type: typeof selectedApplication.proponentId,
+                           hasId: selectedApplication.proponentId?._id,
+                           finalValue: selectedApplication.proponentId?._id || selectedApplication.proponentId
+                        });
+
                         await handleTNAScheduled(payload);
                         // Refresh applications so newly scheduled items are removed from the list
                         fetchApplications();
