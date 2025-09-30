@@ -73,10 +73,10 @@ const setupApplicationSchema = new mongoose.Schema({
       type: String
    },
    
-   // Enterprise Details
+   // Enterprise Details (now optional since step 3 was removed)
    yearEstablished: {
       type: Number,
-      required: true
+      required: false
    },
    initialCapital: {
       type: Number,
@@ -84,30 +84,30 @@ const setupApplicationSchema = new mongoose.Schema({
    },
    organizationType: {
       type: String,
-      required: true,
+      required: false,
       enum: ['Single proprietorship', 'Cooperative', 'Partnership', 'Corporation']
    },
    profitType: {
       type: String,
-      required: true,
+      required: false,
       enum: ['Profit', 'Non-profit']
    },
    registrationNo: {
       type: String,
-      required: true
+      required: false
    },
    yearRegistered: {
       type: Number,
-      required: true
+      required: false
    },
    capitalClassification: {
       type: String,
-      required: true,
+      required: false,
       enum: ['Micro', 'Small', 'Medium']
    },
    employmentClassification: {
       type: String,
-      required: true,
+      required: false,
       enum: ['Micro', 'Small', 'Medium']
    },
    
@@ -133,39 +133,39 @@ const setupApplicationSchema = new mongoose.Schema({
       default: 0
    },
    
-   // Business Activity
+   // Business Activity (now optional since step 4 was removed)
    businessActivity: {
       type: String,
-      required: true
+      required: false
    },
    specificProduct: {
       type: String,
-      required: true
+      required: false
    },
    enterpriseBackground: {
       type: String,
-      required: true
+      required: false
    },
    
    // Program-Specific Fields (conditional based on programCode)
-   // SETUP Specific Fields
+   // SETUP Specific Fields (now optional since step 5 was removed)
    technologyNeeds: {
       type: String,
-      required: function() { return this.programCode === 'SETUP'; }
+      required: false
    },
    currentTechnologyLevel: {
       type: String,
       enum: ['Basic', 'Intermediate', 'Advanced'],
-      required: function() { return this.programCode === 'SETUP'; }
+      required: false
    },
    desiredTechnologyLevel: {
       type: String,
       enum: ['Basic', 'Intermediate', 'Advanced'],
-      required: function() { return this.programCode === 'SETUP'; }
+      required: false
    },
    expectedOutcomes: {
       type: String,
-      required: function() { return this.programCode === 'SETUP'; }
+      required: false
    },
    
    // GIA Specific Fields
@@ -191,16 +191,16 @@ const setupApplicationSchema = new mongoose.Schema({
       required: function() { return this.programCode === 'SSCP'; }
    },
    
-   // General Agreement (for programs that require it)
+   // General Agreement (now optional since step 7 was removed)
    generalAgreement: {
       accepted: {
          type: Boolean,
-         required: function() { return ['SETUP'].includes(this.programCode); },
+         required: false,
          default: false
       },
       acceptedAt: {
          type: Date,
-         required: function() { return this.generalAgreement?.accepted; }
+         required: false
       },
       ipAddress: {
          type: String
@@ -217,15 +217,15 @@ const setupApplicationSchema = new mongoose.Schema({
       },
       signatoryName: {
          type: String,
-         required: function() { return this.generalAgreement?.accepted; }
+         required: false
       },
       position: {
          type: String,
-         required: function() { return this.generalAgreement?.accepted; }
+         required: false
       },
       signedDate: {
          type: Date,
-         required: function() { return this.generalAgreement?.accepted; }
+         required: false
       }
    },
    
@@ -425,17 +425,7 @@ setupApplicationSchema.pre('save', function(next) {
    next();
 });
 
-// Validate general agreement acceptance for programs that require it
-setupApplicationSchema.pre('save', function(next) {
-   if (this.isNew && ['SETUP'].includes(this.programCode)) {
-      if (!this.generalAgreement?.accepted) {
-         const error = new Error('General agreement must be accepted before submission');
-         error.name = 'ValidationError';
-         return next(error);
-      }
-   }
-   next();
-});
+// General agreement validation removed since step 7 was removed from the form
 
 // Index for better query performance
 setupApplicationSchema.index({ programCode: 1, status: 1 });
