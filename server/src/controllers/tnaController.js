@@ -26,7 +26,7 @@ const scheduleTNA = async (req, res) => {
          assessors
       } = req.body;
 
-      const pstoId = req.user.id;
+      const pstoId = req.user._id || req.user.id;
       console.log('Extracted data:', {
          applicationId,
          proponentId,
@@ -111,7 +111,7 @@ const scheduleTNA = async (req, res) => {
          email: application.proponentId?.email || application.contactPersonEmail || 'not-provided@example.com',
          assessmentTeam: Array.isArray(assessors) && assessors.length > 0 ? assessors : [],
          notes: notes || '',
-         scheduledBy: pstoId,
+         scheduledBy: new mongoose.Types.ObjectId(pstoId),
          status: 'scheduled'
       };
 
