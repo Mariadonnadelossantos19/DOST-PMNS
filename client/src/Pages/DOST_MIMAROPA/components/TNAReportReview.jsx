@@ -22,11 +22,13 @@ const TNAReportReview = () => {
             throw new Error('Please login first');
          }
 
+         console.log('TNAReportReview - Fetching TNA reports...');
          const response = await fetch('http://localhost:4000/api/tna/dost-mimaropa/reports', {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
+         console.log('TNAReportReview - Response status:', response.status);
 
          if (!response.ok) {
             if (response.status === 401) {
@@ -42,8 +44,10 @@ const TNAReportReview = () => {
          }
 
          const result = await response.json();
+         console.log('TNAReportReview - API Response:', result);
          
          if (result.success) {
+            console.log('TNAReportReview - TNA Reports found:', result.data?.length || 0);
             setTnaReports(result.data || []);
          } else {
             throw new Error(result.message || 'Failed to fetch TNA reports');
@@ -184,6 +188,19 @@ const TNAReportReview = () => {
             {tnaReports.length === 0 ? (
                <div className="text-center py-8">
                   <p className="text-gray-500">No TNA reports submitted for review</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                     Debug: Check browser console for API response details
+                  </p>
+                  <div className="mt-4 text-left bg-gray-50 p-4 rounded-lg">
+                     <h4 className="text-sm font-medium text-gray-700 mb-2">To see TNA reports here:</h4>
+                     <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
+                        <li>PSTO must approve an application</li>
+                        <li>PSTO schedules a TNA for the approved application</li>
+                        <li>PSTO conducts the TNA and marks it as completed</li>
+                        <li>PSTO uploads a TNA report</li>
+                        <li>PSTO forwards the TNA report to DOST MIMAROPA</li>
+                     </ol>
+                  </div>
                </div>
             ) : (
                <div className="space-y-4">
