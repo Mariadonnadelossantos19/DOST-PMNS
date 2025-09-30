@@ -258,7 +258,7 @@ const TNAReportReview = () => {
             )}
          </Card>
 
-         {/* Enhanced Review Modal */}
+         {/* TNA Report Review Modal */}
          <Modal
             isOpen={showReviewModal}
             onClose={() => {
@@ -267,143 +267,97 @@ const TNAReportReview = () => {
                setReviewStatus('');
                setReviewComments('');
             }}
-            title="TNA Report Review - DOST MIMAROPA"
-            size="full"
-            className="max-w-7xl"
+            title="TNA Report Review"
+            size="xl"
          >
             {selectedReport && (
-               <div className="space-y-6">
-                  {/* TNA Details using reusable component */}
-                  <TNADetailsDisplay tnaData={selectedReport} formatDate={formatDate} />
+               <>
+                  <Modal.Content className="space-y-6 max-h-96 overflow-y-auto">
+                     {/* TNA Details using reusable component */}
+                     <TNADetailsDisplay tnaData={selectedReport} formatDate={formatDate} />
+                  </Modal.Content>
 
-                  {/* Enhanced Review Section */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                     <div className="flex items-center mb-6">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                           </svg>
-                        </div>
+                  <Modal.Header>
+                     <Modal.Title>Review Decision</Modal.Title>
+                  </Modal.Header>
+
+                  <Modal.Content className="space-y-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                           <h4 className="text-xl font-bold text-gray-900">DOST MIMAROPA Review Decision</h4>
-                           <p className="text-sm text-gray-600">Review and approve/reject this TNA report</p>
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                           <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                 <svg className="w-4 h-4 inline mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                 </svg>
-                                 Review Decision
-                              </label>
-                              <select
-                                 value={reviewStatus}
-                                 onChange={(e) => setReviewStatus(e.target.value)}
-                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
-                              >
-                                 <option value="">Select your decision...</option>
-                                 <option value="approved">✅ Approve - Accept TNA Report</option>
-                                 <option value="rejected">❌ Reject - TNA Report Needs Major Changes</option>
-                                 <option value="returned">🔄 Return for Revision - Minor Changes Required</option>
-                              </select>
-                           </div>
-
-                           {/* Decision Info Cards */}
-                           <div className="space-y-2">
-                              {reviewStatus === 'approved' && (
-                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                    <p className="text-sm text-green-700">
-                                       <span className="font-medium">Approved:</span> The TNA report will be marked as approved and the application will proceed to the next stage.
-                                    </p>
-                                 </div>
-                              )}
-                              {reviewStatus === 'rejected' && (
-                                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                                    <p className="text-sm text-red-700">
-                                       <span className="font-medium">Rejected:</span> The TNA report will be returned to PSTO with your feedback for major revisions.
-                                    </p>
-                                 </div>
-                              )}
-                              {reviewStatus === 'returned' && (
-                                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                                    <p className="text-sm text-orange-700">
-                                       <span className="font-medium">Returned:</span> The TNA report will be sent back to PSTO for minor corrections based on your comments.
-                                    </p>
-                                 </div>
-                              )}
-                           </div>
+                           <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Decision
+                           </label>
+                           <select
+                              value={reviewStatus}
+                              onChange={(e) => setReviewStatus(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           >
+                              <option value="">Select decision...</option>
+                              <option value="approved">Approve</option>
+                              <option value="rejected">Reject</option>
+                              <option value="returned">Return for Revision</option>
+                           </select>
                         </div>
 
                         <div>
-                           <label className="block text-sm font-semibold text-gray-700 mb-3">
-                              <svg className="w-4 h-4 inline mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.013 8.013 0 01-2.319-.336l-2.143.856a1.077 1.077 0 01-1.398-1.398l.856-2.143A8.013 8.013 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
-                              </svg>
-                              Review Comments & Feedback
+                           <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Comments
                            </label>
                            <Textarea
                               value={reviewComments}
                               onChange={(e) => setReviewComments(e.target.value)}
-                              placeholder="Please provide detailed feedback about the TNA report. Include specific recommendations, concerns, or approval notes..."
-                              rows={6}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
+                              placeholder="Enter your review comments..."
+                              rows={3}
+                              className="w-full"
                            />
-                           <p className="text-xs text-gray-500 mt-2">
-                              Your comments will be shared with the PSTO team and the proponent.
-                           </p>
                         </div>
                      </div>
 
-                     {/* Action Buttons */}
-                     <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
-                        <div className="flex items-center text-sm text-gray-500">
-                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                           </svg>
-                           Review decision is required to proceed
+                     {/* Status Info */}
+                     {reviewStatus && (
+                        <div className={`p-3 rounded-lg ${
+                           reviewStatus === 'approved' ? 'bg-green-50 text-green-700' :
+                           reviewStatus === 'rejected' ? 'bg-red-50 text-red-700' :
+                           'bg-orange-50 text-orange-700'
+                        }`}>
+                           <p className="text-sm">
+                              {reviewStatus === 'approved' && 'The TNA report will be approved and the application will proceed.'}
+                              {reviewStatus === 'rejected' && 'The TNA report will be rejected and returned for major revisions.'}
+                              {reviewStatus === 'returned' && 'The TNA report will be returned for minor corrections.'}
+                           </p>
                         </div>
-                        
-                        <div className="flex space-x-3">
-                           <Button
-                              variant="outline"
-                              onClick={() => {
-                                 setShowReviewModal(false);
-                                 setSelectedReport(null);
-                                 setReviewStatus('');
-                                 setReviewComments('');
-                              }}
-                              className="px-6 py-2"
-                           >
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                              Cancel
-                           </Button>
-                           <Button
-                              onClick={reviewTNAReport}
-                              disabled={!reviewStatus}
-                              className={`px-6 py-2 ${
-                                 reviewStatus === 'approved' ? 'bg-green-600 hover:bg-green-700' :
-                                 reviewStatus === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
-                                 reviewStatus === 'returned' ? 'bg-orange-600 hover:bg-orange-700' :
-                                 'bg-blue-600 hover:bg-blue-700'
-                              }`}
-                           >
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {!reviewStatus ? 'Submit Review' : 
-                               reviewStatus === 'approved' ? 'Approve TNA Report' :
-                               reviewStatus === 'rejected' ? 'Reject TNA Report' :
-                               'Return for Revision'}
-                           </Button>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+                     )}
+                  </Modal.Content>
+
+                  <Modal.Footer>
+                     <Button
+                        variant="outline"
+                        onClick={() => {
+                           setShowReviewModal(false);
+                           setSelectedReport(null);
+                           setReviewStatus('');
+                           setReviewComments('');
+                        }}
+                     >
+                        Cancel
+                     </Button>
+                     <Button
+                        onClick={reviewTNAReport}
+                        disabled={!reviewStatus}
+                        className={
+                           reviewStatus === 'approved' ? 'bg-green-600 hover:bg-green-700' :
+                           reviewStatus === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
+                           reviewStatus === 'returned' ? 'bg-orange-600 hover:bg-orange-700' :
+                           ''
+                        }
+                     >
+                        {reviewStatus === 'approved' ? 'Approve' :
+                         reviewStatus === 'rejected' ? 'Reject' :
+                         reviewStatus === 'returned' ? 'Return' :
+                         'Submit Review'}
+                     </Button>
+                  </Modal.Footer>
+               </>
             )}
          </Modal>
       </div>
