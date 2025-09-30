@@ -109,7 +109,9 @@ const scheduleTNA = async (req, res) => {
          position: 'Proponent',
          phone: contactPhone || application.proponentId?.phone || application.contactPersonTel || 'Not provided',
          email: application.proponentId?.email || application.contactPersonEmail || 'not-provided@example.com',
-         assessmentTeam: Array.isArray(assessors) && assessors.length > 0 ? assessors : [],
+         assessmentTeam: Array.isArray(assessors) && assessors.length > 0 
+            ? assessors.filter(assessor => assessor.name && assessor.position && assessor.department)
+            : [],
          notes: notes || '',
          scheduledBy: new mongoose.Types.ObjectId(pstoId),
          status: 'scheduled'
@@ -120,6 +122,21 @@ const scheduleTNA = async (req, res) => {
       // Create TNA
       const tna = new TNA(tnaData);
       console.log('TNA instance created, attempting to save...');
+      
+      // Validate the TNA data before saving
+      try {
+         await tna.validate();
+         console.log('TNA validation passed');
+      } catch (validationError) {
+         console.error('TNA validation failed:', validationError.message);
+         console.error('Validation errors:', validationError.errors);
+         return res.status(400).json({
+            success: false,
+            message: 'TNA validation failed',
+            errors: validationError.errors
+         });
+      }
+      
       await tna.save();
       console.log('TNA saved successfully with ID:', tna._id);
 
@@ -127,9 +144,15 @@ const scheduleTNA = async (req, res) => {
 
       // Update application status
       console.log('Updating application status to tna_scheduled...');
-      application.status = 'tna_scheduled';
-      await application.save();
-      console.log('Application status updated to tna_scheduled successfully');
+      try {
+         application.status = 'tna_scheduled';
+         await application.save();
+         console.log('Application status updated to tna_scheduled successfully');
+      } catch (appUpdateError) {
+         console.error('Error updating application status:', appUpdateError);
+         // Don't fail the TNA creation if application update fails
+         // The TNA is already created successfully at this point
+      }
 
       // Create notification
       try {
