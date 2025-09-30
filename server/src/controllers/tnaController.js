@@ -119,15 +119,17 @@ const scheduleTNA = async (req, res) => {
 
       // Create TNA
       const tna = new TNA(tnaData);
+      console.log('TNA instance created, attempting to save...');
       await tna.save();
+      console.log('TNA saved successfully with ID:', tna._id);
 
       console.log('TNA created successfully:', tna._id);
 
       // Update application status
+      console.log('Updating application status to tna_scheduled...');
       application.status = 'tna_scheduled';
       await application.save();
-
-      console.log('Application status updated to tna_scheduled');
+      console.log('Application status updated to tna_scheduled successfully');
 
       // Create notification
       try {
