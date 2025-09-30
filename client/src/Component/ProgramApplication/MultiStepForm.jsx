@@ -146,11 +146,7 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
          return [
             { id: 1, title: 'Contact Information', description: 'Basic contact details' },
             { id: 2, title: 'Basic Enterprise Info', description: 'Company name and contact details' },
-            { id: 3, title: 'Enterprise Details', description: 'Company structure and classification' },
-            { id: 4, title: 'Business Activity', description: 'Business operations and background' },
-            { id: 5, title: 'Technology Assessment', description: 'Technology needs and outcomes' },
-            { id: 6, title: 'Documents', description: 'Required file uploads' },
-            { id: 7, title: 'General Agreement', description: 'Terms and conditions agreement' }
+            { id: 6, title: 'Documents', description: 'Required file uploads' }
          ];
       } else if (programCode === 'GIA') {
          return [
@@ -284,32 +280,6 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
                   console.log(`Field ${field} is missing, adding error`);
                }
             });
-         } else if (currentStep === 3) {
-            // Enterprise Details and Classification
-            const fields = [
-               'yearEstablished', 'organizationType', 'profitType', 'registrationNo', 'yearRegistered',
-               'capitalClassification', 'employmentClassification', 'directWorkers', 'productionWorkers',
-               'nonProductionWorkers', 'contractWorkers'
-            ];
-            fields.forEach(field => {
-               if (!formData[field]) {
-                  newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
-               }
-            });
-         } else if (currentStep === 4) {
-            const fields = ['businessActivity', 'specificProduct', 'enterpriseBackground'];
-            fields.forEach(field => {
-               if (!formData[field]) {
-                  newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
-               }
-            });
-         } else if (currentStep === 5) {
-            const fields = ['technologyNeeds', 'currentTechnologyLevel', 'desiredTechnologyLevel', 'expectedOutcomes'];
-            fields.forEach(field => {
-               if (!formData[field]) {
-                  newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
-               }
-            });
          } else if (currentStep === 6) {
             if (!formData.letterOfIntent) {
                newErrors.letterOfIntent = 'Letter of Intent is required';
@@ -317,26 +287,6 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             if (!formData.enterpriseProfile) {
                newErrors.enterpriseProfile = 'Enterprise Profile is required';
             }
-         } else if (currentStep === 7) {
-            // General Agreement validation
-            console.log('MultiStepForm - Validating Step 7, generalAgreement:', formData.generalAgreement);
-            if (!formData.generalAgreement?.accepted) {
-               console.log('MultiStepForm - General agreement not accepted');
-               newErrors.generalAgreement = 'General agreement must be accepted';
-            }
-            if (!formData.generalAgreement?.signatoryName) {
-               console.log('MultiStepForm - Signatory name missing');
-               newErrors.signatoryName = 'Signatory name is required';
-            }
-            if (!formData.generalAgreement?.position) {
-               console.log('MultiStepForm - Position missing');
-               newErrors.position = 'Position is required';
-            }
-            if (!formData.generalAgreement?.signatureFile) {
-               console.log('MultiStepForm - Signature file missing');
-               newErrors.signatureFile = 'Signature file is required';
-            }
-            console.log('MultiStepForm - Step 7 validation errors:', newErrors);
          }
       } else if (programCode === 'GIA') {
          if (currentStep === 2) {
