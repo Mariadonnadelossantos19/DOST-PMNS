@@ -63,7 +63,9 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
    // Render different dashboards based on user role
    const renderDashboard = () => {
       if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
-         return <DostMimaropaDashboard currentPath={currentPage} />;
+         const dostCurrentPath = `/${currentPage}`;
+         console.log('App.jsx - Passing currentPath to DostMimaropaDashboard:', dostCurrentPath);
+         return <DostMimaropaDashboard currentPath={dostCurrentPath} />;
       } else if (currentUser.role === 'proponent') {
          return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
       } else if (currentUser.role === 'psto') {
@@ -158,13 +160,16 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
       );
    }
 
+   const currentPathForLayout = `/${currentPage}`;
+   console.log('App.jsx - Passing currentPath to MainLayout:', currentPathForLayout);
+   
    return (
       <MainLayout 
          user={currentUser} 
          onLogout={onLogout}
          onNavigateToProfile={proponentNavigateToProfile}
          onNavigate={handleNavigate}
-         currentPath={`/${currentPage}`}
+         currentPath={currentPathForLayout}
       >
          {renderContent()}
       </MainLayout>
@@ -189,8 +194,10 @@ function App() {
 
    // Navigation handler
    const handleNavigate = (path) => {
-      console.log('Navigating to:', path);
-      setCurrentPage(path.replace('/', ''));
+      console.log('App.jsx - Navigating to:', path);
+      const cleanedPath = path.replace('/', '');
+      console.log('App.jsx - Cleaned path:', cleanedPath);
+      setCurrentPage(cleanedPath);
    };
 
    // Debug current page

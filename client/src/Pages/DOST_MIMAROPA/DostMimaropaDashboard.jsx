@@ -207,8 +207,12 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
 
    // Render different sections based on currentPath
    const renderContent = () => {
+      console.log('[DOST Dashboard] renderContent - activeView:', activeView, 'currentPath:', currentPath);
       const isTnaManagement = activeView === '/tna-management';
-      switch (isTnaManagement ? '/tna-management' : activeView) {
+      const switchValue = isTnaManagement ? '/tna-management' : activeView;
+      console.log('[DOST Dashboard] renderContent - switchValue:', switchValue);
+      
+      switch (switchValue) {
          case '/dashboard':
             return (
                <div className="space-y-6">
