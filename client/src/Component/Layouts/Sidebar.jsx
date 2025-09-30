@@ -386,9 +386,8 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                            .filter(section => {
                               // Filter sections based on user role
                               if (userRole === 'proponent') {
-                                 // For proponents, show relevant sections
-                                 const allowedSections = ['management', 'tna-management', 'proponent-management', 'notifications', 'reports', 'settings'];
-                                 return allowedSections.includes(section.id);
+                                 // Show all sections for proponents - they should have access to everything
+                                 return true;
                               }
                               // For other roles (PSTO, DOST MIMAROPA, Super Admin), show all sections
                               return true;
