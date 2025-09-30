@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../../Component/UI';
 import { API_ENDPOINTS } from '../../../config/api';
+import TNADetailsDisplay from './TNADetailsDisplay';
 
 const DostMimaropaReviewModal = ({ 
    selectedApplication, 
@@ -264,6 +265,11 @@ const DostMimaropaReviewModal = ({
 
                {/* TNA Report Tab */}
                {activeTab === 'tna-report' && (
+                  <TNADetailsDisplay tnaData={tnaData} formatDate={formatDate} />
+               )}
+
+               {/* Keep this as backup - remove after testing */}
+               {false && activeTab === 'tna-report' && (
                   <div className="space-y-6">
                      {!tnaData ? (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">

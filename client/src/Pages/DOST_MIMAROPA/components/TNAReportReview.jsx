@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Textarea } from '../../../Component/UI';
 import { API_ENDPOINTS } from '../../../config/api';
+import TNADetailsDisplay from './TNADetailsDisplay';
 
 const TNAReportReview = () => {
    const [tnaReports, setTnaReports] = useState([]);
@@ -267,71 +268,64 @@ const TNAReportReview = () => {
                setReviewComments('');
             }}
             title="Review TNA Report"
+            size="xl"
          >
             {selectedReport && (
-               <div className="space-y-4">
-                  <div>
-                     <h4 className="font-medium text-gray-900 mb-2">TNA Report Details</h4>
-                     <p className="text-sm text-gray-600">
-                        TNA ID: {selectedReport.tnaId}
-                     </p>
-                     <p className="text-sm text-gray-600">
-                        Application: {selectedReport.applicationId?.applicationId}
-                     </p>
-                     <p className="text-sm text-gray-600">
-                        Proponent: {selectedReport.proponentId?.firstName} {selectedReport.proponentId?.lastName}
-                     </p>
-                     <p className="text-sm text-gray-600">
-                        Enterprise: {selectedReport.applicationId?.enterpriseName}
-                     </p>
-                  </div>
+               <div className="space-y-6">
+                  {/* TNA Details using reusable component */}
+                  <TNADetailsDisplay tnaData={selectedReport} formatDate={formatDate} />
 
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Review Decision
-                     </label>
-                     <select
-                        value={reviewStatus}
-                        onChange={(e) => setReviewStatus(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                     >
-                        <option value="">Select decision</option>
-                        <option value="approved">Approve</option>
-                        <option value="rejected">Reject</option>
-                        <option value="returned">Return for Revision</option>
-                     </select>
-                  </div>
+                  {/* Review Section */}
+                  <div className="border-t pt-4">
+                     <h4 className="font-medium text-gray-900 mb-4">DOST MIMAROPA Review</h4>
 
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Comments
-                     </label>
-                     <Textarea
-                        value={reviewComments}
-                        onChange={(e) => setReviewComments(e.target.value)}
-                        placeholder="Enter your review comments..."
-                        rows={4}
-                     />
-                  </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                           Review Decision
+                        </label>
+                        <select
+                           value={reviewStatus}
+                           onChange={(e) => setReviewStatus(e.target.value)}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                           <option value="">Select decision</option>
+                           <option value="approved">Approve</option>
+                           <option value="rejected">Reject</option>
+                           <option value="returned">Return for Revision</option>
+                        </select>
+                     </div>
 
-                  <div className="flex justify-end space-x-3">
-                     <Button
-                        variant="outline"
-                        onClick={() => {
-                           setShowReviewModal(false);
-                           setSelectedReport(null);
-                           setReviewStatus('');
-                           setReviewComments('');
-                        }}
-                     >
-                        Cancel
-                     </Button>
-                     <Button
-                        onClick={reviewTNAReport}
-                        disabled={!reviewStatus}
-                     >
-                        Submit Review
-                     </Button>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                           Comments
+                        </label>
+                        <Textarea
+                           value={reviewComments}
+                           onChange={(e) => setReviewComments(e.target.value)}
+                           placeholder="Enter your review comments..."
+                           rows={4}
+                        />
+                     </div>
+
+                     <div className="flex justify-end space-x-3">
+                        <Button
+                           variant="outline"
+                           onClick={() => {
+                              setShowReviewModal(false);
+                              setSelectedReport(null);
+                              setReviewStatus('');
+                              setReviewComments('');
+                           }}
+                        >
+                           Cancel
+                        </Button>
+                        <Button
+                           onClick={reviewTNAReport}
+                           disabled={!reviewStatus}
+                        >
+                           Submit Review
+                        </Button>
+                     </div>
                   </div>
                </div>
             )}
