@@ -702,7 +702,7 @@ const getPSTOApplications = async (req, res) => {
             ...filter,
             proponentId: { $in: proponentIds }
          })
-         .populate('proponentId', 'firstName lastName email userId province')
+         .populate('proponentId', 'firstName lastName email userId province proponentInfo.phone')
          .sort({ createdAt: -1 })
          .limit(limit * 1)
          .skip((page - 1) * limit);
@@ -726,7 +726,7 @@ const getPSTOApplications = async (req, res) => {
       } else {
          // For admin users, show all applications
          const applications = await SETUPApplication.find(filter)
-            .populate('proponentId', 'firstName lastName email userId province')
+            .populate('proponentId', 'firstName lastName email userId province proponentInfo.phone')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit);
@@ -1272,7 +1272,7 @@ const getDostMimaropaApplications = async (req, res) => {
       if (status) filter.dostMimaropaStatus = status;
 
       const applications = await SETUPApplication.find(filter)
-         .populate('proponentId', 'firstName lastName email userId province')
+         .populate('proponentId', 'firstName lastName email userId province proponentInfo.phone')
          .populate('assignedPSTO', 'name province')
          .sort({ forwardedToDostMimaropaAt: -1 })
          .limit(limit * 1)

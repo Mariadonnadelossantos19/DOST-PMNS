@@ -118,8 +118,8 @@ const scheduleTNA = async (req, res) => {
          location: location,
          contactPerson: contactPerson || (application.proponentId?.firstName + ' ' + application.proponentId?.lastName) || 'Not provided',
          position: 'Proponent',
-         phone: contactPhone || application.proponentId?.phone || application.contactPersonTel || 'Not provided',
-         email: application.proponentId?.email || application.contactPersonEmail || 'not-provided@example.com',
+         phone: contactPhone || application.contactPersonTel || application.proponentId?.proponentInfo?.phone || 'Not provided',
+         email: application.contactPersonEmail || application.proponentId?.email || 'not-provided@example.com',
          assessmentTeam: Array.isArray(assessors) && assessors.length > 0 
             ? assessors.filter(assessor => assessor.name && assessor.position && assessor.department)
             : [],
