@@ -112,22 +112,12 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
             title="Required Documents" 
             description="Upload the necessary documents for your application"
          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
                <FormFileUpload
                   label="Letter of Intent"
                   name="letterOfIntent"
                   onChange={handleInputChange}
                   error={errors.letterOfIntent}
-                  required
-                  accept=".pdf,.doc,.docx"
-                  helpText="PDF, DOC, or DOCX files only (max 10MB)"
-               />
-
-               <FormFileUpload
-                  label="Enterprise Profile"
-                  name="enterpriseProfile"
-                  onChange={handleInputChange}
-                  error={errors.enterpriseProfile}
                   required
                   accept=".pdf,.doc,.docx"
                   helpText="PDF, DOC, or DOCX files only (max 10MB)"

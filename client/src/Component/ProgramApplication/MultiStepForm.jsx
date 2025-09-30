@@ -284,9 +284,6 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
             if (!formData.letterOfIntent) {
                newErrors.letterOfIntent = 'Letter of Intent is required';
             }
-            if (!formData.enterpriseProfile) {
-               newErrors.enterpriseProfile = 'Enterprise Profile is required';
-            }
          }
       } else if (programCode === 'GIA') {
          if (currentStep === 2) {
