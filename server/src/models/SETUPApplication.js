@@ -84,7 +84,7 @@ const setupApplicationSchema = new mongoose.Schema({
    },
    
    
-   // File Uploads (Step 6 fields)
+   // File Uploads
    letterOfIntent: {
       filename: String,
       originalName: String,
@@ -92,13 +92,7 @@ const setupApplicationSchema = new mongoose.Schema({
       size: Number,
       mimetype: String
    },
-   enterpriseProfile: {
-      filename: String,
-      originalName: String,
-      path: String,
-      size: Number,
-      mimetype: String
-   }, 
+  
    
    // SETUP Process Stages - Correct DOST PMNS Workflow
    currentStage: {

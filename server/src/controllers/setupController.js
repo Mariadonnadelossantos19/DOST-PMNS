@@ -30,32 +30,8 @@ const submitApplication = async (req, res) => {
          factoryEmail,
          website,
          
-         // Enterprise details
-         yearEstablished,
-         initialCapital,
-         organizationType,
-         profitType,
-         registrationNo,
-         yearRegistered,
-         capitalClassification,
-         employmentClassification,
-         
-         // Employment details
-         directWorkers,
-         productionWorkers,
-         nonProductionWorkers,
-         contractWorkers,
-         totalWorkers,
-         
-         // Business information
-         businessActivity,
-         specificProduct,
-         enterpriseBackground,
-         technologyNeeds,
-         currentTechnologyLevel,
-         desiredTechnologyLevel,
-         expectedOutcomes,
-         
+        
+   
          // Program information
          programCode,
          programName,
@@ -65,21 +41,14 @@ const submitApplication = async (req, res) => {
          generalAgreement
       } = req.body;
 
-      // Validate required fields
+      // Validate required fields for simplified form
       const requiredFields = {
          enterpriseName,
          contactPerson,
          officeAddress,
          position,
          contactPersonTel,
-         contactPersonEmail,
-         yearEstablished,
-         organizationType,
-         profitType,
-         registrationNo,
-         yearRegistered,
-         capitalClassification,
-         employmentClassification
+         contactPersonEmail
       };
 
       const missingFields = Object.entries(requiredFields)
@@ -94,45 +63,10 @@ const submitApplication = async (req, res) => {
          });
       }
 
-      // Parse generalAgreement if it's a JSON string
-      let parsedGeneralAgreement = generalAgreement;
-      if (typeof generalAgreement === 'string') {
-         try {
-            parsedGeneralAgreement = JSON.parse(generalAgreement);
-            console.log('Backend - Parsed generalAgreement from JSON string:', parsedGeneralAgreement);
-         } catch (error) {
-            console.error('Backend - Error parsing generalAgreement JSON:', error);
-            return res.status(400).json({
-               success: false,
-               message: 'Invalid general agreement data format'
-            });
-         }
-      }
-      
-      // Validate general agreement
-      console.log('Backend - Received generalAgreement:', parsedGeneralAgreement);
-      console.log('Backend - generalAgreement.accepted:', parsedGeneralAgreement?.accepted);
-      console.log('Backend - generalAgreement type:', typeof parsedGeneralAgreement);
-      
-      if (!parsedGeneralAgreement || !parsedGeneralAgreement.accepted) {
-         console.log('Backend - General agreement validation failed');
-         return res.status(400).json({
-            success: false,
-            message: 'General agreement must be accepted'
-         });
-      }
+      // General agreement validation removed since step 7 was removed from the form
 
-      if (!parsedGeneralAgreement.signatoryName || !parsedGeneralAgreement.position || !parsedGeneralAgreement.signedDate) {
-         return res.status(400).json({
-            success: false,
-            message: 'General agreement signature details are required'
-         });
-      }
-
-      // Handle file uploads
+      // Handle file uploads (only letterOfIntent for simplified form)
       let letterOfIntent = null;
-      let enterpriseProfile = null;
-      let signatureFile = null;
 
       if (req.files && req.files.length > 0) {
          console.log('Processing uploaded files:', req.files.map(f => ({ fieldname: f.fieldname, filename: f.filename, originalname: f.originalname })));
@@ -149,12 +83,6 @@ const submitApplication = async (req, res) => {
             if (file.fieldname === 'letterOfIntent') {
                letterOfIntent = fileInfo;
                console.log('Letter of Intent file processed:', fileInfo);
-            } else if (file.fieldname === 'enterpriseProfile') {
-               enterpriseProfile = fileInfo;
-               console.log('Enterprise Profile file processed:', fileInfo);
-            } else if (file.fieldname === 'signature') {
-               signatureFile = file.filename;
-               console.log('Signature file processed:', file.filename);
             }
          });
       } else {
@@ -179,74 +107,25 @@ const submitApplication = async (req, res) => {
          }
       }
 
-      // Create application with all form data
+      // Create application with simplified form data
       const application = new SETUPApplication({
          applicationId,
          proponentId: req.user._id,
          
-         // Basic required fields
+         // Basic required fields (Step 2)
          enterpriseName,
          contactPerson,
+         contactPersonTel,
+         contactPersonEmail,
          officeAddress,
          position,
          
-         // Contact information
-         contactPersonTel,
-         contactPersonEmail,
-         contactPersonFax: contactPersonFax || '',
+         // Optional fields (Step 2)
          factoryAddress: factoryAddress || '',
-         factoryTel: factoryTel || '',
-         factoryFax: factoryFax || '',
-         factoryEmail: factoryEmail || '',
          website: website || '',
          
-         // Enterprise details
-         yearEstablished: parseInt(yearEstablished) || new Date().getFullYear(),
-         initialCapital: initialCapital || '',
-         organizationType,
-         profitType,
-         registrationNo,
-         yearRegistered: parseInt(yearRegistered) || new Date().getFullYear(),
-         capitalClassification,
-         employmentClassification,
-         
-         // Employment details
-         directWorkers: directWorkers || '0',
-         productionWorkers: productionWorkers || '0',
-         nonProductionWorkers: nonProductionWorkers || '0',
-         contractWorkers: contractWorkers || '0',
-         totalWorkers: totalWorkers || '0',
-         
-         // Business information
-         businessActivity: businessActivity || '',
-         specificProduct: specificProduct || '',
-         enterpriseBackground: enterpriseBackground || '',
-         technologyNeeds: technologyNeeds || '',
-         currentTechnologyLevel: currentTechnologyLevel || 'Basic',
-         desiredTechnologyLevel: desiredTechnologyLevel || 'Advanced',
-         expectedOutcomes: expectedOutcomes || '',
-         
-         // File uploads
+         // File uploads (Step 6)
          letterOfIntent,
-         enterpriseProfile,
-         
-         // General Agreement
-         generalAgreement: {
-            accepted: parsedGeneralAgreement.accepted,
-            acceptedAt: new Date(),
-            ipAddress: req.ip || req.connection.remoteAddress || '',
-            userAgent: parsedGeneralAgreement.userAgent || req.get('User-Agent') || '',
-            signatoryName: parsedGeneralAgreement.signatoryName,
-            position: parsedGeneralAgreement.position,
-            signedDate: new Date(parsedGeneralAgreement.signedDate),
-            signature: signatureFile ? {
-               filename: signatureFile,
-               originalName: req.files?.find(f => f.fieldname === 'signature')?.originalname || signatureFile,
-               path: `uploads/${signatureFile}`,
-               size: req.files?.find(f => f.fieldname === 'signature')?.size || 0,
-               mimetype: req.files?.find(f => f.fieldname === 'signature')?.mimetype || 'application/octet-stream'
-            } : null
-         },
          
          // Status and PSTO assignment
          status: 'pending',
@@ -265,8 +144,7 @@ const submitApplication = async (req, res) => {
          contactPerson: application.contactPerson,
          assignedPSTO: assignedPSTO,
          forwardedToPSTO: application.forwardedToPSTO,
-         letterOfIntent: application.letterOfIntent,
-         enterpriseProfile: application.enterpriseProfile
+         letterOfIntent: application.letterOfIntent
       });
 
       const message = assignedPSTO 
@@ -332,9 +210,7 @@ const getMyApplications = async (req, res) => {
       // Log file information for debugging
       applications.forEach((app, index) => {
          console.log(`Application ${index + 1} (${app.applicationId}):`, {
-            letterOfIntent: app.letterOfIntent,
-            enterpriseProfile: app.enterpriseProfile,
-            businessPlan: app.businessPlan
+            letterOfIntent: app.letterOfIntent
          });
       });
 
@@ -465,7 +341,7 @@ const uploadDocuments = async (req, res) => {
          });
       }
 
-      // Update file information
+      // Update file information (only letterOfIntent for simplified form)
       if (files) {
          files.forEach(file => {
             const fileInfo = {
@@ -478,10 +354,6 @@ const uploadDocuments = async (req, res) => {
 
             if (file.fieldname === 'letterOfIntent') {
                application.letterOfIntent = fileInfo;
-            } else if (file.fieldname === 'enterpriseProfile') {
-               application.enterpriseProfile = fileInfo;
-            } else if (file.fieldname === 'businessPlan') {
-               application.businessPlan = fileInfo;
             }
          });
       }
@@ -664,12 +536,6 @@ const downloadFile = async (req, res) => {
       let fileInfo;
       if (fileType === 'letterOfIntent' && application.letterOfIntent?.filename) {
          fileInfo = application.letterOfIntent;
-      } else if (fileType === 'enterpriseProfile' && application.enterpriseProfile?.filename) {
-         fileInfo = application.enterpriseProfile;
-      } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
-         fileInfo = application.businessPlan;
-      } else if (fileType === 'generalAgreement' && application.generalAgreement?.signature?.filename) {
-         fileInfo = application.generalAgreement.signature;
       } else {
          return res.status(404).json({
             success: false,
@@ -738,12 +604,6 @@ const viewFile = async (req, res) => {
       let fileInfo;
       if (fileType === 'letterOfIntent' && application.letterOfIntent?.filename) {
          fileInfo = application.letterOfIntent;
-      } else if (fileType === 'enterpriseProfile' && application.enterpriseProfile?.filename) {
-         fileInfo = application.enterpriseProfile;
-      } else if (fileType === 'businessPlan' && application.businessPlan?.filename) {
-         fileInfo = application.businessPlan;
-      } else if (fileType === 'generalAgreement' && application.generalAgreement?.signature?.filename) {
-         fileInfo = application.generalAgreement.signature;
       } else {
          return res.status(404).json({
             success: false,
