@@ -280,8 +280,8 @@ const MultiStepForm = ({ selectedProgram, onBack, onSubmit }) => {
                   console.log(`Field ${field} is missing, adding error`);
                }
             });
-         } else if (currentStep === 6) {
-            console.log('Validating step 6 (Documents)');
+         } else if (currentStep === 3) { // Documents step (was previously step 6, now step 3 in simplified flow)
+            console.log('Validating step 3 (Documents)');
             console.log('formData.letterOfIntent:', formData.letterOfIntent);
             console.log('letterOfIntent type:', typeof formData.letterOfIntent);
             

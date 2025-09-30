@@ -105,8 +105,8 @@ const SETUPFormSteps = ({ formData, errors, handleInputChange, currentStep }) =>
       );
    }
 
-   // Step 6: Documents (now step 3 in the simplified flow)
-   if (currentStep === 6) {
+   // Step 3: Documents (simplified flow)
+   if (currentStep === 3) {
       return (
          <FormSection 
             title="Required Documents" 
