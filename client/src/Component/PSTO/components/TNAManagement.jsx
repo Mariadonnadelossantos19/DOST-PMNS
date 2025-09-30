@@ -483,24 +483,7 @@ const TNAManagement = ({ currentUser }) => {
 
    return (
       <div className="space-y-6">
-         {/* Enhanced Header */}
-         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-            <div className="flex justify-between items-center">
-               <div>
-                  <h2 className="text-3xl font-bold mb-2">TNA Management</h2>
-                  <p className="text-blue-100">Manage Technology Needs Assessments and Reports</p>
-               </div>
-               <Button 
-                  onClick={() => { fetchApplications(); fetchTNAs(); }}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white border-white"
-               >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-               </Button>
-            </div>
-         </div>
+         
 
          {/* Statistics Dashboard */}
          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -722,155 +705,86 @@ const TNAManagement = ({ currentUser }) => {
                   <p className="text-gray-500">No TNAs found matching your criteria</p>
                </div>
             ) : viewMode === 'grid' ? (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredTNAs.map((tna) => (
-                     <div key={tna._id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
-                        <div className="flex justify-between items-start mb-4">
-                           <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900 mb-1">
-                                 {tna.programName || tna.applicationId?.programName || 'SETUP Program'}
-                              </h4>
-                              <p className="text-sm text-gray-600 mb-2">
-                                 {tna.applicationId?.enterpriseName || 'N/A'}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                 {tna.proponentId?.firstName} {tna.proponentId?.lastName}
-                              </p>
-                           </div>
-                           <Badge color={getStatusColor(tna.status)}>
-                              {getStatusLabel(tna.status)}
-                           </Badge>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                           <p className="text-sm text-gray-600">
-                              <span className="font-medium">Scheduled:</span> {new Date(tna.scheduledDate).toLocaleDateString()}
-                           </p>
-                           <p className="text-sm text-gray-600">
-                              <span className="font-medium">Location:</span> {tna.location}
-                           </p>
-                           {tna.tnaReport && (
-                              <p className="text-sm text-green-600 font-medium">
-                                 ✓ Report: {tna.tnaReport.originalName || tna.tnaReport.filename}
-                              </p>
-                           )}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                           <Button
-                              onClick={() => handleViewTNA(tna)}
-                              variant="outline"
-                              size="sm"
-                           >
-                              View
-                           </Button>
-                           
-                           {tna.status === 'scheduled' && (
-                              <Button
-                                 onClick={() => markTNAAsInProgress(tna._id)}
-                                 className="bg-purple-600 hover:bg-purple-700"
-                                 size="sm"
-                              >
-                                 Start TNA
-                              </Button>
-                           )}
-                           
-                           {tna.status === 'in_progress' && (
-                              <Button
-                                 onClick={() => markTNAAsCompleted(tna._id)}
-                                 className="bg-green-600 hover:bg-green-700"
-                                 size="sm"
-                              >
-                                 Mark Complete
-                              </Button>
-                           )}
-                           
-                           {tna.status === 'completed' && !tna.tnaReport && (
-                              <Button
-                                 onClick={() => handleUploadReport(tna)}
-                                 className="bg-blue-600 hover:bg-blue-700"
-                                 size="sm"
-                              >
-                                 Upload Report
-                              </Button>
-                           )}
-                           
-                           {tna.tnaReport && (
-                              <>
-                                 <Button
-                                    onClick={() => handleUpdateReport(tna)}
-                                    variant="outline"
-                                    size="sm"
-                                 >
-                                    Update Report
-                                 </Button>
-                                 <Button
-                                    onClick={() => viewTNAReport(tna._id)}
-                                    variant="outline"
-                                    size="sm"
-                                 >
-                                    View Report
-                                 </Button>
-                                 <Button
-                                    onClick={() => downloadTNAReport(tna._id)}
-                                    variant="outline"
-                                    size="sm"
-                                 >
-                                    Download
-                                 </Button>
-                              </>
-                           )}
-                           
-                           {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && (
-                              <Button
-                                 onClick={() => forwardTNAToDostMimaropa(tna._id)}
-                                 className="bg-indigo-600 hover:bg-indigo-700"
-                                 size="sm"
-                              >
-                                 Forward to DOST
-                              </Button>
-                           )}
-                        </div>
-                     </div>
-                  ))}
-               </div>
-            ) : (
-               <div className="space-y-4">
-                  {filteredTNAs.map((tna) => (
-                     <div key={tna._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start">
-                           <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                 <h4 className="font-medium text-gray-900">
-                                    {tna.programName || tna.applicationId?.programName || 'SETUP Program'}
-                                 </h4>
-                                 <Badge color={getStatusColor(tna.status)}>
-                                    {getStatusLabel(tna.status)}
-                                 </Badge>
+                     <Card key={tna._id} className="hover:shadow-lg transition-all duration-200">
+                        <div className="p-6">
+                           {/* Header Section */}
+                           <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center space-x-3 flex-1">
+                                 <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                 </div>
+                                 <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-gray-900 text-sm truncate">
+                                       {tna.programName || tna.applicationId?.programName || 'SETUP Program'}
+                                    </h4>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                       TNA Assessment
+                                    </p>
+                                 </div>
                               </div>
-                              <p className="text-sm text-gray-600 mb-1">
-                                 Enterprise: {tna.applicationId?.enterpriseName || 'N/A'}
-                              </p>
-                              <p className="text-sm text-gray-600 mb-1">
-                                 Proponent: {tna.proponentId?.firstName} {tna.proponentId?.lastName}
-                              </p>
-                              <p className="text-sm text-gray-600 mb-1">
-                                 Scheduled: {new Date(tna.scheduledDate).toLocaleDateString()} at {tna.scheduledTime}
-                              </p>
-                              <p className="text-sm text-gray-600 mb-1">
-                                 Location: {tna.location}
-                              </p>
-                              {tna.tnaReport && (
-                                 <p className="text-sm text-green-600 font-medium">
-                                    ✓ Report: {tna.tnaReport.originalName || tna.tnaReport.filename}
-                                 </p>
-                              )}
+                              <Badge color={getStatusColor(tna.status)} className="ml-2 flex-shrink-0">
+                                 {getStatusLabel(tna.status)}
+                              </Badge>
                            </div>
-                           <div className="flex items-center space-x-2">
+
+                           {/* Enterprise & Proponent Info */}
+                           <div className="space-y-2 mb-4">
+                              <div>
+                                 <p className="font-medium text-gray-900 text-sm">
+                                    {tna.applicationId?.enterpriseName || 'N/A'}
+                                 </p>
+                                 <p className="text-xs text-gray-500">
+                                    {tna.proponentId?.firstName} {tna.proponentId?.lastName}
+                                 </p>
+                              </div>
+                           </div>
+
+                           {/* Schedule & Location Info */}
+                           <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                              <div className="space-y-2">
+                                 <div className="flex items-center text-sm">
+                                    <svg className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-gray-600 truncate">
+                                       {new Date(tna.scheduledDate).toLocaleDateString('en-US', {
+                                          year: 'numeric',
+                                          month: 'short',
+                                          day: 'numeric'
+                                       })}
+                                    </span>
+                                 </div>
+                                 <div className="flex items-center text-sm">
+                                    <svg className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="text-gray-600 truncate">
+                                       {tna.location}
+                                    </span>
+                                 </div>
+                                 {tna.tnaReport && (
+                                    <div className="flex items-center text-sm">
+                                       <svg className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                       </svg>
+                                       <span className="text-green-600 font-medium truncate">
+                                          {tna.tnaReport.originalName || tna.tnaReport.filename}
+                                       </span>
+                                    </div>
+                                 )}
+                              </div>
+                           </div>
+
+                           {/* Action Buttons */}
+                           <div className="flex flex-wrap gap-2">
                               <Button
                                  onClick={() => handleViewTNA(tna)}
-                                 variant="outline"
-                                 size="sm"
+                                 className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
                               >
                                  View
                               </Button>
@@ -878,8 +792,7 @@ const TNAManagement = ({ currentUser }) => {
                               {tna.status === 'scheduled' && (
                                  <Button
                                     onClick={() => markTNAAsInProgress(tna._id)}
-                                    className="bg-purple-600 hover:bg-purple-700"
-                                    size="sm"
+                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
                                  >
                                     Start TNA
                                  </Button>
@@ -888,18 +801,16 @@ const TNAManagement = ({ currentUser }) => {
                               {tna.status === 'in_progress' && (
                                  <Button
                                     onClick={() => markTNAAsCompleted(tna._id)}
-                                    className="bg-green-600 hover:bg-green-700"
-                                    size="sm"
+                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
                                  >
-                                    Mark Complete
+                                    Complete
                                  </Button>
                               )}
                               
                               {tna.status === 'completed' && !tna.tnaReport && (
                                  <Button
                                     onClick={() => handleUploadReport(tna)}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                    size="sm"
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
                                  >
                                     Upload Report
                                  </Button>
@@ -909,22 +820,19 @@ const TNAManagement = ({ currentUser }) => {
                                  <>
                                     <Button
                                        onClick={() => handleUpdateReport(tna)}
-                                       variant="outline"
-                                       size="sm"
+                                       className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
                                     >
-                                       Update Report
+                                       Update
                                     </Button>
                                     <Button
                                        onClick={() => viewTNAReport(tna._id)}
-                                       variant="outline"
-                                       size="sm"
+                                       className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
                                     >
                                        View Report
                                     </Button>
                                     <Button
                                        onClick={() => downloadTNAReport(tna._id)}
-                                       variant="outline"
-                                       size="sm"
+                                       className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
                                     >
                                        Download
                                     </Button>
@@ -934,15 +842,152 @@ const TNAManagement = ({ currentUser }) => {
                               {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && (
                                  <Button
                                     onClick={() => forwardTNAToDostMimaropa(tna._id)}
-                                    className="bg-indigo-600 hover:bg-indigo-700"
-                                    size="sm"
+                                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
                                  >
                                     Forward to DOST
                                  </Button>
                               )}
                            </div>
                         </div>
-                     </div>
+                     </Card>
+                  ))}
+               </div>
+            ) : (
+               <div className="space-y-4">
+                  {filteredTNAs.map((tna) => (
+                     <Card key={tna._id} className="hover:shadow-md transition-all duration-200">
+                        <div className="p-4">
+                           <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-4 flex-1">
+                                 {/* Icon */}
+                                 <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                 </div>
+
+                                 {/* Content */}
+                                 <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-3 mb-3">
+                                       <h4 className="font-semibold text-gray-900 text-sm">
+                                          {tna.programName || tna.applicationId?.programName || 'SETUP Program'}
+                                       </h4>
+                                       <Badge color={getStatusColor(tna.status)}>
+                                          {getStatusLabel(tna.status)}
+                                       </Badge>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                       <div>
+                                          <p className="font-medium text-gray-900">
+                                             {tna.applicationId?.enterpriseName || 'N/A'}
+                                          </p>
+                                          <p className="text-gray-500 text-xs">
+                                             {tna.proponentId?.firstName} {tna.proponentId?.lastName}
+                                          </p>
+                                       </div>
+                                       <div>
+                                          <div className="flex items-center text-xs text-gray-600 mb-1">
+                                             <svg className="w-3 h-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                             </svg>
+                                             {new Date(tna.scheduledDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                             })} at {tna.scheduledTime}
+                                          </div>
+                                          <div className="flex items-center text-xs text-gray-600">
+                                             <svg className="w-3 h-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                             </svg>
+                                             {tna.location}
+                                          </div>
+                                          {tna.tnaReport && (
+                                             <div className="flex items-center text-xs text-green-600 font-medium mt-1">
+                                                <svg className="w-3 h-3 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                {tna.tnaReport.originalName || tna.tnaReport.filename}
+                                             </div>
+                                          )}
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
+                                 <Button
+                                    onClick={() => handleViewTNA(tna)}
+                                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
+                                 >
+                                    View
+                                 </Button>
+                                 
+                                 {tna.status === 'scheduled' && (
+                                    <Button
+                                       onClick={() => markTNAAsInProgress(tna._id)}
+                                       className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
+                                    >
+                                       Start TNA
+                                    </Button>
+                                 )}
+                                 
+                                 {tna.status === 'in_progress' && (
+                                    <Button
+                                       onClick={() => markTNAAsCompleted(tna._id)}
+                                       className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
+                                    >
+                                       Complete
+                                    </Button>
+                                 )}
+                                 
+                                 {tna.status === 'completed' && !tna.tnaReport && (
+                                    <Button
+                                       onClick={() => handleUploadReport(tna)}
+                                       className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
+                                    >
+                                       Upload Report
+                                    </Button>
+                                 )}
+                                 
+                                 {tna.tnaReport && (
+                                    <>
+                                       <Button
+                                          onClick={() => handleUpdateReport(tna)}
+                                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
+                                       >
+                                          Update
+                                       </Button>
+                                       <Button
+                                          onClick={() => viewTNAReport(tna._id)}
+                                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
+                                       >
+                                          View Report
+                                       </Button>
+                                       <Button
+                                          onClick={() => downloadTNAReport(tna._id)}
+                                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200"
+                                       >
+                                          Download
+                                       </Button>
+                                    </>
+                                 )}
+                                 
+                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && (
+                                    <Button
+                                       onClick={() => forwardTNAToDostMimaropa(tna._id)}
+                                       className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
+                                    >
+                                       Forward to DOST
+                                    </Button>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
+                     </Card>
                   ))}
                </div>
             )}
