@@ -156,6 +156,18 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          path: '/management'
       },
       {
+         id: 'psto-applications',
+         label: 'PSTO Applications Review',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/psto-applications-review',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
          id: 'tna-management',
          label: 'TNA Management',
          icon: (
@@ -166,6 +178,18 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
             </svg>
          ),
          path: '/tna-management'
+      },
+      {
+         id: 'tna-report-review',
+         label: 'TNA Report Review',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-report-review',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
          id: 'monitoring',
@@ -400,7 +424,11 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                                  const allowedSections = ['monitoring', 'notifications', 'reports', 'settings'];
                                  return allowedSections.includes(section.id);
                               }
-                              // For other roles (PSTO, DOST MIMAROPA, Super Admin), show all sections
+                              // Check if section has role restrictions
+                              if (section.roles && section.roles.length > 0) {
+                                 return section.roles.includes(userRole);
+                              }
+                              // For other roles (PSTO, DOST MIMAROPA, Super Admin), show all sections without role restrictions
                               return true;
                            })
                            .map((section) => {

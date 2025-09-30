@@ -5,6 +5,7 @@ import { API_ENDPOINTS } from '../../config/api';
 import ApplicationReviewModal from '../../Component/ProgramApplication/ApplicationReviewModal';
 import PSTOApplicationsList from './components/PSTOApplicationsList';
 import DostMimaropaReviewModal from './components/DostMimaropaReviewModal';
+import TNAReportReview from './components/TNAReportReview';
 import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 
@@ -275,11 +276,12 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             );
 
          case '/application-management':
+         case '/psto-applications-review':
             return (
                <div className="space-y-6">
                   <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white">
-                     <h1 className="text-3xl font-bold mb-2">Application Management</h1>
-                     <p className="text-green-100">Review and manage submitted applications</p>
+                     <h1 className="text-3xl font-bold mb-2">PSTO Applications Review</h1>
+                     <p className="text-green-100">Review and manage applications forwarded by PSTO offices</p>
                      <div className="mt-4 flex gap-2">
                         <Button variant="outline" onClick={() => { setActiveView('/tna-management'); fetchTNAReports(); }}>Go to TNA Management</Button>
                      </div>
@@ -289,18 +291,35 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
                      applications={applications}
                      loading={loading}
                      error={error}
-                     onRefresh={fetchApplications}
-                     onViewDetails={(app) => {
-                        setSelectedApplication(app);
-                        setReviewStatus(app.status || '');
-                        setReviewComments(app.comments || '');
-                     }}
+                     onRetry={fetchApplications}
+                     selectedApplication={selectedApplication}
+                     setSelectedApplication={setSelectedApplication}
+                     reviewStatus={reviewStatus}
+                     setReviewStatus={setReviewStatus}
+                     reviewComments={reviewComments}
+                     setReviewComments={setReviewComments}
+                     reviewApplication={reviewApplication}
+                     formatDate={formatDate}
                   />
                </div>
             );
 
          case '/tna-management':
             return <TNAManagement currentUser={{ role: 'dost_mimaropa' }} />;
+
+         case '/tna-report-review':
+            return (
+               <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
+                     <h1 className="text-3xl font-bold mb-2">TNA Report Review</h1>
+                     <p className="text-purple-100">Review and approve TNA reports submitted by PSTO offices</p>
+                     <div className="mt-4 flex gap-2">
+                        <Button variant="outline" onClick={() => setActiveView('/tna-management')}>Go to TNA Management</Button>
+                     </div>
+                  </div>
+                  <TNAReportReview />
+               </div>
+            );
 
          case '/proponent-management':
             return (

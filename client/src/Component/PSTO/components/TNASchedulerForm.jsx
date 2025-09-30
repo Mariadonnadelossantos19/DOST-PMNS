@@ -41,7 +41,7 @@ const TNASchedulerForm = ({ application, onSchedule, onCancel }) => {
    const addAssessor = () => {
       setScheduleData(prev => ({
          ...prev,
-         assessors: [...prev.assessors, { name: '', email: '', phone: '' }]
+         assessors: [...prev.assessors, { name: '', position: 'Member', department: 'PSTO' }]
       }));
    };
 
@@ -99,7 +99,9 @@ const TNASchedulerForm = ({ application, onSchedule, onCancel }) => {
             contactPerson: scheduleData.contactPerson,
             contactPhone: scheduleData.contactPhone,
             notes: scheduleData.notes,
-            assessors: scheduleData.assessors.filter(a => a.name.trim() !== ''),
+            assessors: scheduleData.assessors.filter(a => a.name.trim() !== '').length > 0 
+               ? scheduleData.assessors.filter(a => a.name.trim() !== '')
+               : [{ name: 'TNA Team', position: 'Assessor', department: 'PSTO' }], // Default if no assessors added
             status: 'scheduled',
             scheduledBy: 'psto' // This will be set by the backend
          };
@@ -392,17 +394,17 @@ const TNASchedulerForm = ({ application, onSchedule, onCancel }) => {
                               className="w-full"
                            />
                            <Input
-                              type="email"
-                              value={assessor.email}
-                              onChange={(e) => updateAssessor(index, 'email', e.target.value)}
-                              placeholder="Email address"
+                              type="text"
+                              value={assessor.position}
+                              onChange={(e) => updateAssessor(index, 'position', e.target.value)}
+                              placeholder="Position (e.g., Member, Lead)"
                               className="w-full"
                            />
                            <Input
-                              type="tel"
-                              value={assessor.phone}
-                              onChange={(e) => updateAssessor(index, 'phone', e.target.value)}
-                              placeholder="Phone number"
+                              type="text"
+                              value={assessor.department}
+                              onChange={(e) => updateAssessor(index, 'department', e.target.value)}
+                              placeholder="Department (e.g., PSTO)"
                               className="w-full"
                            />
                         </div>

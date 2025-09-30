@@ -33,8 +33,19 @@ const scheduleTNA = async (req, res) => {
          scheduledDate,
          scheduledTime,
          location,
-         pstoId
+         pstoId,
+         pstoIdType: typeof pstoId,
+         pstoIdValid: mongoose.Types.ObjectId.isValid(pstoId)
       });
+
+      // Validate PSTO ID
+      if (!pstoId || !mongoose.Types.ObjectId.isValid(pstoId)) {
+         console.log('Invalid PSTO ID:', pstoId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid PSTO user ID'
+         });
+      }
 
       // Validate required fields
       console.log('Validating required fields...');
@@ -120,11 +131,22 @@ const scheduleTNA = async (req, res) => {
          position: 'Proponent',
          phone: contactPhone || application.contactPersonTel || application.proponentId?.proponentInfo?.phone || 'Not provided',
          email: application.contactPersonEmail || application.proponentId?.email || 'not-provided@example.com',
-         assessmentTeam: Array.isArray(assessors) && assessors.length > 0 
-            ? assessors.filter(assessor => assessor.name && assessor.position && assessor.department)
-            : [],
+         assessmentTeam: (() => {
+            console.log('Processing assessmentTeam:', { assessors, isArray: Array.isArray(assessors) });
+            if (Array.isArray(assessors) && assessors.length > 0) {
+               const validAssessors = assessors.filter(assessor => 
+                  assessor && assessor.name && assessor.name.trim() && 
+                  assessor.position && assessor.position.trim() && 
+                  assessor.department && assessor.department.trim()
+               );
+               console.log('Valid assessors found:', validAssessors.length);
+               return validAssessors.length > 0 ? validAssessors : [{ name: 'TNA Team', position: 'Assessor', department: 'PSTO' }];
+            }
+            console.log('No valid assessors, using default');
+            return [{ name: 'TNA Team', position: 'Assessor', department: 'PSTO' }];
+         })(),
          notes: notes || '',
-         scheduledBy: mongoose.Types.ObjectId.isValid(pstoId) ? new mongoose.Types.ObjectId(pstoId) : pstoId,
+         scheduledBy: new mongoose.Types.ObjectId(pstoId),
          status: 'scheduled'
       };
 
@@ -203,6 +225,25 @@ const scheduleTNA = async (req, res) => {
          name: error.name,
          stack: error.stack
       });
+
+      // Handle specific error types
+      if (error.name === 'ValidationError') {
+         return res.status(400).json({
+            success: false,
+            message: 'TNA validation failed',
+            error: error.message,
+            details: error.errors
+         });
+      }
+
+      if (error.name === 'CastError') {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid ID format',
+            error: error.message
+         });
+      }
+
       res.status(500).json({
          success: false,
          message: 'Internal server error',
