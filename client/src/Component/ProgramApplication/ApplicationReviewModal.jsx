@@ -231,9 +231,18 @@ const ApplicationReviewModal = ({
                            <p className="text-xs font-medium text-gray-600">Office Address</p>
                            <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.officeAddress || 'N/A'}</p>
                         </div>
+                        
                         <div>
                            <p className="text-xs font-medium text-gray-600">Factory Address</p>
                            <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.factoryAddress || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">Contact Person Tel</p>
+                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.contactPersonTel || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">Contact Person Email</p>
+                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.contactPersonEmail || 'N/A'}</p>
                         </div>
                         <div>
                            <p className="text-xs font-medium text-gray-600">Website</p>
@@ -254,152 +263,6 @@ const ApplicationReviewModal = ({
                               }
                            </p>
                         </div>
-                     </div>
-                  </div>
-
-
-                  {/* Contact Information */}
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Contact Information</h4>
-                           <p className="text-sm text-indigo-600">Communication details and contact methods</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-3 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Contact Person Email</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.contactPersonEmail || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Contact Person Tel</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.contactPersonTel || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Factory Email</p>
-                           <p className="text-sm font-semibold text-gray-900 truncate">{selectedApplication.factoryEmail || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Factory Tel</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.factoryTel || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Contact Person Fax</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.contactPersonFax || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Factory Fax</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.factoryFax || 'N/A'}</p>
-                        </div>
-                     </div>
-                  </div>
-
-
-
-
-
-
-                  {/* Application Status & Processing */}
-                  <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 border border-red-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Application Status & Processing</h4>
-                           <p className="text-sm text-red-600">Current status and processing workflow</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-3 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Current Stage</p>
-                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.currentStage || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Status</p>
-                           <Badge className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(selectedApplication.status)}`}>
-                              {selectedApplication.status?.toUpperCase() || 'N/A'}
-                           </Badge>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">PSTO Status</p>
-                           <Badge className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(selectedApplication.pstoStatus)}`}>
-                              {selectedApplication.pstoStatus?.toUpperCase() || 'PENDING'}
-                           </Badge>
-                        </div>
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Forwarded to PSTO</p>
-                           <p className="text-sm font-semibold text-gray-900">
-                              {selectedApplication.forwardedToPSTO ? (
-                                 <span className="text-green-600 font-bold">Yes</span>
-                              ) : (
-                                 <span className="text-red-600 font-bold">No</span>
-                              )}
-                           </p>
-                        </div>
-                        {selectedApplication.forwardedAt && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Forwarded Date</p>
-                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.forwardedAt)}</p>
-                           </div>
-                        )}
-                        {selectedApplication.assignedPSTO && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Assigned PSTO</p>
-                              <p className="text-sm font-semibold text-gray-900">
-                                 {typeof selectedApplication.assignedPSTO === 'string' 
-                                    ? selectedApplication.assignedPSTO 
-                                    : selectedApplication.assignedPSTO?.name || selectedApplication.assignedPSTO?.fullOfficeName || 'N/A'
-                                 }
-                              </p>
-                           </div>
-                        )}
-                     </div>
-                  </div>
-
-                  {/* Timeline Information */}
-                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-5 border border-purple-200 shadow-sm">
-                     <div className="flex items-center mb-4">
-                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
-                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                           </svg>
-                        </div>
-                        <div>
-                           <h4 className="text-lg font-bold text-gray-900">Timeline Information</h4>
-                           <p className="text-sm text-purple-600">Important dates and project timeline</p>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-3">
-                        <div>
-                           <p className="text-xs font-medium text-gray-600">Submitted Date</p>
-                           <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.createdAt)}</p>
-                        </div>
-                        {selectedApplication.updatedAt && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Last Updated</p>
-                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.updatedAt)}</p>
-                           </div>
-                        )}
-                        {selectedApplication.expectedStartDate && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Expected Start Date</p>
-                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.expectedStartDate)}</p>
-                           </div>
-                        )}
-                        {selectedApplication.expectedEndDate && (
-                           <div>
-                              <p className="text-xs font-medium text-gray-600">Expected End Date</p>
-                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.expectedEndDate)}</p>
-                           </div>
-                        )}
                      </div>
                   </div>
 
@@ -473,6 +336,107 @@ const ApplicationReviewModal = ({
 
                      </div>
                   </div>
+
+
+
+                  {/* Application Status & Processing */}
+                  <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 border border-red-200 shadow-sm">
+                     <div className="flex items-center mb-4">
+                        <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mr-3">
+                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-bold text-gray-900">Application Status & Processing</h4>
+                           <p className="text-sm text-red-600">Current status and processing workflow</p>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-3 gap-3">
+                     <div>
+                           <p className="text-xs font-medium text-gray-600">Submitted Date</p>
+                           <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.createdAt)}</p>
+                        </div>
+                        <div>
+                              <p className="text-xs font-medium text-gray-600">Last Updated</p>
+                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.updatedAt)}</p>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">Current Stage</p>
+                           <p className="text-sm font-semibold text-gray-900">{selectedApplication.currentStage || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">Status</p>
+                           <Badge className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(selectedApplication.status)}`}>
+                              {selectedApplication.status?.toUpperCase() || 'N/A'}
+                           </Badge>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">PSTO Status</p>
+                           <Badge className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(selectedApplication.pstoStatus)}`}>
+                              {selectedApplication.pstoStatus?.toUpperCase() || 'PENDING'}
+                           </Badge>
+                        </div>
+                        <div>
+                           <p className="text-xs font-medium text-gray-600">Forwarded to PSTO</p>
+                           <p className="text-sm font-semibold text-gray-900">
+                              {selectedApplication.forwardedToPSTO ? (
+                                 <span className="text-green-600 font-bold">Yes</span>
+                              ) : (
+                                 <span className="text-red-600 font-bold">No</span>
+                              )}
+                           </p>
+                        </div>
+                        {selectedApplication.forwardedAt && (
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Forwarded Date</p>
+                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.forwardedAt)}</p>
+                           </div>
+                        )}
+                        {selectedApplication.assignedPSTO && (
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Assigned PSTO</p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                 {typeof selectedApplication.assignedPSTO === 'string' 
+                                    ? selectedApplication.assignedPSTO 
+                                    : selectedApplication.assignedPSTO?.name || selectedApplication.assignedPSTO?.fullOfficeName || 'N/A'
+                                 }
+                              </p>
+                           </div>
+                        )}
+                     </div>
+                  </div>
+
+                  {/* Timeline Information */}
+                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-5 border border-purple-200 shadow-sm">
+                     <div className="flex items-center mb-4">
+                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-bold text-gray-900">Timeline Information</h4>
+                           <p className="text-sm text-purple-600">Important dates and project timeline</p>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-3">
+                        {selectedApplication.expectedStartDate && (
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Expected Start Date</p>
+                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.expectedStartDate)}</p>
+                           </div>
+                        )}
+                        {selectedApplication.expectedEndDate && (
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Expected End Date</p>
+                              <p className="text-sm font-semibold text-gray-900">{formatDate(selectedApplication.expectedEndDate)}</p>
+                           </div>
+                        )}
+                     </div>
+                  </div>
+
+                  
 
                   {/* Additional Information */}
                   <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-5 border border-gray-200 shadow-sm">
