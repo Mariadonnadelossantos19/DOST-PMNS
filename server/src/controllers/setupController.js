@@ -89,9 +89,6 @@ const submitApplication = async (req, res) => {
          console.log('No files uploaded');
       }
 
-      // Generate unique application ID
-      const applicationId = `SETUP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
       // Find the appropriate PSTO for this proponent's province
       let assignedPSTO = null;
       if (req.user.province) {
@@ -109,8 +106,9 @@ const submitApplication = async (req, res) => {
 
       // Create application with simplified form data
       const application = new SETUPApplication({
-         applicationId,
          proponentId: req.user._id,
+         programCode: 'SETUP',
+         programName: 'Small Enterprise Technology Upgrading Program',
          
          // Basic required fields (Step 2)
          enterpriseName,
