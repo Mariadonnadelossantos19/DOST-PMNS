@@ -54,19 +54,19 @@ const scheduleTNA = async (req, res) => {
       }
 
       // Validate ObjectIds
-      if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+      if (!applicationId || !mongoose.Types.ObjectId.isValid(applicationId)) {
          console.log('Invalid applicationId:', applicationId);
          return res.status(400).json({
             success: false,
-            message: 'Invalid application ID format'
+            message: 'Invalid or missing application ID'
          });
       }
 
-      if (!mongoose.Types.ObjectId.isValid(proponentId)) {
+      if (!proponentId || !mongoose.Types.ObjectId.isValid(proponentId)) {
          console.log('Invalid proponentId:', proponentId);
          return res.status(400).json({
             success: false,
-            message: 'Invalid proponent ID format'
+            message: 'Invalid or missing proponent ID'
          });
       }
 
@@ -84,8 +84,19 @@ const scheduleTNA = async (req, res) => {
       console.log('Application found:', {
          id: application._id,
          programName: application.programName,
-         enterpriseName: application.enterpriseName
+         enterpriseName: application.enterpriseName,
+         proponentId: application.proponentId,
+         proponentType: typeof application.proponentId
       });
+
+      // Verify application has valid proponent
+      if (!application.proponentId) {
+         console.log('Application has no proponentId');
+         return res.status(400).json({
+            success: false,
+            message: 'Application is missing proponent information'
+         });
+      }
 
       // Validate date
       const parsedDate = new Date(scheduledDate);
