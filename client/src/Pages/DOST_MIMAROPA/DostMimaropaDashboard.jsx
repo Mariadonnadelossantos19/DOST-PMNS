@@ -316,13 +316,6 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
          case '/tna-report-review':
             return (
                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
-                     <h1 className="text-3xl font-bold mb-2">TNA Report Review</h1>
-                     <p className="text-purple-100">Review and approve TNA reports submitted by PSTO offices</p>
-                     <div className="mt-4 flex gap-2">
-                        <Button variant="outline" onClick={() => setActiveView('/tna-management')}>Go to TNA Management</Button>
-                     </div>
-                  </div>
                   <TNAReportReview />
                </div>
             );

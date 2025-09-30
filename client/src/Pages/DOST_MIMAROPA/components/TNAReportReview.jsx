@@ -306,7 +306,7 @@ const TNAReportReview = () => {
 
                {/* Modal */}
                <div className="flex min-h-full items-center justify-center p-4">
-                  <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+                  <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden">
                      {/* Header */}
                      <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
                         <div className="flex items-center justify-between">
@@ -338,24 +338,24 @@ const TNAReportReview = () => {
                      </div>
 
                      {/* Content */}
-                     <div className="overflow-y-auto max-h-[calc(90vh-200px)]">
-                        <div className="p-6 space-y-6">
+                     <div className="overflow-y-auto max-h-[calc(85vh-180px)]">
+                        <div className="p-4 space-y-4">
                            {/* TNA Details - Full Width */}
                            <TNADetailsDisplay tnaData={selectedReport} formatDate={formatDate} />
                         </div>
                      </div>
 
                      {/* Review Section - Fixed at Bottom */}
-                     <div className="border-t bg-gray-50 p-6">
-                        <div className="max-w-4xl mx-auto">
-                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                              <svg className="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="border-t bg-gray-50 p-4">
+                        <div className="max-w-3xl mx-auto">
+                           <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                              <svg className="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                               Review Decision
                            </h3>
 
-                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
+                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
                               <div>
                                  <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Decision
@@ -380,15 +380,15 @@ const TNAReportReview = () => {
                                     value={reviewComments}
                                     onChange={(e) => setReviewComments(e.target.value)}
                                     placeholder="Enter your review comments..."
-                                    rows={4}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                                  />
                               </div>
                            </div>
 
                            {/* Status Info */}
                            {reviewStatus && (
-                              <div className={`p-4 rounded-lg mb-4 ${
+                              <div className={`p-3 rounded-lg mb-3 ${
                                  reviewStatus === 'approved' ? 'bg-green-50 border border-green-200' :
                                  reviewStatus === 'rejected' ? 'bg-red-50 border border-red-200' :
                                  'bg-orange-50 border border-orange-200'
@@ -415,14 +415,14 @@ const TNAReportReview = () => {
                                     setReviewStatus('');
                                     setReviewComments('');
                                  }}
-                                 className="px-6 py-2"
+                                 className="px-4 py-2"
                               >
                                  Cancel
                               </Button>
                               <Button
                                  onClick={reviewTNAReport}
                                  disabled={!reviewStatus}
-                                 className={`px-6 py-2 ${
+                                 className={`px-4 py-2 ${
                                     reviewStatus === 'approved' ? 'bg-green-600 hover:bg-green-700' :
                                     reviewStatus === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
                                     reviewStatus === 'returned' ? 'bg-orange-600 hover:bg-orange-700' :
