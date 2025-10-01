@@ -75,6 +75,45 @@ const TNAReportReview = () => {
       fetchTNAReports();
    }, []);
 
+   // View/Download TNA report
+   const handleViewReport = async () => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) {
+            alert('Please login first');
+            return;
+         }
+
+         const response = await fetch(`http://localhost:4000/api/tna/${selectedReport._id}/download-report`, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         });
+
+         if (!response.ok) {
+            if (response.status === 401) {
+               alert('Session expired. Please login again.');
+               return;
+            }
+            throw new Error(`Failed to download report: ${response.status}`);
+         }
+
+         // Get the blob and create a download link
+         const blob = await response.blob();
+         const url = window.URL.createObjectURL(blob);
+         const a = document.createElement('a');
+         a.href = url;
+         a.download = selectedReport.tnaReport?.originalName || 'tna-report.pdf';
+         document.body.appendChild(a);
+         a.click();
+         window.URL.revokeObjectURL(url);
+         document.body.removeChild(a);
+      } catch (error) {
+         console.error('Error downloading report:', error);
+         alert('Error downloading report: ' + error.message);
+      }
+   };
+
    // Review TNA report
    const reviewTNAReport = async () => {
       try {
@@ -295,20 +334,17 @@ const TNAReportReview = () => {
          {/* TNA Report Review Modal - Improved Design */}
          {showReviewModal && selectedReport && (
             <div className="fixed inset-0 z-50 overflow-y-auto">
-               {/* Backdrop */}
-               <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
-                    onClick={() => {
-                       setShowReviewModal(false);
-                       setSelectedReport(null);
-                       setReviewStatus('');
-                       setReviewComments('');
-                    }} />
+               <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
+                  setShowReviewModal(false);
+                  setSelectedReport(null);
+                  setReviewStatus('');
+                  setReviewComments('');
+               }} />
 
-               {/* Modal */}
                <div className="flex min-h-full items-center justify-center p-4">
-                  <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden">
+                  <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                      {/* Header */}
-                     <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
+                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
                         <div className="flex items-center justify-between">
                            <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
@@ -318,52 +354,62 @@ const TNAReportReview = () => {
                               </div>
                               <div>
                                  <h2 className="text-xl font-bold text-white">TNA Report Review</h2>
-                                 <p className="text-purple-100 text-sm">DOST MIMAROPA Review Panel</p>
+                                 <p className="text-blue-100 text-sm">DOST MIMAROPA Review Panel</p>
                               </div>
                            </div>
-                           <button
-                              onClick={() => {
-                                 setShowReviewModal(false);
-                                 setSelectedReport(null);
-                                 setReviewStatus('');
-                                 setReviewComments('');
-                              }}
-                              className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-all"
-                           >
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                           </button>
+                           <div className="flex items-center space-x-3">
+                              {selectedReport?.tnaReport?.originalName && (
+                                 <button
+                                    onClick={handleViewReport}
+                                    className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm rounded-lg transition-all flex items-center space-x-2"
+                                 >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>Download Report</span>
+                                 </button>
+                              )}
+                              <button
+                                 onClick={() => {
+                                    setShowReviewModal(false);
+                                    setSelectedReport(null);
+                                    setReviewStatus('');
+                                    setReviewComments('');
+                                 }}
+                                 className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-all"
+                              >
+                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                 </svg>
+                              </button>
+                           </div>
                         </div>
                      </div>
 
                      {/* Content */}
-                     <div className="overflow-y-auto max-h-[calc(85vh-180px)]">
-                        <div className="p-4 space-y-4">
-                           {/* TNA Details - Full Width */}
+                     <div className="flex-1 overflow-y-auto">
+                        <div className="p-6">
                            <TNADetailsDisplay tnaData={selectedReport} formatDate={formatDate} />
                         </div>
                      </div>
 
-                     {/* Review Section - Fixed at Bottom */}
-                     <div className="border-t bg-gray-50 p-4">
-                        <div className="max-w-3xl mx-auto">
-                           <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                              <svg className="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     {/* Review Section - Always Visible */}
+                     <div className="border-t bg-gray-50 px-6 py-4 flex-shrink-0">
+                        <div className="max-w-4xl mx-auto">
+                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                              <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                               Review Decision
                            </h3>
-
-                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
+                           
+                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
                               <div>
-                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Decision
-                                 </label>
+                                 <label className="block text-sm font-medium text-gray-700 mb-2">Decision</label>
                                  <select
                                     value={reviewStatus}
                                     onChange={(e) => setReviewStatus(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                  >
                                     <option value="">Select your decision...</option>
                                     <option value="approved">✅ Approve TNA Report</option>
@@ -373,22 +419,20 @@ const TNAReportReview = () => {
                               </div>
 
                               <div>
-                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Comments & Feedback
-                                 </label>
+                                 <label className="block text-sm font-medium text-gray-700 mb-2">Comments & Feedback</label>
                                  <Textarea
                                     value={reviewComments}
                                     onChange={(e) => setReviewComments(e.target.value)}
                                     placeholder="Enter your review comments..."
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                                  />
                               </div>
                            </div>
 
                            {/* Status Info */}
                            {reviewStatus && (
-                              <div className={`p-3 rounded-lg mb-3 ${
+                              <div className={`p-4 rounded-lg mb-4 ${
                                  reviewStatus === 'approved' ? 'bg-green-50 border border-green-200' :
                                  reviewStatus === 'rejected' ? 'bg-red-50 border border-red-200' :
                                  'bg-orange-50 border border-orange-200'
@@ -415,18 +459,18 @@ const TNAReportReview = () => {
                                     setReviewStatus('');
                                     setReviewComments('');
                                  }}
-                                 className="px-4 py-2"
+                                 className="px-6 py-2"
                               >
                                  Cancel
                               </Button>
                               <Button
                                  onClick={reviewTNAReport}
                                  disabled={!reviewStatus}
-                                 className={`px-4 py-2 ${
+                                 className={`px-6 py-2 ${
                                     reviewStatus === 'approved' ? 'bg-green-600 hover:bg-green-700' :
                                     reviewStatus === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
                                     reviewStatus === 'returned' ? 'bg-orange-600 hover:bg-orange-700' :
-                                    'bg-purple-600 hover:bg-purple-700'
+                                    'bg-blue-600 hover:bg-blue-700'
                                  }`}
                               >
                                  {reviewStatus === 'approved' ? 'Approve Report' :

@@ -78,7 +78,19 @@ const tnaSchema = new mongoose.Schema({
    // TNA status
    status: {
       type: String,
-      enum: ['pending', 'scheduled', 'in_progress', 'completed', 'report_uploaded', 'forwarded_to_dost_mimaropa', 'cancelled'],
+      // Expanded to include DOST MIMAROPA review outcomes
+      enum: [
+         'pending',
+         'scheduled',
+         'in_progress',
+         'completed',
+         'report_uploaded',
+         'forwarded_to_dost_mimaropa',
+         'dost_mimaropa_approved',
+         'dost_mimaropa_rejected',
+         'returned_to_psto',
+         'cancelled'
+      ],
       default: 'pending'
    },
    
@@ -200,6 +212,12 @@ const tnaSchema = new mongoose.Schema({
    // Additional notes
    notes: {
       type: String,
+      default: null
+   },
+   
+   // DOST MIMAROPA approval timestamp
+   dostMimaropaApprovedAt: {
+      type: Date,
       default: null
    }
 }, {

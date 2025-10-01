@@ -11,7 +11,8 @@ const {
    downloadTNAReport,
    forwardTNAToDostMimaropa,
    getTNAReportsForDostMimaropa,
-   reviewTNAReport
+   reviewTNAReport,
+   getApprovedTNAs
 } = require('../controllers/tnaController');
 
 // Schedule TNA
@@ -40,5 +41,8 @@ router.get('/dost-mimaropa/reports', auth, getTNAReportsForDostMimaropa);
 
 // Review TNA report (DOST MIMAROPA)
 router.patch('/:tnaId/dost-mimaropa/review', auth, reviewTNAReport);
+
+// Get approved TNAs for DOST MIMAROPA
+router.get('/dost-mimaropa/approved', auth, getApprovedTNAs);
 
 module.exports = router;

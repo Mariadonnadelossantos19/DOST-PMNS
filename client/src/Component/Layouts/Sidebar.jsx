@@ -144,42 +144,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
    // Management sections
    const managementSections = [
       {
-         id: 'management',
-         label: 'Application Management',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M2 3H6C6.55228 3 7 3.44772 7 4V20C7 20.5523 6.55228 21 6 21H2C1.44772 21 1 20.5523 1 20V4C1 3.44772 1.44772 3 2 3Z" stroke="currentColor" strokeWidth="2"/>
-               <path d="M9 9H21C21.5523 9 22 9.44772 22 10V11C22 11.5523 21.5523 12 21 12H9C8.44772 12 8 11.5523 8 11V10C8 9.44772 8.44772 9 9 9Z" stroke="currentColor" strokeWidth="2"/>
-               <path d="M9 15H21C21.5523 15 22 15.4477 22 16V17C22 17.5523 21.5523 18 21 18H9C8.44772 18 8 17.5523 8 17V16C8 15.4477 8.44772 15 9 15Z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-         ),
-         path: '/management'
-      },
-      {
-         id: 'psto-applications',
-         label: 'PSTO Applications Review',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/psto-applications-review',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
-      },
-      {
-         id: 'tna-management',
-         label: 'TNA Management',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" strokeWidth="2"/>
-               <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/tna-management'
-      },
-      {
          id: 'tna-report-review',
          label: 'TNA Report Review',
          icon: (
@@ -192,14 +156,16 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
-         id: 'monitoring',
-         label: 'Application Monitoring',
+         id: 'approved-tnas',
+         label: 'Approved TNAs',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" strokeWidth="2"/>
             </svg>
          ),
-         path: '/monitoring'
+         path: '/approved-tnas',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
          id: 'proponent-management',
@@ -360,49 +326,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                         </div>
                      </div>
                   </div>
-                  )}
-
-
-                  {/* Quick Stats Section for DOST MIMAROPA */}
-                  {(userRole === 'dost_mimaropa' || userRole === 'super_admin') && (
-                     <div>
-                     {!isCollapsed && (
-                        <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 transition-colors duration-300 ${
-                           isDarkMode ? 'text-gray-400' : 'text-gray-400'
-                        }`}>
-                           Quick Stats
-                        </h3>
-                     )}
-                        <div className="space-y-2">
-                           <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span className="text-xs font-medium text-blue-700">Total Applications</span>
-                                 </div>
-                                 <span className="text-sm font-bold text-blue-800">{stats.totalApplications}</span>
-                              </div>
-                           </div>
-                           <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                    <span className="text-xs font-medium text-yellow-700">Pending Review</span>
-                                 </div>
-                                 <span className="text-sm font-bold text-yellow-800">{stats.pendingApplications}</span>
-                              </div>
-                           </div>
-                           <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span className="text-xs font-medium text-green-700">Approved</span>
-                                 </div>
-                                 <span className="text-sm font-bold text-green-800">{stats.approvedApplications}</span>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
                   )}
 
 

@@ -893,6 +893,11 @@ const reviewTNAReport = async (req, res) => {
       if (comments) {
          tna.notes = comments;
       }
+      
+      // Set approval timestamp if approved
+      if (status === 'approved') {
+         tna.dostMimaropaApprovedAt = new Date();
+      }
 
       await tna.save();
 
@@ -931,6 +936,48 @@ const reviewTNAReport = async (req, res) => {
    }
 };
 
+// Get approved TNAs for DOST MIMAROPA
+const getApprovedTNAs = async (req, res) => {
+   try {
+      console.log('=== GET APPROVED TNAS ===');
+      console.log('User:', req.user);
+
+      // Verify user is DOST MIMAROPA or super admin
+      if (req.user.role !== 'dost_mimaropa' && req.user.role !== 'super_admin') {
+         return res.status(403).json({
+            success: false,
+            message: 'Access denied. Only DOST MIMAROPA users can view approved TNAs'
+         });
+      }
+
+      // Find TNAs that are approved by DOST MIMAROPA
+      const approvedTNAs = await TNA.find({ 
+         status: 'dost_mimaropa_approved' 
+      })
+      .populate('applicationId', 'applicationId enterpriseName status')
+      .populate('proponentId', 'firstName lastName email province')
+      .populate('assignedPSTO', 'name province')
+      .populate('scheduledBy', 'firstName lastName')
+      .sort({ dostMimaropaApprovedAt: -1, updatedAt: -1 });
+
+      console.log('Found approved TNAs:', approvedTNAs.length);
+
+      res.json({
+         success: true,
+         message: 'Approved TNAs retrieved successfully',
+         data: approvedTNAs
+      });
+
+   } catch (error) {
+      console.error('Error fetching approved TNAs:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    scheduleTNA,
    listTNAs,
@@ -940,5 +987,6 @@ module.exports = {
    downloadTNAReport,
    forwardTNAToDostMimaropa,
    getTNAReportsForDostMimaropa,
-   reviewTNAReport
+   reviewTNAReport,
+   getApprovedTNAs
 };
