@@ -380,6 +380,7 @@ const TNAManagement = ({ currentUser }) => {
          'dost_mimaropa_approved': 'green',
          'dost_mimaropa_rejected': 'red',
          'returned_to_psto': 'orange',
+         'signed_by_rd': 'emerald',
          'cancelled': 'red'
       };
       return colors[status] || 'gray';
@@ -396,6 +397,7 @@ const TNAManagement = ({ currentUser }) => {
          'dost_mimaropa_approved': 'Approved by DOST',
          'dost_mimaropa_rejected': 'Rejected by DOST',
          'returned_to_psto': 'Returned to PSTO',
+         'signed_by_rd': 'Signed by RD',
          'cancelled': 'Cancelled'
       };
       return labels[status] || status;
@@ -1018,7 +1020,7 @@ const TNAManagement = ({ currentUser }) => {
                                     </>
                                  )}
                                  
-                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && (
+                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
                                     <Button
                                        onClick={() => forwardTNAToDostMimaropa(tna._id)}
                                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -1159,7 +1161,7 @@ const TNAManagement = ({ currentUser }) => {
                                     </>
                                  )}
                                  
-                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && (
+                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
                                     <Button
                                        onClick={() => forwardTNAToDostMimaropa(tna._id)}
                                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
