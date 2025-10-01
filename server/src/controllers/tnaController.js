@@ -1053,6 +1053,61 @@ const uploadSignedTNAReport = async (req, res) => {
    }
 };
 
+// Download signed TNA report
+const downloadSignedTNAReport = async (req, res) => {
+   try {
+      const { tnaId } = req.params;
+
+      // Find the TNA
+      const tna = await TNA.findById(tnaId);
+      if (!tna) {
+         return res.status(404).json({
+            success: false,
+            message: 'TNA not found'
+         });
+      }
+
+      // Check if signed TNA report exists
+      if (!tna.signedTnaReport || !tna.signedTnaReport.path) {
+         return res.status(404).json({
+            success: false,
+            message: 'Signed TNA report not found'
+         });
+      }
+
+      // Check if file exists
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '../../uploads', tna.signedTnaReport.filename);
+      
+      if (!fs.existsSync(filePath)) {
+         return res.status(404).json({
+            success: false,
+            message: 'Signed TNA report file not found on server'
+         });
+      }
+
+      // Set appropriate headers
+      res.setHeader('Content-Type', tna.signedTnaReport.mimetype || 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${tna.signedTnaReport.originalName}"`);
+
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+
+      console.log(`Signed TNA report downloaded for TNA ${tnaId}`);
+
+   } catch (error) {
+      console.error('Error downloading signed TNA report:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message,
+         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+   }
+};
+
 module.exports = {
    scheduleTNA,
    listTNAs,
@@ -1064,5 +1119,6 @@ module.exports = {
    getTNAReportsForDostMimaropa,
    reviewTNAReport,
    getApprovedTNAs,
-   uploadSignedTNAReport
+   uploadSignedTNAReport,
+   downloadSignedTNAReport
 };

@@ -13,7 +13,8 @@ const {
    getTNAReportsForDostMimaropa,
    reviewTNAReport,
    getApprovedTNAs,
-   uploadSignedTNAReport
+   uploadSignedTNAReport,
+   downloadSignedTNAReport
 } = require('../controllers/tnaController');
 
 // Schedule TNA
@@ -48,5 +49,8 @@ router.get('/dost-mimaropa/approved', auth, getApprovedTNAs);
 
 // Upload signed TNA report (DOST MIMAROPA)
 router.post('/:tnaId/upload-signed-report', auth, upload.single('signedTnaReport'), uploadSignedTNAReport);
+
+// Download signed TNA report
+router.get('/:tnaId/download-signed-report', auth, downloadSignedTNAReport);
 
 module.exports = router;

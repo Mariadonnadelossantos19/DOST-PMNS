@@ -311,6 +311,33 @@ const TNAManagement = ({ currentUser }) => {
       }
    };
 
+   const downloadSignedTNAReport = async (tnaId) => {
+      try {
+         const response = await fetch(`http://localhost:4000/api/tna/${tnaId}/download-signed-report`, {
+            headers: {
+               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+         });
+
+         if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `signed-tna-report-${tnaId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+         } else {
+            alert('Error downloading signed TNA report');
+         }
+      } catch (error) {
+         console.error('Error downloading signed TNA report:', error);
+         alert('Error downloading signed TNA report');
+      }
+   };
+
    const viewTNAReport = async (tnaId) => {
       try {
          const response = await fetch(`http://localhost:4000/api/tna/${tnaId}/download-report`, {
@@ -1019,6 +1046,47 @@ const TNAManagement = ({ currentUser }) => {
                                        </Button>
                                     </>
                                  )}
+
+                                 {/* Signed TNA Report Section */}
+                                 {tna.signedTnaReport && (
+                                    <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                                       <div className="flex items-center justify-between">
+                                          <div className="flex items-center space-x-3">
+                                             <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                             </div>
+                                             <div>
+                                                <p className="text-sm font-medium text-emerald-800">Signed TNA Report (RD Signature)</p>
+                                                <p className="text-xs text-emerald-600">{tna.signedTnaReport.originalName}</p>
+                                                {tna.rdSignedAt && (
+                                                   <p className="text-xs text-emerald-500 mt-1">
+                                                      Signed on: {new Date(tna.rdSignedAt).toLocaleDateString('en-US', {
+                                                         year: 'numeric',
+                                                         month: 'long',
+                                                         day: 'numeric',
+                                                         hour: '2-digit',
+                                                         minute: '2-digit'
+                                                      })}
+                                                   </p>
+                                                )}
+                                             </div>
+                                          </div>
+                                          <div className="flex space-x-2">
+                                             <Button
+                                                onClick={() => downloadSignedTNAReport(tna._id)}
+                                                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition-colors duration-200"
+                                             >
+                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Download Signed
+                                             </Button>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 )}
                                  
                                  {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
                                     <Button
@@ -1159,6 +1227,44 @@ const TNAManagement = ({ currentUser }) => {
                                           Download
                                        </Button>
                                     </>
+                                 )}
+
+                                 {/* Signed TNA Report Section - List View */}
+                                 {tna.signedTnaReport && (
+                                    <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                                       <div className="flex items-center justify-between">
+                                          <div className="flex items-center space-x-2">
+                                             <div className="w-6 h-6 bg-emerald-100 rounded flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                             </div>
+                                             <div>
+                                                <p className="text-xs font-medium text-emerald-800">Signed TNA Report (RD Signature)</p>
+                                                <p className="text-xs text-emerald-600">{tna.signedTnaReport.originalName}</p>
+                                                {tna.rdSignedAt && (
+                                                   <p className="text-xs text-emerald-500">
+                                                      Signed: {new Date(tna.rdSignedAt).toLocaleDateString('en-US', {
+                                                         month: 'short',
+                                                         day: 'numeric',
+                                                         hour: '2-digit',
+                                                         minute: '2-digit'
+                                                      })}
+                                                   </p>
+                                                )}
+                                             </div>
+                                          </div>
+                                          <Button
+                                             onClick={() => downloadSignedTNAReport(tna._id)}
+                                             className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors duration-200"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </Button>
+                                       </div>
+                                    </div>
                                  )}
                                  
                                  {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
