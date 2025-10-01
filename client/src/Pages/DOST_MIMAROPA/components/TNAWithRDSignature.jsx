@@ -804,7 +804,6 @@ const TNAWithRDSignature = () => {
          </div>
 
          {/* TNA Details Modal */}
-         {console.log('Modal render check:', { showDetailsModal, selectedTna: selectedTna?.tnaId })}
          {showDetailsModal && (
             <div className="fixed inset-0 z-50 overflow-y-auto">
                <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
