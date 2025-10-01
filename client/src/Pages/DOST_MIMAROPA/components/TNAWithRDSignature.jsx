@@ -542,7 +542,7 @@ const TNAWithRDSignature = () => {
                // TNA with RD Signature Tab - Show signature workflow
                <div className="space-y-2">
                   {/* Compact Stats Cards */}
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
             <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
@@ -610,29 +610,29 @@ const TNAWithRDSignature = () => {
                   </div>
                </div>
             </div>
-         </div>
-
-         {/* TNA List for RD Signature */}
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-               <h3 className="text-base font-semibold text-gray-900">TNAs Pending RD Signature</h3>
-            </div>
-            
-            <div className="p-2">
-               {approvedTnas.length === 0 ? (
-                  <div className="text-center py-8">
-                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                     </div>
-                     <h4 className="font-medium text-gray-900 mb-1">No TNAs Pending RD Signature</h4>
-                     <p className="text-sm text-gray-600">
-                        Approved TNAs will appear here for RD signature process.
-                     </p>
                   </div>
-               ) : (
-                  <div className="space-y-3">
+
+                  {/* TNA List for RD Signature */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                     <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <h3 className="text-base font-semibold text-gray-900">TNAs Pending RD Signature</h3>
+                     </div>
+                     
+                     <div className="p-2">
+                        {approvedTnas.length === 0 ? (
+                           <div className="text-center py-8">
+                              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                 </svg>
+                              </div>
+                              <h4 className="font-medium text-gray-900 mb-1">No TNAs Pending RD Signature</h4>
+                              <p className="text-sm text-gray-600">
+                                 Approved TNAs will appear here for RD signature process.
+                              </p>
+                           </div>
+                        ) : (
+                           <div className="space-y-3">
                      {approvedTnas.map((tna) => (
                         <div key={tna._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
                            <div className="flex justify-between items-start">
@@ -797,9 +797,12 @@ const TNAWithRDSignature = () => {
                            </div>
                         </div>
                      ))}
+                           </div>
+                        )}
+                     </div>
                   </div>
-               )}
-            </div>
+               </div>
+            )}
          </div>
 
          {/* TNA Details Modal */}
@@ -978,7 +981,6 @@ const TNAWithRDSignature = () => {
                         </div>
                      </div>
                   )}
-                        </div>
                      </div>
                   </div>
                </div>
@@ -1078,6 +1080,7 @@ const TNAWithRDSignature = () => {
                </div>
             </Modal>
          )}
+         </div>
       </div>
    );
 };
