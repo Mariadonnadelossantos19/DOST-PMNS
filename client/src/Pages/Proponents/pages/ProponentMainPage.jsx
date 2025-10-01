@@ -105,8 +105,12 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
 
    // Fetch applications when user data is available
    useEffect(() => {
+      console.log('ProponentMainPage: useEffect triggered, userData:', userData);
       if (userData) {
+         console.log('ProponentMainPage: userData available, calling fetchApplications');
          fetchApplications();
+      } else {
+         console.log('ProponentMainPage: userData not available yet');
       }
    }, [userData]);
 
@@ -148,18 +152,28 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
    // Fetch applications for the proponent
    const fetchApplications = async () => {
       try {
+         console.log('ProponentMainPage: Fetching applications...');
          const token = localStorage.getItem('authToken');
-         if (!token) return;
+         if (!token) {
+            console.log('ProponentMainPage: No auth token found');
+            return;
+         }
 
+         console.log('ProponentMainPage: Making API call to fetch applications');
          const response = await fetch('http://localhost:4000/api/programs/setup/my-applications', {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
 
+         console.log('ProponentMainPage: API response status:', response.status);
          if (response.ok) {
             const data = await response.json();
+            console.log('ProponentMainPage: API response data:', data);
             setApplications(data.applications || []);
+            console.log('ProponentMainPage: Set applications:', data.applications || []);
+         } else {
+            console.error('ProponentMainPage: API call failed with status:', response.status);
          }
       } catch (error) {
          console.error('Error fetching applications:', error);
