@@ -113,6 +113,45 @@ const TNAWithRDSignature = () => {
       }
    };
 
+   // Download signed TNA report
+   const handleDownloadSignedTNA = async (tnaId) => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) {
+            alert('Please login first');
+            return;
+         }
+
+         const response = await fetch(`http://localhost:4000/api/tna/${tnaId}/download-signed-report`, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         });
+
+         if (!response.ok) {
+            if (response.status === 401) {
+               alert('Session expired. Please login again.');
+               return;
+            }
+            throw new Error(`Failed to download signed report: ${response.status}`);
+         }
+
+         // Get the blob and create a download link
+         const blob = await response.blob();
+         const url = window.URL.createObjectURL(blob);
+         const a = document.createElement('a');
+         a.href = url;
+         a.download = `TNA-${tnaId}-signed-by-RD.pdf`;
+         document.body.appendChild(a);
+         a.click();
+         window.URL.revokeObjectURL(url);
+         document.body.removeChild(a);
+      } catch (error) {
+         console.error('Error downloading signed report:', error);
+         alert('Error downloading signed report: ' + error.message);
+      }
+   };
+
    // Upload signed TNA
    const handleUploadSignedTNA = async () => {
       if (!signedFile || !selectedTna) {
@@ -325,14 +364,14 @@ const TNAWithRDSignature = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
-                     <p className="text-xs font-medium text-gray-600">Active Projects</p>
+                     <p className="text-xs font-medium text-gray-600">Signed TNAs</p>
                      <p className="text-xl font-bold text-gray-900">
-                        {approvedTnas.filter(tna => tna.applicationId?.status === 'approved').length}
+                        {approvedTnas.filter(tna => tna.status === 'signed_by_rd').length}
                      </p>
                   </div>
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                     <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                      </svg>
                   </div>
                </div>
@@ -489,20 +528,37 @@ const TNAWithRDSignature = () => {
                               </div>
                               
                               <div className="flex items-center space-x-2 ml-4">
-                                 <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                       setSelectedTna(tna);
-                                       setShowUploadModal(true);
-                                    }}
-                                    className="border-blue-300 text-blue-600 hover:bg-blue-50 text-xs px-3 py-1"
-                                 >
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                    </svg>
-                                    Upload Signed
-                                 </Button>
+                                 {tna.status === 'signed_by_rd' && tna.signedTnaReport ? (
+                                    // Show "View Signed TNA" button if already signed
+                                    <Button
+                                       variant="outline"
+                                       size="sm"
+                                       onClick={() => handleDownloadSignedTNA(tna._id)}
+                                       className="border-green-300 text-green-600 hover:bg-green-50 text-xs px-3 py-1"
+                                    >
+                                       <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                       </svg>
+                                       View Signed TNA
+                                    </Button>
+                                 ) : (
+                                    // Show "Upload Signed" button if not yet signed
+                                    <Button
+                                       variant="outline"
+                                       size="sm"
+                                       onClick={() => {
+                                          setSelectedTna(tna);
+                                          setShowUploadModal(true);
+                                       }}
+                                       className="border-blue-300 text-blue-600 hover:bg-blue-50 text-xs px-3 py-1"
+                                    >
+                                       <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                       </svg>
+                                       Upload Signed
+                                    </Button>
+                                 )}
                               </div>
                            </div>
                         </div>
