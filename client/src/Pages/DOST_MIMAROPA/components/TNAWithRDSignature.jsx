@@ -441,8 +441,10 @@ const TNAWithRDSignature = () => {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => {
+                                             console.log('View Details clicked for TNA:', tna.tnaId);
                                              setSelectedTna(tna);
                                              setShowDetailsModal(true);
+                                             console.log('Modal state set to true');
                                           }}
                                           className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-2 py-1"
                                        >
@@ -800,7 +802,8 @@ const TNAWithRDSignature = () => {
          </div>
 
          {/* TNA Details Modal */}
-         {showDetailsModal && selectedTna && (
+         {console.log('Modal render check:', { showDetailsModal, selectedTna: selectedTna?.tnaId })}
+         {showDetailsModal && (
             <Modal
                isOpen={showDetailsModal}
                onClose={() => {
@@ -808,31 +811,40 @@ const TNAWithRDSignature = () => {
                   setSelectedTna(null);
                }}
                size="lg"
-               title={`TNA Report Details - ${selectedTna.tnaId}`}
+               title={selectedTna ? `TNA Report Details - ${selectedTna.tnaId}` : 'TNA Report Details'}
             >
                <div className="space-y-4">
+                  {/* Test Content */}
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                     <h4 className="font-semibold text-blue-900 mb-3">Modal Test - This should appear!</h4>
+                     <p className="text-blue-700">If you can see this, the modal is working!</p>
+                     <p className="text-sm text-blue-600">Selected TNA: {selectedTna?.tnaId || 'None'}</p>
+                  </div>
+
                   {/* TNA Overview */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                     <h4 className="font-semibold text-gray-900 mb-3">TNA Overview</h4>
-                     <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                           <p className="font-medium text-gray-600">TNA ID</p>
-                           <p className="text-gray-900">{selectedTna.tnaId}</p>
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Status</p>
-                           <StatusBadge status={selectedTna.status} size="sm" />
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Location</p>
-                           <p className="text-gray-900">{selectedTna.location || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Scheduled Date</p>
-                           <p className="text-gray-900">{formatDate(selectedTna.scheduledDate)}</p>
+                  {selectedTna && (
+                     <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">TNA Overview</h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                           <div>
+                              <p className="font-medium text-gray-600">TNA ID</p>
+                              <p className="text-gray-900">{selectedTna.tnaId}</p>
+                           </div>
+                           <div>
+                              <p className="font-medium text-gray-600">Status</p>
+                              <StatusBadge status={selectedTna.status} size="sm" />
+                           </div>
+                           <div>
+                              <p className="font-medium text-gray-600">Location</p>
+                              <p className="text-gray-900">{selectedTna.location || 'N/A'}</p>
+                           </div>
+                           <div>
+                              <p className="font-medium text-gray-600">Scheduled Date</p>
+                              <p className="text-gray-900">{formatDate(selectedTna.scheduledDate)}</p>
+                           </div>
                         </div>
                      </div>
-                  </div>
+                  )}
 
                   {/* Application Details */}
                   <div className="bg-gray-50 rounded-lg p-4">
