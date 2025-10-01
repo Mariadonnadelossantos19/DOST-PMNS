@@ -9,7 +9,13 @@ const ProponentTNAViewer = ({ application }) => {
 
    // Fetch TNA data for this application
    useEffect(() => {
-      if (application && application.status === 'psto_approved') {
+      if (application && (application.status === 'psto_approved' || 
+                         application.status === 'tna_scheduled' || 
+                         application.status === 'tna_completed' || 
+                         application.status === 'tna_report_submitted' ||
+                         application.status === 'dost_mimaropa_approved' ||
+                         application.status === 'dost_mimaropa_rejected' ||
+                         application.status === 'rd_signed')) {
          fetchTNAData();
       }
    }, [application]);
@@ -18,6 +24,8 @@ const ProponentTNAViewer = ({ application }) => {
       try {
          setLoading(true);
          setError(null);
+
+         console.log('ProponentTNAViewer: Fetching TNA data for application:', application._id, 'Status:', application.status);
 
          const token = localStorage.getItem('authToken');
          if (!token) {
@@ -33,10 +41,15 @@ const ProponentTNAViewer = ({ application }) => {
 
          if (response.ok) {
             const data = await response.json();
+            console.log('ProponentTNAViewer: TNA API response:', data);
             if (data.success && data.tnas && data.tnas.length > 0) {
+               console.log('ProponentTNAViewer: Found TNA data:', data.tnas[0]);
                setTnaData(data.tnas[0]); // Get the first TNA for this application
+            } else {
+               console.log('ProponentTNAViewer: No TNA data found for application');
             }
          } else {
+            console.error('ProponentTNAViewer: Failed to fetch TNA data, status:', response.status);
             setError('Failed to fetch TNA data');
          }
       } catch (error) {
@@ -148,8 +161,11 @@ const ProponentTNAViewer = ({ application }) => {
       });
    };
 
-   // Don't show TNA viewer if application is not approved or no TNA data
-   if (application.status !== 'psto_approved' || !tnaData) {
+   // Don't show TNA viewer if no TNA data or application is not in a TNA-related status
+   const tnaRelatedStatuses = ['psto_approved', 'tna_scheduled', 'tna_completed', 'tna_report_submitted', 
+                              'dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rd_signed'];
+   
+   if (!tnaRelatedStatuses.includes(application.status) || !tnaData) {
       return null;
    }
 
