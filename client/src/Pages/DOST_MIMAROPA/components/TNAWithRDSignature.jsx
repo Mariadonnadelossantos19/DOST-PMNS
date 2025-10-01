@@ -57,6 +57,7 @@ const TNAWithRDSignature = () => {
          
          if (result.success) {
             console.log('TNAWithRDSignature - Approved TNAs found:', result.data?.length || 0);
+            console.log('TNAWithRDSignature - TNA statuses:', result.data?.map(tna => ({ id: tna._id, status: tna.status, tnaId: tna.tnaId })));
             setApprovedTnas(result.data || []);
          } else {
             throw new Error(result.message || 'Failed to fetch approved TNAs');
@@ -273,7 +274,9 @@ const TNAWithRDSignature = () => {
                <div className="flex items-center justify-between">
                   <div>
                      <p className="text-xs font-medium text-gray-600">Pending Signature</p>
-                     <p className="text-xl font-bold text-gray-900">{approvedTnas.length}</p>
+                     <p className="text-xl font-bold text-gray-900">
+                        {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved').length}
+                     </p>
                   </div>
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +291,7 @@ const TNAWithRDSignature = () => {
                   <div>
                      <p className="text-xs font-medium text-gray-600">Ready for Download</p>
                      <p className="text-xl font-bold text-gray-900">
-                        {approvedTnas.filter(tna => tna.tnaReport?.originalName).length}
+                        {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved' && tna.tnaReport?.originalName).length}
                      </p>
                   </div>
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">

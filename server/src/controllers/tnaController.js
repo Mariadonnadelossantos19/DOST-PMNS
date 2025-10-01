@@ -959,9 +959,11 @@ const getApprovedTNAs = async (req, res) => {
          });
       }
 
-      // Find TNAs that are approved by DOST MIMAROPA
+      // Find TNAs that are approved by DOST MIMAROPA (including those already signed by RD)
       const approvedTNAs = await TNA.find({ 
-         status: 'dost_mimaropa_approved' 
+         status: { 
+            $in: ['dost_mimaropa_approved', 'signed_by_rd'] 
+         } 
       })
       .populate('applicationId', 'applicationId enterpriseName status')
       .populate('proponentId', 'firstName lastName email province')
