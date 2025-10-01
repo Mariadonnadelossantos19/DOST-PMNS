@@ -1079,9 +1079,6 @@ const TNAWithRDSignature = () => {
                </div>
             </Modal>
          )}
-               </div>
-            )}
-         </div>
       </div>
    );
 };
