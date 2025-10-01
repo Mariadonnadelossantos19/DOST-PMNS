@@ -30,7 +30,11 @@ const StatusBadge = ({
          'in_progress': { color: 'purple', text: 'In Progress' },
          'completed': { color: 'green', text: 'Completed' },
          'report_uploaded': { color: 'blue', text: 'Report Uploaded' },
-         'submitted_to_dost': { color: 'blue', text: 'Submitted to DOST' },
+         'forwarded_to_dost_mimaropa': { color: 'blue', text: 'Forwarded to DOST' },
+         'dost_mimaropa_approved': { color: 'green', text: 'DOST Approved' },
+         'dost_mimaropa_rejected': { color: 'red', text: 'DOST Rejected' },
+         'returned_to_psto': { color: 'orange', text: 'Returned to PSTO' },
+         'signed_by_rd': { color: 'emerald', text: 'Signed by RD' },
          'cancelled': { color: 'red', text: 'Cancelled' },
          
          // User Statuses
@@ -61,7 +65,8 @@ const StatusBadge = ({
       green: 'bg-green-100 text-green-800',
       orange: 'bg-orange-100 text-orange-800',
       red: 'bg-red-100 text-red-800',
-      purple: 'bg-purple-100 text-purple-800'
+      purple: 'bg-purple-100 text-purple-800',
+      emerald: 'bg-emerald-100 text-emerald-800'
    };
 
    return (

@@ -248,7 +248,7 @@ const TNAReportReview = () => {
             />
             <StatsCard
                title="Reviewed"
-               value={tnaReports.filter(report => ['approved', 'rejected', 'returned'].includes(report.status)).length}
+               value={tnaReports.filter(report => ['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'returned_to_psto'].includes(report.status)).length}
                icon="✅"
                color="green"
                subtitle="Completed reviews"

@@ -801,7 +801,16 @@ const getTNAReportsForDostMimaropa = async (req, res) => {
    try {
       console.log('=== GET TNA REPORTS FOR DOST MIMAROPA DEBUG ===');
 
-      const tnas = await TNA.find({ status: 'forwarded_to_dost_mimaropa' })
+      const tnas = await TNA.find({ 
+         status: { 
+            $in: [
+               'forwarded_to_dost_mimaropa', 
+               'dost_mimaropa_approved', 
+               'dost_mimaropa_rejected', 
+               'returned_to_psto'
+            ] 
+         } 
+      })
          .populate('applicationId', 'applicationId enterpriseName proponentId programName businessActivity')
          .populate('proponentId', 'firstName lastName email province phone')
          .populate('scheduledBy', 'firstName lastName')
