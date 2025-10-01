@@ -441,7 +441,8 @@ const TNAWithRDSignature = () => {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => {
-                                             console.log('View Details clicked for TNA:', tna.tnaId);
+                                             console.log('View Details clicked for TNA:', tna);
+                                             console.log('TNA ID:', tna._id, 'TNA ID field:', tna.tnaId);
                                              setSelectedTna(tna);
                                              setShowDetailsModal(true);
                                              console.log('Modal state set to true');
@@ -804,21 +805,51 @@ const TNAWithRDSignature = () => {
          {/* TNA Details Modal */}
          {console.log('Modal render check:', { showDetailsModal, selectedTna: selectedTna?.tnaId })}
          {showDetailsModal && (
-            <Modal
-               isOpen={showDetailsModal}
-               onClose={() => {
+            <div className="fixed inset-0 z-50 overflow-y-auto">
+               <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedTna(null);
-               }}
-               size="lg"
-               title={selectedTna ? `TNA Report Details - ${selectedTna.tnaId}` : 'TNA Report Details'}
-            >
+               }} />
+               
+               <div className="flex min-h-full items-center justify-center p-4">
+                  <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                     {/* Header */}
+                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                           <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                              </div>
+                              <div>
+                                 <h2 className="text-xl font-bold text-white">TNA Report Details</h2>
+                                 <p className="text-blue-100 text-sm">DOST MIMAROPA Review Panel</p>
+                              </div>
+                           </div>
+                           <button
+                              onClick={() => {
+                                 setShowDetailsModal(false);
+                                 setSelectedTna(null);
+                              }}
+                              className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-all"
+                           >
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                           </button>
+                        </div>
+                     </div>
+
+                     {/* Content */}
+                     <div className="flex-1 overflow-y-auto">
+                        <div className="p-6">
                <div className="space-y-4">
                   {/* Test Content */}
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                      <h4 className="font-semibold text-blue-900 mb-3">Modal Test - This should appear!</h4>
                      <p className="text-blue-700">If you can see this, the modal is working!</p>
-                     <p className="text-sm text-blue-600">Selected TNA: {selectedTna?.tnaId || 'None'}</p>
+                     <p className="text-sm text-blue-600">Selected TNA: {selectedTna?._id || selectedTna?.tnaId || 'None'}</p>
                   </div>
 
                   {/* TNA Overview */}
@@ -828,7 +859,7 @@ const TNAWithRDSignature = () => {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                            <div>
                               <p className="font-medium text-gray-600">TNA ID</p>
-                              <p className="text-gray-900">{selectedTna.tnaId}</p>
+                              <p className="text-gray-900">{selectedTna._id || selectedTna.tnaId || 'N/A'}</p>
                            </div>
                            <div>
                               <p className="font-medium text-gray-600">Status</p>
@@ -948,8 +979,11 @@ const TNAWithRDSignature = () => {
                         </div>
                      </div>
                   )}
+                        </div>
+                     </div>
+                  </div>
                </div>
-            </Modal>
+            </div>
          )}
 
          {/* Upload Signed TNA Modal */}
