@@ -801,7 +801,6 @@ const TNAWithRDSignature = () => {
                )}
             </div>
          </div>
-         </div>
 
          {/* TNA Details Modal */}
          {showDetailsModal && (
