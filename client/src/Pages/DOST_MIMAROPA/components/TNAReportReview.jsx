@@ -59,6 +59,7 @@ const TNAReportReview = () => {
          
          if (result.success) {
             console.log('TNAReportReview - TNA Reports found:', result.data?.length || 0);
+            console.log('TNAReportReview - Report statuses:', result.data?.map(r => ({ id: r._id, status: r.status, tnaId: r.tnaId })));
             setTnaReports(result.data || []);
          } else {
             throw new Error(result.message || 'Failed to fetch TNA reports');
@@ -143,6 +144,7 @@ const TNAReportReview = () => {
          
          if (result.success) {
             alert('TNA report reviewed successfully!');
+            console.log('TNAReportReview - Review successful, refreshing reports...');
             setShowReviewModal(false);
             setSelectedReport(null);
             setReviewStatus('');
