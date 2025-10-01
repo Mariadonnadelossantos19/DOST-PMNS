@@ -131,16 +131,23 @@ const DostMimaropaApprovedTna = () => {
 
    if (loading) {
       return (
-         <div className="space-y-6">
-            <DashboardHeader
-               title="Approved TNA Reports"
-               subtitle="Loading approved TNA reports..."
-               color="green"
-            />
-            <div className="flex items-center justify-center h-64">
-               <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading approved TNA reports...</p>
+         <div className="min-h-screen bg-gray-50">
+            <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600">
+               <div className="px-6 py-8">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <h1 className="text-3xl font-bold text-white mb-2">Approved TNA Reports</h1>
+                        <p className="text-green-100 text-lg">Loading approved TNA reports...</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div className="px-6 py-8">
+               <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                     <p className="text-gray-600">Loading approved TNA reports...</p>
+                  </div>
                </div>
             </div>
          </div>
@@ -149,180 +156,331 @@ const DostMimaropaApprovedTna = () => {
 
    if (error) {
       return (
-         <div className="space-y-6">
-            <DashboardHeader
-               title="Approved TNA Reports"
-               subtitle="View approved TNA reports and their details"
-               color="red"
-            />
-            <Alert
-               type="error"
-               title="Error Loading Approved TNAs"
-               message={error}
-               action={
-                  <Button onClick={fetchApprovedTnas} size="sm">
-                     Try Again
-                  </Button>
-               }
-            />
+         <div className="min-h-screen bg-gray-50">
+            <div className="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
+               <div className="px-6 py-8">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <h1 className="text-3xl font-bold text-white mb-2">Approved TNA Reports</h1>
+                        <p className="text-red-100 text-lg">Error loading approved TNA reports</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div className="px-6 py-8">
+               <div className="bg-white rounded-xl shadow-sm border border-red-200 p-8">
+                  <div className="text-center">
+                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                     </div>
+                     <h4 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Approved TNAs</h4>
+                     <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
+                     <Button 
+                        onClick={fetchApprovedTnas} 
+                        className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
+                     >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Try Again
+                     </Button>
+                  </div>
+               </div>
+            </div>
          </div>
       );
    }
 
    return (
-      <div className="space-y-6">
-         <DashboardHeader
-            title="Approved TNA Reports"
-            subtitle="View approved TNA reports and their details"
-            color="green"
-         >
-            <Button onClick={fetchApprovedTnas} variant="outline" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-               </svg>
-               Refresh
-            </Button>
-         </DashboardHeader>
+      <div className="min-h-screen bg-gray-50">
+         {/* Header Section */}
+         <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600">
+            <div className="px-6 py-8">
+               <div className="flex items-center justify-between">
+                  <div>
+                     <h1 className="text-3xl font-bold text-white mb-2">Approved TNA Reports</h1>
+                     <p className="text-green-100 text-lg">View and manage approved TNA reports</p>
+                  </div>
+                  <Button 
+                     onClick={fetchApprovedTnas} 
+                     variant="outline" 
+                     className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm"
+                  >
+                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                     </svg>
+                     Refresh
+                  </Button>
+               </div>
+            </div>
+         </div>
+
+         <div className="px-6 py-8 space-y-8">
 
          {/* Stats Cards */}
-         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatsCard
-               title="Total Approved"
-               value={approvedTnas.length}
-               icon="✅"
-               color="green"
-               subtitle="Approved TNA reports"
-            />
-            <StatsCard
-               title="This Month"
-               value={approvedTnas.filter(tna => {
-                  const tnaDate = new Date(tna.dostMimaropaApprovedAt || tna.updatedAt);
-                  const now = new Date();
-                  return tnaDate.getMonth() === now.getMonth() && tnaDate.getFullYear() === now.getFullYear();
-               }).length}
-               icon="📅"
-               color="blue"
-               subtitle="Approved this month"
-            />
-            <StatsCard
-               title="With Reports"
-               value={approvedTnas.filter(tna => tna.tnaReport?.originalName).length}
-               icon="📄"
-               color="purple"
-               subtitle="Reports available"
-            />
-            <StatsCard
-               title="Active Projects"
-               value={approvedTnas.filter(tna => tna.applicationId?.status === 'approved').length}
-               icon="🚀"
-               color="orange"
-               subtitle="Active applications"
-            />
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+               <div className="flex items-center justify-between">
+                  <div>
+                     <p className="text-sm font-medium text-gray-600 mb-1">Total Approved</p>
+                     <p className="text-2xl font-bold text-gray-900">{approvedTnas.length}</p>
+                     <p className="text-xs text-gray-500 mt-1">TNA reports</p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+               <div className="flex items-center justify-between">
+                  <div>
+                     <p className="text-sm font-medium text-gray-600 mb-1">This Month</p>
+                     <p className="text-2xl font-bold text-gray-900">
+                        {approvedTnas.filter(tna => {
+                           const tnaDate = new Date(tna.dostMimaropaApprovedAt || tna.updatedAt);
+                           const now = new Date();
+                           return tnaDate.getMonth() === now.getMonth() && tnaDate.getFullYear() === now.getFullYear();
+                        }).length}
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">Approved this month</p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                     </svg>
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+               <div className="flex items-center justify-between">
+                  <div>
+                     <p className="text-sm font-medium text-gray-600 mb-1">With Reports</p>
+                     <p className="text-2xl font-bold text-gray-900">
+                        {approvedTnas.filter(tna => tna.tnaReport?.originalName).length}
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">Reports available</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                     </svg>
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+               <div className="flex items-center justify-between">
+                  <div>
+                     <p className="text-sm font-medium text-gray-600 mb-1">Active Projects</p>
+                     <p className="text-2xl font-bold text-gray-900">
+                        {approvedTnas.filter(tna => tna.applicationId?.status === 'approved').length}
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">Active applications</p>
+                  </div>
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                     </svg>
+                  </div>
+               </div>
+            </div>
          </div>
 
          {/* Approved TNAs List */}
-         <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-               Approved TNA Reports
-            </h3>
+         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+               <h3 className="text-lg font-semibold text-gray-900">Approved TNA Reports</h3>
+               <p className="text-sm text-gray-600 mt-1">Manage and view approved TNA reports</p>
+            </div>
             
-            {approvedTnas.length === 0 ? (
-               <Alert
-                  type="info"
-                  title="No Approved TNAs"
-                  message="There are currently no approved TNA reports. TNAs will appear here once they are approved by DOST MIMAROPA."
-               />
-            ) : (
-               <div className="space-y-4">
-                  {approvedTnas.map((tna) => (
-                     <div key={tna._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start">
-                           <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                 <h4 className="font-medium text-gray-900">
-                                    TNA Report - {tna.tnaId}
-                                 </h4>
-                                 <StatusBadge 
-                                    status={tna.status}
-                                    size="sm"
-                                 />
-                                 <StatusBadge 
-                                    status={tna.applicationId?.status}
-                                    size="sm"
-                                 />
+            <div className="p-6">
+               {approvedTnas.length === 0 ? (
+                  <div className="text-center py-12">
+                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                     </div>
+                     <h4 className="text-lg font-medium text-gray-900 mb-2">No Approved TNAs</h4>
+                     <p className="text-gray-600 max-w-md mx-auto">
+                        There are currently no approved TNA reports. TNAs will appear here once they are approved by DOST MIMAROPA.
+                     </p>
+                  </div>
+               ) : (
+                  <div className="space-y-4">
+                     {approvedTnas.map((tna) => (
+                        <div key={tna._id} className="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+                           <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                 <div className="flex items-center space-x-3 mb-4">
+                                    <div className="flex items-center space-x-2">
+                                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                       <h4 className="font-semibold text-gray-900">
+                                          TNA Report - {tna.tnaId}
+                                       </h4>
+                                    </div>
+                                    <StatusBadge 
+                                       status={tna.status}
+                                       size="sm"
+                                    />
+                                    <StatusBadge 
+                                       status={tna.applicationId?.status}
+                                       size="sm"
+                                    />
+                                 </div>
+                                 
+                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">Application</p>
+                                             <p className="text-sm text-gray-900">{tna.applicationId?.applicationId || 'N/A'}</p>
+                                          </div>
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">Proponent</p>
+                                             <p className="text-sm text-gray-900">{tna.proponentId?.firstName} {tna.proponentId?.lastName}</p>
+                                          </div>
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">Enterprise</p>
+                                             <p className="text-sm text-gray-900">{tna.applicationId?.enterpriseName || 'N/A'}</p>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">PSTO</p>
+                                             <p className="text-sm text-gray-900">{tna.scheduledBy?.firstName} {tna.scheduledBy?.lastName}</p>
+                                          </div>
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">Approved</p>
+                                             <p className="text-sm text-gray-900">{formatDate(tna.dostMimaropaApprovedAt)}</p>
+                                          </div>
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-gray-600">Location</p>
+                                             <p className="text-sm text-gray-900">{tna.location || 'N/A'}</p>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+
+                                 {tna.tnaReport && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                       <div className="flex items-center justify-between">
+                                          <div className="flex items-center space-x-3">
+                                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                             </div>
+                                             <div>
+                                                <p className="text-sm font-medium text-blue-800">Report File</p>
+                                                <p className="text-sm text-blue-600">{tna.tnaReport.originalName}</p>
+                                             </div>
+                                          </div>
+                                          <Button
+                                             variant="outline"
+                                             size="sm"
+                                             onClick={() => handleViewReport(tna)}
+                                             className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                          >
+                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </Button>
+                                       </div>
+                                    </div>
+                                 )}
+
+                                 {tna.assessmentTeam && tna.assessmentTeam.length > 0 && (
+                                    <div className="mt-4">
+                                       <p className="text-sm font-medium text-gray-700 mb-2">Assessment Team</p>
+                                       <div className="flex flex-wrap gap-2">
+                                          {tna.assessmentTeam.map((member, index) => (
+                                             <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md border">
+                                                {member.name} ({member.position})
+                                             </span>
+                                          ))}
+                                       </div>
+                                    </div>
+                                 )}
                               </div>
                               
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                                 <div>
-                                    <p><strong>Application:</strong> {tna.applicationId?.applicationId || 'N/A'}</p>
-                                    <p><strong>Proponent:</strong> {tna.proponentId?.firstName} {tna.proponentId?.lastName}</p>
-                                    <p><strong>Enterprise:</strong> {tna.applicationId?.enterpriseName || 'N/A'}</p>
-                                 </div>
-                                 <div>
-                                    <p><strong>PSTO:</strong> {tna.scheduledBy?.firstName} {tna.scheduledBy?.lastName}</p>
-                                    <p><strong>Approved:</strong> {formatDate(tna.dostMimaropaApprovedAt)}</p>
-                                    <p><strong>Location:</strong> {tna.location || 'N/A'}</p>
-                                 </div>
+                              <div className="flex items-center space-x-2 ml-6">
+                                 <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                       setSelectedTna(tna);
+                                       setShowDetailsModal(true);
+                                    }}
+                                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                                 >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View Details
+                                 </Button>
                               </div>
-
-                              {tna.tnaReport && (
-                                 <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                                    <div className="flex items-center justify-between">
-                                       <div className="flex items-center space-x-2">
-                                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                          </svg>
-                                          <span className="text-sm font-medium text-blue-800">
-                                             Report File: {tna.tnaReport.originalName}
-                                          </span>
-                                       </div>
-                                       <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleViewReport(tna)}
-                                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                                       >
-                                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                          </svg>
-                                          Download
-                                       </Button>
-                                    </div>
-                                 </div>
-                              )}
-
-                              {tna.assessmentTeam && tna.assessmentTeam.length > 0 && (
-                                 <div className="mt-3">
-                                    <p className="text-sm font-medium text-gray-700 mb-1">Assessment Team:</p>
-                                    <div className="flex flex-wrap gap-2">
-                                       {tna.assessmentTeam.map((member, index) => (
-                                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md">
-                                             {member.name} ({member.position})
-                                          </span>
-                                       ))}
-                                    </div>
-                                 </div>
-                              )}
-                           </div>
-                           
-                           <div className="flex items-center space-x-2 ml-4">
-                              <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => {
-                                    setSelectedTna(tna);
-                                    setShowDetailsModal(true);
-                                 }}
-                              >
-                                 View Details
-                              </Button>
                            </div>
                         </div>
-                     </div>
-                  ))}
-               </div>
-            )}
-         </Card>
+                     ))}
+                  </div>
+               )}
+            </div>
+         </div>
 
          {/* TNA Details Modal */}
          {showDetailsModal && selectedTna && (
@@ -339,34 +497,40 @@ const DostMimaropaApprovedTna = () => {
                   <TNADetailsDisplay tnaData={selectedTna} formatDate={formatDate} />
                   
                   {selectedTna.tnaReport && (
-                     <div className="border-t pt-4">
-                        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-md">
-                           <div className="flex items-center space-x-3">
-                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              <div>
-                                 <p className="font-medium text-blue-800">TNA Report File</p>
-                                 <p className="text-sm text-blue-600">{selectedTna.tnaReport.originalName}</p>
+                     <div className="border-t pt-6">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                           <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div>
+                                    <h4 className="font-semibold text-blue-900">TNA Report File</h4>
+                                    <p className="text-sm text-blue-700">{selectedTna.tnaReport.originalName}</p>
+                                 </div>
                               </div>
+                              <Button
+                                 onClick={() => handleViewReport(selectedTna)}
+                                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                              >
+                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                                 Download Report
+                              </Button>
                            </div>
-                           <Button
-                              onClick={() => handleViewReport(selectedTna)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                           >
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              Download Report
-                           </Button>
                         </div>
                      </div>
                   )}
                </div>
             </Modal>
          )}
+         </div>
       </div>
    );
+   
 };
 
 export default DostMimaropaApprovedTna;
