@@ -192,22 +192,11 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
-         id: 'approved-tnas',
-         label: 'Approved TNAs',
+         id: 'approved-tna-management',
+         label: 'Approved TNAs Management',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-         ),
-         path: '/approved-tnas',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
-      },
-      {
-         id: 'tna-rd-signature',
-         label: 'TNA with RD Signature',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
