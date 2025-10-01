@@ -13,6 +13,7 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
    const [showRegistrationForm, setShowRegistrationForm] = useState(false);
    const [loading, setLoading] = useState(true);
    const [showProfileModal, setShowProfileModal] = useState(false);
+   const [showEnterpriseProfile, setShowEnterpriseProfile] = useState(false);
    const [showProgramSelection, setShowProgramSelection] = useState(false);
    const [showApplicationForm, setShowApplicationForm] = useState(false);
    const [selectedProgram, setSelectedProgram] = useState(null);
