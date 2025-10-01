@@ -287,10 +287,10 @@ const TNAWithRDSignature = () => {
       <div className="bg-gray-50 min-h-screen">
          {/* Header with Tabs */}
          <div className="bg-white border-b border-gray-200">
-            <div className="px-3 py-2">
-               <div className="flex items-center justify-between mb-2">
+            <div className="px-2 py-1">
+               <div className="flex items-center justify-between mb-1">
                   <div>
-                     <h1 className="text-lg font-bold text-gray-900">Approved TNAs Management</h1>
+                     <h1 className="text-base font-bold text-gray-900">Approved TNAs Management</h1>
                      <p className="text-gray-600 text-xs">Manage approved TNAs and RD signature process</p>
                   </div>
                   <Button 
@@ -350,11 +350,11 @@ const TNAWithRDSignature = () => {
             </div>
          </div>
 
-         <div className="p-3 space-y-3">
+         <div className="p-2 space-y-2">
             {/* Tab Content */}
             {activeTab === 'approved' ? (
                // Approved TNAs Tab - Show all approved TNAs
-               <div className="space-y-3">
+               <div className="space-y-2">
                   {/* Stats for Approved TNAs */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                      <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
@@ -426,10 +426,10 @@ const TNAWithRDSignature = () => {
 
                   {/* Approved TNAs List - Matching the design from the image */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-                     <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-                        <h3 className="text-lg font-semibold text-gray-900">Approved TNA Reports</h3>
+                     <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <h3 className="text-base font-semibold text-gray-900">Approved TNA Reports</h3>
                      </div>
-                     <div className="p-4">
+                     <div className="p-2">
                         {approvedTnas.length === 0 ? (
                            <div className="text-center py-12">
                               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -441,13 +441,13 @@ const TNAWithRDSignature = () => {
                               <p className="text-gray-600">Approved TNAs will appear here</p>
                            </div>
                         ) : (
-                           <div className="space-y-2">
+                           <div className="space-y-1">
                               {approvedTnas.map((tna) => (
-                                 <div key={tna._id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                 <div key={tna._id} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow duration-200">
                                     {/* Header with status badges */}
-                                    <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center justify-between mb-1">
                                        <div className="flex items-center space-x-2">
-                                          <h4 className="text-sm font-semibold text-gray-900">TNA Report - {tna.tnaId}</h4>
+                                          <h4 className="text-xs font-semibold text-gray-900">TNA Report - {tna.tnaId}</h4>
                                           <StatusBadge status={tna.status} size="sm" />
                                           {tna.applicationId?.status && (
                                              <StatusBadge status={tna.applicationId.status} size="sm" />
@@ -456,41 +456,41 @@ const TNAWithRDSignature = () => {
                                        <Button
                                           variant="outline"
                                           size="sm"
-                                          className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-2 py-1"
+                                          className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-1.5 py-0.5"
                                        >
                                           View Details
                                        </Button>
                                     </div>
 
                                     {/* Two column layout */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                                        {/* Left Column */}
-                                       <div className="space-y-2">
+                                       <div className="space-y-1">
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">Application</p>
-                                             <p className="text-sm text-gray-900">{tna.applicationId?.applicationId || 'N/A'}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">Application</p>
+                                             <p className="text-xs text-gray-900">{tna.applicationId?.applicationId || 'N/A'}</p>
                                           </div>
                                           
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">Proponent</p>
-                                             <p className="text-sm text-gray-900">{tna.proponentId?.firstName} {tna.proponentId?.lastName}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">Proponent</p>
+                                             <p className="text-xs text-gray-900">{tna.proponentId?.firstName} {tna.proponentId?.lastName}</p>
                                           </div>
                                           
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">Enterprise</p>
-                                             <p className="text-sm text-gray-900">{tna.applicationId?.enterpriseName || 'N/A'}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">Enterprise</p>
+                                             <p className="text-xs text-gray-900">{tna.applicationId?.enterpriseName || 'N/A'}</p>
                                           </div>
                                           
                                           {tna.tnaReport && (
                                              <div>
-                                                <p className="text-xs font-medium text-gray-600 mb-1">Report File</p>
-                                                <div className="flex items-center space-x-2">
-                                                   <span className="text-blue-600 text-xs truncate max-w-32">{tna.tnaReport.originalName}</span>
+                                                <p className="text-xs font-medium text-gray-600 mb-0.5">Report File</p>
+                                                <div className="flex items-center space-x-1">
+                                                   <span className="text-blue-600 text-xs truncate max-w-24">{tna.tnaReport.originalName}</span>
                                                    <Button
                                                       variant="outline"
                                                       size="sm"
                                                       onClick={() => handleDownloadForSignature(tna)}
-                                                      className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-2 py-1"
+                                                      className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-1.5 py-0.5"
                                                    >
                                                       Download
                                                    </Button>
@@ -500,8 +500,8 @@ const TNAWithRDSignature = () => {
                                           
                                           {tna.assessmentTeam && tna.assessmentTeam.length > 0 && (
                                              <div>
-                                                <p className="text-xs font-medium text-gray-600 mb-1">Assessment Team</p>
-                                                <div className="space-y-1">
+                                                <p className="text-xs font-medium text-gray-600 mb-0.5">Assessment Team</p>
+                                                <div className="space-y-0.5">
                                                    {tna.assessmentTeam.slice(0, 2).map((member, index) => (
                                                       <p key={index} className="text-gray-900 text-xs">
                                                          {member.name} ({member.position})
@@ -516,26 +516,26 @@ const TNAWithRDSignature = () => {
                                        </div>
 
                                        {/* Right Column */}
-                                       <div className="space-y-2">
+                                       <div className="space-y-1">
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">PSTO</p>
-                                             <p className="text-sm text-gray-900">{tna.scheduledBy?.firstName} {tna.scheduledBy?.lastName}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">PSTO</p>
+                                             <p className="text-xs text-gray-900">{tna.scheduledBy?.firstName} {tna.scheduledBy?.lastName}</p>
                                           </div>
                                           
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">Approved</p>
-                                             <p className="text-sm text-gray-900">{formatDate(tna.dostMimaropaApprovedAt)}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">Approved</p>
+                                             <p className="text-xs text-gray-900">{formatDate(tna.dostMimaropaApprovedAt)}</p>
                                           </div>
                                           
                                           <div>
-                                             <p className="text-xs font-medium text-gray-600 mb-1">Location</p>
-                                             <p className="text-sm text-gray-900">{tna.location || 'N/A'}</p>
+                                             <p className="text-xs font-medium text-gray-600 mb-0.5">Location</p>
+                                             <p className="text-xs text-gray-900">{tna.location || 'N/A'}</p>
                                           </div>
                                           
                                           {tna.dateConducted && (
                                              <div>
-                                                <p className="text-xs font-medium text-gray-600 mb-1">Conducted</p>
-                                                <p className="text-sm text-gray-900">{formatDate(tna.dateConducted)}</p>
+                                                <p className="text-xs font-medium text-gray-600 mb-0.5">Conducted</p>
+                                                <p className="text-xs text-gray-900">{formatDate(tna.dateConducted)}</p>
                                              </div>
                                           )}
                                        </div>
@@ -549,46 +549,46 @@ const TNAWithRDSignature = () => {
                </div>
             ) : (
                // TNA with RD Signature Tab - Show signature workflow
-               <div className="space-y-6">
+               <div className="space-y-2">
                   {/* Compact Stats Cards */}
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
                      <p className="text-xs font-medium text-gray-600">Pending Signature</p>
-                     <p className="text-xl font-bold text-gray-900">
+                     <p className="text-base font-bold text-gray-900">
                         {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved').length}
                      </p>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                     <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-5 h-5 bg-blue-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                      </svg>
                   </div>
                </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
                      <p className="text-xs font-medium text-gray-600">Ready for Download</p>
-                     <p className="text-xl font-bold text-gray-900">
+                     <p className="text-base font-bold text-gray-900">
                         {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved' && tna.tnaReport?.originalName).length}
                      </p>
                   </div>
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                     <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                      </svg>
                   </div>
                </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
                      <p className="text-xs font-medium text-gray-600">This Month</p>
-                     <p className="text-xl font-bold text-gray-900">
+                     <p className="text-base font-bold text-gray-900">
                         {approvedTnas.filter(tna => {
                            const tnaDate = new Date(tna.dostMimaropaApprovedAt || tna.updatedAt);
                            const now = new Date();
@@ -596,24 +596,24 @@ const TNAWithRDSignature = () => {
                         }).length}
                      </p>
                   </div>
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                     <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                      </svg>
                   </div>
                </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
                   <div>
                      <p className="text-xs font-medium text-gray-600">Signed TNAs</p>
-                     <p className="text-xl font-bold text-gray-900">
+                     <p className="text-base font-bold text-gray-900">
                         {approvedTnas.filter(tna => tna.status === 'signed_by_rd').length}
                      </p>
                   </div>
-                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                     <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-5 h-5 bg-emerald-100 rounded-lg flex items-center justify-center">
+                     <svg className="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                      </svg>
                   </div>
@@ -623,11 +623,11 @@ const TNAWithRDSignature = () => {
 
          {/* TNA List for RD Signature */}
          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-               <h3 className="text-lg font-semibold text-gray-900">TNAs Pending RD Signature</h3>
+            <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+               <h3 className="text-base font-semibold text-gray-900">TNAs Pending RD Signature</h3>
             </div>
             
-            <div className="p-4">
+            <div className="p-2">
                {approvedTnas.length === 0 ? (
                   <div className="text-center py-8">
                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
