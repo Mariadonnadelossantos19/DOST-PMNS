@@ -232,6 +232,8 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
 
    // Render content based on current path
    const renderContent = () => {
+      console.log('ProponentMainPage renderContent - currentPath:', currentPath);
+      
       // Handle specific forms first, as they are modal-like or full-page overrides
       if (showRegistrationForm) {
          return <ProponentRegistrationForm currentUser={currentUser} handleLoginSuccess={handleLoginSuccess} setShowRegistrationForm={setShowRegistrationForm} />;
@@ -421,6 +423,7 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
             );
          default:
             // Default to the Proponent Dashboard if path is not recognized
+            console.log('ProponentMainPage - Using default case for currentPath:', currentPath);
             return (
                <div className="container mx-auto p-6">
                   <div className="flex justify-between items-center mb-6">
