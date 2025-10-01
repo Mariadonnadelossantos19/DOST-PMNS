@@ -259,7 +259,7 @@ const DostMimaropaApprovedTna = () => {
                                     <p><strong>Enterprise:</strong> {tna.applicationId?.enterpriseName || 'N/A'}</p>
                                  </div>
                                  <div>
-                                    <p><strong>PSTO:</strong> {tna.assignedPSTO?.name || 'N/A'}</p>
+                                    <p><strong>PSTO:</strong> {tna.scheduledBy?.firstName} {tna.scheduledBy?.lastName}</p>
                                     <p><strong>Approved:</strong> {formatDate(tna.dostMimaropaApprovedAt)}</p>
                                     <p><strong>Location:</strong> {tna.location || 'N/A'}</p>
                                  </div>

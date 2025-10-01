@@ -956,7 +956,6 @@ const getApprovedTNAs = async (req, res) => {
       })
       .populate('applicationId', 'applicationId enterpriseName status')
       .populate('proponentId', 'firstName lastName email province')
-      .populate('assignedPSTO', 'name province')
       .populate('scheduledBy', 'firstName lastName')
       .sort({ dostMimaropaApprovedAt: -1, updatedAt: -1 });
 
