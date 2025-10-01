@@ -20,6 +20,7 @@ const TNAWithRDSignature = () => {
    const [showUploadModal, setShowUploadModal] = useState(false);
    const [signedFile, setSignedFile] = useState(null);
    const [uploading, setUploading] = useState(false);
+   const [activeTab, setActiveTab] = useState('approved'); // 'approved' or 'signature'
 
    // Fetch approved TNAs that need RD signature
    const fetchApprovedTnas = async () => {
@@ -284,30 +285,218 @@ const TNAWithRDSignature = () => {
 
    return (
       <div className="bg-gray-50 min-h-screen">
-         {/* Compact Header */}
-         <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-               <div>
-                  <h1 className="text-2xl font-bold text-gray-900">TNA with RD Signature</h1>
-                  <p className="text-gray-600 text-sm mt-1">Download, print, get RD signature, and upload signed TNAs</p>
+         {/* Header with Tabs */}
+         <div className="bg-white border-b border-gray-200">
+            <div className="px-6 py-4">
+               <div className="flex items-center justify-between mb-4">
+                  <div>
+                     <h1 className="text-2xl font-bold text-gray-900">Approved TNAs Management</h1>
+                     <p className="text-gray-600 text-sm mt-1">Manage approved TNAs and RD signature process</p>
+                  </div>
+                  <Button 
+                     onClick={fetchApprovedTnas} 
+                     variant="outline" 
+                     size="sm"
+                     className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                     </svg>
+                     Refresh
+                  </Button>
                </div>
-               <Button 
-                  onClick={fetchApprovedTnas} 
-                  variant="outline" 
-                  size="sm"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-               >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-               </Button>
+               
+               {/* Tabs */}
+               <div className="border-b border-gray-200">
+                  <nav className="flex space-x-8" aria-label="Tabs">
+                     <button
+                        onClick={() => setActiveTab('approved')}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                           activeTab === 'approved'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                     >
+                        <div className="flex items-center space-x-2">
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                           <span>Approved TNAs</span>
+                           <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">
+                              {approvedTnas.length}
+                           </span>
+                        </div>
+                     </button>
+                     <button
+                        onClick={() => setActiveTab('signature')}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                           activeTab === 'signature'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                     >
+                        <div className="flex items-center space-x-2">
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                           </svg>
+                           <span>TNA with RD Signature</span>
+                           <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full">
+                              {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved').length}
+                           </span>
+                        </div>
+                     </button>
+                  </nav>
+               </div>
             </div>
          </div>
 
          <div className="p-6 space-y-6">
+            {/* Tab Content */}
+            {activeTab === 'approved' ? (
+               // Approved TNAs Tab - Show all approved TNAs
+               <div className="space-y-6">
+                  {/* Stats for Approved TNAs */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Total Approved</p>
+                              <p className="text-xl font-bold text-gray-900">{approvedTnas.length}</p>
+                           </div>
+                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                           </div>
+                        </div>
+                     </div>
 
-         {/* Compact Stats Cards */}
+                     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Pending Signature</p>
+                              <p className="text-xl font-bold text-gray-900">
+                                 {approvedTnas.filter(tna => tna.status === 'dost_mimaropa_approved').length}
+                              </p>
+                           </div>
+                           <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">Signed TNAs</p>
+                              <p className="text-xl font-bold text-gray-900">
+                                 {approvedTnas.filter(tna => tna.status === 'signed_by_rd').length}
+                              </p>
+                           </div>
+                           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <p className="text-xs font-medium text-gray-600">This Month</p>
+                              <p className="text-xl font-bold text-gray-900">
+                                 {approvedTnas.filter(tna => {
+                                    const tnaDate = new Date(tna.dostMimaropaApprovedAt || tna.updatedAt);
+                                    const now = new Date();
+                                    return tnaDate.getMonth() === now.getMonth() && tnaDate.getFullYear() === now.getFullYear();
+                                 }).length}
+                              </p>
+                           </div>
+                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Approved TNAs List */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                     <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <h3 className="text-lg font-semibold text-gray-900">All Approved TNAs</h3>
+                     </div>
+                     <div className="p-4">
+                        {approvedTnas.length === 0 ? (
+                           <div className="text-center py-12">
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">No Approved TNAs</h3>
+                              <p className="text-gray-600">Approved TNAs will appear here</p>
+                           </div>
+                        ) : (
+                           <div className="space-y-4">
+                              {approvedTnas.map((tna) => (
+                                 <div key={tna._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                       <div className="flex-1">
+                                          <div className="flex items-center space-x-3 mb-2">
+                                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                             <h4 className="font-medium text-gray-900">TNA Report - {tna.tnaId}</h4>
+                                             <StatusBadge status={tna.status} size="sm" />
+                                          </div>
+                                          
+                                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                                             <div>
+                                                <p className="font-medium text-gray-600">Application</p>
+                                                <p className="text-gray-900">{tna.applicationId?.applicationId || 'N/A'}</p>
+                                             </div>
+                                             <div>
+                                                <p className="font-medium text-gray-600">Proponent</p>
+                                                <p className="text-gray-900">{tna.proponentId?.firstName} {tna.proponentId?.lastName}</p>
+                                             </div>
+                                             <div>
+                                                <p className="font-medium text-gray-600">Enterprise</p>
+                                                <p className="text-gray-900">{tna.applicationId?.enterpriseName || 'N/A'}</p>
+                                             </div>
+                                             <div>
+                                                <p className="font-medium text-gray-600">Approved</p>
+                                                <p className="text-gray-900">{formatDate(tna.dostMimaropaApprovedAt)}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-2 ml-4">
+                                          <Button
+                                             variant="outline"
+                                             size="sm"
+                                             onClick={() => handleDownloadForSignature(tna)}
+                                             className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-2 py-1"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Download
+                                          </Button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        )}
+                     </div>
+                  </div>
+               </div>
+            ) : (
+               // TNA with RD Signature Tab - Show signature workflow
+               <div className="space-y-6">
+                  {/* Compact Stats Cards */}
          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                <div className="flex items-center justify-between">
@@ -661,6 +850,8 @@ const TNAWithRDSignature = () => {
                </div>
             </Modal>
          )}
+               </div>
+            )}
          </div>
       </div>
    );
