@@ -419,10 +419,10 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                                  const allowedSections = ['proponent-dashboard', 'monitoring', 'notifications', 'reports', 'settings', 'applications'];
                                  return allowedSections.includes(section.id);
                               }
-                              // For DOST MIMAROPA, exclude Application Management and PSTO Applications Review
+                              // For DOST MIMAROPA, exclude Application Management, PSTO Applications Review, Application Monitoring, and Proponent Management
                               if (userRole === 'dost_mimaropa') {
-                                 if (section.id === 'management' || section.id === 'psto-applications') {
-                                    return false; // Hide Application Management and PSTO Applications Review for DOST MIMAROPA
+                                 if (section.id === 'management' || section.id === 'psto-applications' || section.id === 'monitoring' || section.id === 'proponent-management') {
+                                    return false; // Hide these sections for DOST MIMAROPA
                                  }
                               }
                               // Check if section has role restrictions
