@@ -801,6 +801,7 @@ const TNAWithRDSignature = () => {
                )}
             </div>
          </div>
+         </div>
 
          {/* TNA Details Modal */}
          {console.log('Modal render check:', { showDetailsModal, selectedTna: selectedTna?.tnaId })}
