@@ -846,141 +846,136 @@ const TNAWithRDSignature = () => {
                      {/* Content */}
                      <div className="flex-1 overflow-y-auto">
                         <div className="p-6">
-               <div className="space-y-4">
-                  {/* Test Content */}
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                     <h4 className="font-semibold text-blue-900 mb-3">Modal Test - This should appear!</h4>
-                     <p className="text-blue-700">If you can see this, the modal is working!</p>
-                     <p className="text-sm text-blue-600">Selected TNA: {selectedTna?._id || selectedTna?.tnaId || 'None'}</p>
-                  </div>
-
-                  {/* TNA Overview */}
-                  {selectedTna && (
-                     <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3">TNA Overview</h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                           <div>
-                              <p className="font-medium text-gray-600">TNA ID</p>
-                              <p className="text-gray-900">{selectedTna._id || selectedTna.tnaId || 'N/A'}</p>
-                           </div>
-                           <div>
-                              <p className="font-medium text-gray-600">Status</p>
-                              <StatusBadge status={selectedTna.status} size="sm" />
-                           </div>
-                           <div>
-                              <p className="font-medium text-gray-600">Location</p>
-                              <p className="text-gray-900">{selectedTna.location || 'N/A'}</p>
-                           </div>
-                           <div>
-                              <p className="font-medium text-gray-600">Scheduled Date</p>
-                              <p className="text-gray-900">{formatDate(selectedTna.scheduledDate)}</p>
-                           </div>
-                        </div>
-                     </div>
-                  )}
-
-                  {/* Application Details */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                     <h4 className="font-semibold text-gray-900 mb-3">Application Details</h4>
-                     <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                           <p className="font-medium text-gray-600">Application ID</p>
-                           <p className="text-gray-900">{selectedTna.applicationId?.applicationId || 'N/A'}</p>
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Application Status</p>
-                           {selectedTna.applicationId?.status && (
-                              <StatusBadge status={selectedTna.applicationId.status} size="sm" />
-                           )}
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Proponent</p>
-                           <p className="text-gray-900">{selectedTna.proponentId?.firstName} {selectedTna.proponentId?.lastName}</p>
-                        </div>
-                        <div>
-                           <p className="font-medium text-gray-600">Enterprise</p>
-                           <p className="text-gray-900">{selectedTna.applicationId?.enterpriseName || 'N/A'}</p>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Assessment Team */}
-                  {selectedTna.assessmentTeam && selectedTna.assessmentTeam.length > 0 && (
-                     <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3">Assessment Team</h4>
-                        <div className="space-y-2">
-                           {selectedTna.assessmentTeam.map((member, index) => (
-                              <div key={index} className="flex items-center space-x-3 text-sm">
-                                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
+                           <div className="space-y-4">
+                              {/* TNA Overview */}
+                              {selectedTna && (
+                                 <div className="bg-gray-50 rounded-lg p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-3">TNA Overview</h4>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                       <div>
+                                          <p className="font-medium text-gray-600">TNA ID</p>
+                                          <p className="text-gray-900">{selectedTna._id || selectedTna.tnaId || 'N/A'}</p>
+                                       </div>
+                                       <div>
+                                          <p className="font-medium text-gray-600">Status</p>
+                                          <StatusBadge status={selectedTna.status} size="sm" />
+                                       </div>
+                                       <div>
+                                          <p className="font-medium text-gray-600">Location</p>
+                                          <p className="text-gray-900">{selectedTna.location || 'N/A'}</p>
+                                       </div>
+                                       <div>
+                                          <p className="font-medium text-gray-600">Scheduled Date</p>
+                                          <p className="text-gray-900">{formatDate(selectedTna.scheduledDate)}</p>
+                                       </div>
+                                    </div>
                                  </div>
-                                 <div>
-                                    <p className="font-medium text-gray-900">{member.name}</p>
-                                    <p className="text-gray-600">{member.position} - {member.department}</p>
+                              )}
+
+                              {/* Application Details */}
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                 <h4 className="font-semibold text-gray-900 mb-3">Application Details</h4>
+                                 <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                       <p className="font-medium text-gray-600">Application ID</p>
+                                       <p className="text-gray-900">{selectedTna.applicationId?.applicationId || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                       <p className="font-medium text-gray-600">Application Status</p>
+                                       {selectedTna.applicationId?.status && (
+                                          <StatusBadge status={selectedTna.applicationId.status} size="sm" />
+                                       )}
+                                    </div>
+                                    <div>
+                                       <p className="font-medium text-gray-600">Proponent</p>
+                                       <p className="text-gray-900">{selectedTna.proponentId?.firstName} {selectedTna.proponentId?.lastName}</p>
+                                    </div>
+                                    <div>
+                                       <p className="font-medium text-gray-600">Enterprise</p>
+                                       <p className="text-gray-900">{selectedTna.applicationId?.enterpriseName || 'N/A'}</p>
+                                    </div>
                                  </div>
                               </div>
-                           ))}
-                        </div>
-                     </div>
-                  )}
 
-                  {/* Report File */}
-                  {selectedTna.tnaReport && (
-                     <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3">TNA Report</h4>
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                 </svg>
-                              </div>
-                              <div>
-                                 <p className="font-medium text-gray-900">{selectedTna.tnaReport.originalName}</p>
-                                 <p className="text-sm text-gray-600">{(selectedTna.tnaReport.size / 1024 / 1024).toFixed(2)} MB</p>
-                              </div>
-                           </div>
-                           <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadForSignature(selectedTna)}
-                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                           >
-                              Download Report
-                           </Button>
-                        </div>
-                     </div>
-                  )}
+                              {/* Assessment Team */}
+                              {selectedTna.assessmentTeam && selectedTna.assessmentTeam.length > 0 && (
+                                 <div className="bg-gray-50 rounded-lg p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-3">Assessment Team</h4>
+                                    <div className="space-y-2">
+                                       {selectedTna.assessmentTeam.map((member, index) => (
+                                          <div key={index} className="flex items-center space-x-3 text-sm">
+                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                             </div>
+                                             <div>
+                                                <p className="font-medium text-gray-900">{member.name}</p>
+                                                <p className="text-gray-600">{member.position} - {member.department}</p>
+                                             </div>
+                                          </div>
+                                       ))}
+                                    </div>
+                                 </div>
+                              )}
 
-                  {/* Signed Report */}
-                  {selectedTna.signedTnaReport && (
-                     <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                        <h4 className="font-semibold text-green-900 mb-3">Signed TNA Report</h4>
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                 </svg>
-                              </div>
-                              <div>
-                                 <p className="font-medium text-green-900">{selectedTna.signedTnaReport.originalName}</p>
-                                 <p className="text-sm text-green-600">Signed by RD on {formatDate(selectedTna.rdSignedAt)}</p>
-                              </div>
+                              {/* Report File */}
+                              {selectedTna.tnaReport && (
+                                 <div className="bg-gray-50 rounded-lg p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-3">TNA Report</h4>
+                                    <div className="flex items-center justify-between">
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="font-medium text-gray-900">{selectedTna.tnaReport.originalName}</p>
+                                             <p className="text-sm text-gray-600">{(selectedTna.tnaReport.size / 1024 / 1024).toFixed(2)} MB</p>
+                                          </div>
+                                       </div>
+                                       <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleDownloadForSignature(selectedTna)}
+                                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                       >
+                                          Download Report
+                                       </Button>
+                                    </div>
+                                 </div>
+                              )}
+
+                              {/* Signed Report */}
+                              {selectedTna.signedTnaReport && (
+                                 <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                                    <h4 className="font-semibold text-green-900 mb-3">Signed TNA Report</h4>
+                                    <div className="flex items-center justify-between">
+                                       <div className="flex items-center space-x-3">
+                                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                             </svg>
+                                          </div>
+                                          <div>
+                                             <p className="font-medium text-green-900">{selectedTna.signedTnaReport.originalName}</p>
+                                             <p className="text-sm text-green-600">Signed by RD on {formatDate(selectedTna.rdSignedAt)}</p>
+                                          </div>
+                                       </div>
+                                       <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleDownloadSignedTNA(selectedTna._id)}
+                                          className="text-green-600 border-green-300 hover:bg-green-50"
+                                       >
+                                          Download Signed
+                                       </Button>
+                                    </div>
+                                 </div>
+                              )}
                            </div>
-                           <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadSignedTNA(selectedTna._id)}
-                              className="text-green-600 border-green-300 hover:bg-green-50"
-                           >
-                              Download Signed
-                           </Button>
                         </div>
-                     </div>
-                  )}
                      </div>
                   </div>
                </div>
@@ -1080,7 +1075,6 @@ const TNAWithRDSignature = () => {
                </div>
             </Modal>
          )}
-         </div>
       </div>
    );
 };

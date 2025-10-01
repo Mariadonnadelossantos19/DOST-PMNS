@@ -90,6 +90,9 @@ const tnaSchema = new mongoose.Schema({
          'dost_mimaropa_rejected',
          'returned_to_psto',
          'signed_by_rd',
+         'forwarded_to_rtec',
+         'rtec_scheduled',
+         'rtec_completed',
          'cancelled'
       ],
       default: 'pending'
@@ -297,6 +300,27 @@ tnaSchema.methods.forwardToDostMimaropa = function(userId) {
    this.status = 'forwarded_to_dost_mimaropa';
    this.forwardedToDostMimaropaAt = new Date();
    this.forwardedBy = userId;
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to forward to RTEC
+tnaSchema.methods.forwardToRTEC = function(userId) {
+   this.status = 'forwarded_to_rtec';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to mark RTEC as scheduled
+tnaSchema.methods.markRTECScheduled = function(userId) {
+   this.status = 'rtec_scheduled';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to mark RTEC as completed
+tnaSchema.methods.markRTECCompleted = function(userId) {
+   this.status = 'rtec_completed';
    this.updatedBy = userId;
    return this.save();
 };
