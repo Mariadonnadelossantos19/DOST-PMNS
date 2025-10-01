@@ -204,6 +204,18 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
+         id: 'rtec-management',
+         label: 'RTEC Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/rtec-management',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
          id: 'monitoring',
          label: 'Application Monitoring',
          icon: (

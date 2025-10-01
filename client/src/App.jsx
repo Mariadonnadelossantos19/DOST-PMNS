@@ -7,6 +7,7 @@ import { ToastProvider } from './Component/UI';
 import { FloatingMiniGamesButton } from './Component/Interactive';
 import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
+import RTECManagement from './Pages/DOST_MIMAROPA/components/RTECManagement';
 import { ProponentMainPage } from './Pages/Proponents/pages';
 import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
@@ -145,6 +146,9 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
          case 'notifications':
             console.log('Rendering NotificationsPage');
             return renderNotificationsPage();
+         case 'rtec-management':
+            console.log('Rendering RTECManagement');
+            return <RTECManagement />;
          case 'dashboard':
          default:
             console.log('Rendering Dashboard');
