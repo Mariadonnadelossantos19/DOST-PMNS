@@ -419,11 +419,17 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                                  const allowedSections = ['proponent-dashboard', 'monitoring', 'notifications', 'reports', 'settings', 'applications'];
                                  return allowedSections.includes(section.id);
                               }
+                              // For DOST MIMAROPA, exclude Application Management
+                              if (userRole === 'dost_mimaropa') {
+                                 if (section.id === 'management') {
+                                    return false; // Hide Application Management for DOST MIMAROPA
+                                 }
+                              }
                               // Check if section has role restrictions
                               if (section.roles && section.roles.length > 0) {
                                  return section.roles.includes(userRole);
                               }
-                              // For other roles (PSTO, DOST MIMAROPA, Super Admin), show all sections without role restrictions
+                              // For other roles (PSTO, Super Admin), show all sections without role restrictions
                               return true;
                            })
                            .map((section) => {
