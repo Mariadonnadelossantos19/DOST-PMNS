@@ -144,6 +144,42 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
    // Management sections
    const managementSections = [
       {
+         id: 'management',
+         label: 'Application Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M2 3H6C6.55228 3 7 3.44772 7 4V20C7 20.5523 6.55228 21 6 21H2C1.44772 21 1 20.5523 1 20V4C1 3.44772 1.44772 3 2 3Z" stroke="currentColor" strokeWidth="2"/>
+               <path d="M9 9H21C21.5523 9 22 9.44772 22 10V11C22 11.5523 21.5523 12 21 12H9C8.44772 12 8 11.5523 8 11V10C8 9.44772 8.44772 9 9 9Z" stroke="currentColor" strokeWidth="2"/>
+               <path d="M9 15H21C21.5523 15 22 15.4477 22 16V17C22 17.5523 21.5523 18 21 18H9C8.44772 18 8 17.5523 8 17V16C8 15.4477 8.44772 15 9 15Z" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+         ),
+         path: '/management'
+      },
+      {
+         id: 'psto-applications',
+         label: 'PSTO Applications Review',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/psto-applications-review',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
+         id: 'tna-management',
+         label: 'TNA Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" strokeWidth="2"/>
+               <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-management'
+      },
+      {
          id: 'tna-report-review',
          label: 'TNA Report Review',
          icon: (
@@ -166,6 +202,38 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          ),
          path: '/approved-tnas',
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
+         id: 'tna-rd-signature',
+         label: 'TNA with RD Signature',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-rd-signature',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
+         id: 'monitoring',
+         label: 'Application Monitoring',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/monitoring'
+      },
+      {
+         id: 'applications',
+         label: 'My Applications',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/applications',
+         roles: ['proponent'] // Only show for proponent users
       },
       {
          id: 'proponent-management',
@@ -344,7 +412,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                               // Filter sections based on user role
                               if (userRole === 'proponent') {
                                  // For proponents, only show specific sections
-                                 const allowedSections = ['monitoring', 'notifications', 'reports', 'settings'];
+                                 const allowedSections = ['monitoring', 'notifications', 'reports', 'settings', 'applications'];
                                  return allowedSections.includes(section.id);
                               }
                               // Check if section has role restrictions

@@ -977,6 +977,82 @@ const getApprovedTNAs = async (req, res) => {
    }
 };
 
+// Upload signed TNA report by DOST MIMAROPA
+const uploadSignedTNAReport = async (req, res) => {
+   try {
+      const { tnaId } = req.params;
+      const signedTnaReport = req.file;
+
+      if (!signedTnaReport) {
+         return res.status(400).json({
+            success: false,
+            message: 'Signed TNA report file is required'
+         });
+      }
+
+      // Find the TNA
+      const tna = await TNA.findById(tnaId);
+      if (!tna) {
+         return res.status(404).json({
+            success: false,
+            message: 'TNA not found'
+         });
+      }
+
+      // Check if TNA is approved by DOST MIMAROPA
+      if (tna.status !== 'dost_mimaropa_approved') {
+         return res.status(400).json({
+            success: false,
+            message: 'TNA must be approved by DOST MIMAROPA before uploading signed report'
+         });
+      }
+
+      // Update TNA with signed report
+      tna.signedTnaReport = {
+         filename: signedTnaReport.filename,
+         originalName: signedTnaReport.originalname,
+         path: signedTnaReport.path,
+         size: signedTnaReport.size,
+         mimetype: signedTnaReport.mimetype
+      };
+      tna.status = 'signed_by_rd';
+      tna.rdSignedAt = new Date();
+      tna.forwardedToPSTOAt = new Date();
+
+      await tna.save();
+
+      // Update application status to reflect RD signature
+      const Application = require('../models/SETUPApplication');
+      const application = await Application.findById(tna.applicationId);
+      if (application) {
+         application.status = 'rd_signed';
+         await application.save();
+      }
+
+      console.log(`Signed TNA report uploaded for TNA ${tnaId} by DOST MIMAROPA`);
+
+      res.json({
+         success: true,
+         message: 'Signed TNA report uploaded successfully and forwarded to PSTO',
+         data: {
+            tnaId: tna.tnaId,
+            status: tna.status,
+            rdSignedAt: tna.rdSignedAt,
+            forwardedToPSTOAt: tna.forwardedToPSTOAt
+         }
+      });
+
+   } catch (error) {
+      console.error('Error uploading signed TNA report:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message,
+         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+   }
+};
+
 module.exports = {
    scheduleTNA,
    listTNAs,
@@ -987,5 +1063,6 @@ module.exports = {
    forwardTNAToDostMimaropa,
    getTNAReportsForDostMimaropa,
    reviewTNAReport,
-   getApprovedTNAs
+   getApprovedTNAs,
+   uploadSignedTNAReport
 };

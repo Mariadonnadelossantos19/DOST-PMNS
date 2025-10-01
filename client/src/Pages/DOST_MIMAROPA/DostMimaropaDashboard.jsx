@@ -7,6 +7,7 @@ import PSTOApplicationsList from './components/PSTOApplicationsList';
 import DostMimaropaReviewModal from './components/DostMimaropaReviewModal';
 import TNAReportReview from './components/TNAReportReview';
 import DostMimaropaApprovedTna from './components/DostMimaropaApprovedTna';
+import TNAWithRDSignature from './components/TNAWithRDSignature';
 import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 
@@ -325,6 +326,13 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             return (
                <div className="space-y-6">
                   <DostMimaropaApprovedTna />
+               </div>
+            );
+
+         case '/tna-rd-signature':
+            return (
+               <div className="space-y-6">
+                  <TNAWithRDSignature />
                </div>
             );
 

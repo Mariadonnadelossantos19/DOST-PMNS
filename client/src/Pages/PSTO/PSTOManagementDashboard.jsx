@@ -36,7 +36,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
    // ApplicationReviewModal states
    const [reviewStatus, setReviewStatus] = useState('');
    const [reviewComments, setReviewComments] = useState('');
-   
+
    const { showToast } = useToast();
 
    // Fetch applications for PSTO management with improved error handling
@@ -219,7 +219,7 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
          const tnaResponse = await fetch(`http://localhost:4000/api/tna/list?applicationId=${application._id}`, {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            } 
+            }
          });
 
          if (tnaResponse.ok) {
@@ -457,12 +457,12 @@ const PSTOManagementDashboard = React.memo(({ currentUser }) => {
                      <p className="text-blue-100 text-sm">
                         Review and manage applications submitted by proponents
                      </p>
-                  </div>
-               </div>
+            </div>
+            </div>
                <div className="text-right">
                   <p className="text-xl font-bold">{stats.total}</p>
                   <p className="text-blue-100 text-xs">Total Applications</p>
-               </div>
+            </div>
             </div>
          </div>
          {/* Statistics Cards */}

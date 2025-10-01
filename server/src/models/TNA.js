@@ -89,6 +89,7 @@ const tnaSchema = new mongoose.Schema({
          'dost_mimaropa_approved',
          'dost_mimaropa_rejected',
          'returned_to_psto',
+         'signed_by_rd',
          'cancelled'
       ],
       default: 'pending'
@@ -219,6 +220,27 @@ const tnaSchema = new mongoose.Schema({
    dostMimaropaApprovedAt: {
       type: Date,
       default: null
+   },
+
+   // RD (Regional Director) signature timestamp
+   rdSignedAt: {
+      type: Date,
+      default: null
+   },
+
+   // Forwarded to PSTO timestamp
+   forwardedToPSTOAt: {
+      type: Date,
+      default: null
+   },
+
+   // Signed TNA report file (uploaded by DOST MIMAROPA after RD signature)
+   signedTnaReport: {
+      filename: String,
+      originalName: String,
+      path: String,
+      size: Number,
+      mimetype: String
    }
 }, {
    timestamps: true,
