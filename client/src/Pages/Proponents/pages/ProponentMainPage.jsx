@@ -6,7 +6,6 @@ import ProponentTNAViewer from '../../../Component/ProgramApplication/components
 import ApplicationMonitor from '../../../Component/ProgramApplication/ApplicationMonitor';
 import NotificationsPage from '../../NotificationsPage';
 import { Button, Card, Modal } from '../../../Component/UI';
-import Sidebar from '../../../Component/layouts/Sidebar';
 
 const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/applications' }) => {
    const [userData, setUserData] = useState(null);
@@ -18,7 +17,6 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
    const [showApplicationForm, setShowApplicationForm] = useState(false);
    const [selectedProgram, setSelectedProgram] = useState(null);
    const [applications, setApplications] = useState([]);
-   const [sidebarOpen, setSidebarOpen] = useState(true);
 
    // Debug modal state changes
    useEffect(() => {
@@ -231,10 +229,6 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
       }
    };
 
-   // Navigation handler for sidebar
-   const handleNavigate = (path) => {
-      window.location.hash = path;
-   };
 
    // Render content based on current path
    const renderContent = () => {
@@ -381,57 +375,13 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
       );
    }
 
-   // If user is logged in as proponent, show dashboard with sidebar
+   // If user is logged in as proponent, show dashboard content only
    if (userData) {
       return (
-         <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <Sidebar
-               isOpen={sidebarOpen}
-               onClose={() => setSidebarOpen(false)}
-               currentPath={currentPath}
-               userRole="proponent"
-               isCollapsed={false}
-               onNavigate={handleNavigate}
-               user={userData}
-            />
-            
+         <div className="min-h-screen bg-gray-50">
             {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-               {/* Header */}
-               <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center space-x-4">
-                        <button
-                           onClick={() => setSidebarOpen(!sidebarOpen)}
-                           className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-                        >
-                           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                           </svg>
-                        </button>
-                        <h1 className="text-xl font-semibold text-gray-900">
-                           {currentPath === '/applications' || currentPath === '/my-applications' ? 'My Applications' :
-                            currentPath === '/monitoring' || currentPath === '/application-monitoring' ? 'Application Monitoring' :
-                            currentPath === '/notifications' ? 'Notifications' :
-                            currentPath === '/reports' ? 'Reports' :
-                            currentPath === '/settings' ? 'Settings' :
-                            'Proponent Dashboard'}
-                        </h1>
-                     </div>
-                     <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-600">
-                           Welcome, {userData.firstName} {userData.lastName}
-                        </div>
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                           {userData.firstName?.charAt(0)}{userData.lastName?.charAt(0)}
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               
-               {/* Content Area */}
-               <div className="flex-1 overflow-auto">
+            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+               <div className="px-6">
                   {showApplicationForm ? (
                      <MultiStepForm
                         selectedProgram={selectedProgram}
