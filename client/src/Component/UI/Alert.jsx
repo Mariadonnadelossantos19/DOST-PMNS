@@ -71,7 +71,7 @@ const Alert = ({
    };
 
    const alertClasses = `
-      border rounded-lg p-4 transition-colors duration-300
+      border rounded-md p-3 transition-colors duration-150
       ${variants[variant].container}
       ${className}
    `;
@@ -90,7 +90,7 @@ const Alert = ({
                      {title}
                   </h3>
                )}
-               <div className={`text-sm ${title ? 'mt-1' : ''} ${variants[variant].content}`}>
+               <div className={`text-sm ${title ? 'mt-0.5' : ''} ${variants[variant].content}`}>
                   {children}
                </div>
             </div>
@@ -98,7 +98,7 @@ const Alert = ({
                <div className="ml-auto pl-3">
                   <button
                      onClick={onDismiss}
-                     className={`inline-flex rounded-md p-1.5 ${variants[variant].content} hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-50 focus:ring-blue-600`}
+                     className={`inline-flex rounded-md p-1 ${variants[variant].content} hover:opacity-75 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-offset-blue-50 focus:ring-blue-600`}
                   >
                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

@@ -14,26 +14,26 @@ const Card = ({
    
    const paddingClasses = {
       none: '',
-      sm: 'p-4',
-      default: 'p-6',
-      lg: 'p-8'
+      sm: 'p-3',
+      default: 'p-4',
+      lg: 'p-6'
    };
 
    const shadowClasses = {
       none: '',
       sm: 'shadow-sm',
-      default: 'shadow-md',
-      lg: 'shadow-lg',
-      xl: 'shadow-xl'
+      default: 'shadow-sm',
+      lg: 'shadow-md',
+      xl: 'shadow-lg'
    };
 
    const cardClasses = `
-      rounded-lg transition-colors duration-300
+      rounded-md transition-colors duration-150
       ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
       ${paddingClasses[padding]}
       ${shadowClasses[shadow]}
       ${border ? (isDarkMode ? 'border border-gray-700' : 'border border-gray-200') : ''}
-      ${hover ? 'hover:shadow-lg transition-shadow duration-200' : ''}
+      ${hover ? 'hover:shadow-md transition-shadow duration-150' : ''}
       ${className}
    `;
 
@@ -48,7 +48,7 @@ const Card = ({
 const CardHeader = ({ children, className = '', ...props }) => {
    const { isDarkMode } = useDarkMode();
    return (
-      <div className={`border-b pb-4 mb-4 transition-colors duration-300 ${
+      <div className={`border-b pb-3 mb-3 transition-colors duration-150 ${
          isDarkMode ? 'border-gray-700' : 'border-gray-200'
       } ${className}`} {...props}>
          {children}
@@ -59,7 +59,7 @@ const CardHeader = ({ children, className = '', ...props }) => {
 const CardTitle = ({ children, className = '', ...props }) => {
    const { isDarkMode } = useDarkMode();
    return (
-      <h3 className={`text-lg font-semibold transition-colors duration-300 ${
+      <h3 className={`text-base font-medium transition-colors duration-150 ${
          isDarkMode ? 'text-white' : 'text-gray-900'
       } ${className}`} {...props}>
          {children}
@@ -70,8 +70,8 @@ const CardTitle = ({ children, className = '', ...props }) => {
 const CardDescription = ({ children, className = '', ...props }) => {
    const { isDarkMode } = useDarkMode();
    return (
-      <p className={`text-sm mt-1 transition-colors duration-300 ${
-         isDarkMode ? 'text-gray-300' : 'text-gray-600'
+      <p className={`text-sm mt-1 transition-colors duration-150 ${
+         isDarkMode ? 'text-gray-400' : 'text-gray-500'
       } ${className}`} {...props}>
          {children}
       </p>
@@ -87,7 +87,7 @@ const CardContent = ({ children, className = '', ...props }) => (
 const CardFooter = ({ children, className = '', ...props }) => {
    const { isDarkMode } = useDarkMode();
    return (
-      <div className={`border-t pt-4 mt-4 transition-colors duration-300 ${
+      <div className={`border-t pt-3 mt-3 transition-colors duration-150 ${
          isDarkMode ? 'border-gray-700' : 'border-gray-200'
       } ${className}`} {...props}>
          {children}

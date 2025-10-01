@@ -14,10 +14,10 @@ const Input = forwardRef(({
    const { isDarkMode } = useDarkMode();
    
    const inputClasses = `
-      block w-full px-3 py-2 border rounded-lg text-sm transition-colors duration-300
-      focus:outline-none focus:ring-2 focus:ring-offset-0
+      block w-full px-3 py-2 border rounded-md text-sm transition-colors duration-150
+      focus:outline-none focus:ring-1 focus:ring-offset-0
       ${isDarkMode 
-         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
       }
       ${error 
@@ -34,7 +34,7 @@ const Input = forwardRef(({
    return (
       <div className={containerClassName}>
          {label && (
-            <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+            <label className={`block text-sm font-medium mb-1 transition-colors duration-150 ${
                isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
                {label}
@@ -45,7 +45,7 @@ const Input = forwardRef(({
          <div className="relative">
             {leftIcon && (
                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className={`transition-colors duration-300 ${
+                  <span className={`transition-colors duration-150 ${
                      isDarkMode ? 'text-gray-400' : 'text-gray-400'
                   }`}>
                      {leftIcon}
@@ -61,7 +61,7 @@ const Input = forwardRef(({
             
             {rightIcon && (
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span className={`transition-colors duration-300 ${
+                  <span className={`transition-colors duration-150 ${
                      isDarkMode ? 'text-gray-400' : 'text-gray-400'
                   }`}>
                      {rightIcon}
@@ -77,7 +77,7 @@ const Input = forwardRef(({
          )}
          
          {helperText && !error && (
-            <p className={`mt-1 text-sm transition-colors duration-300 ${
+            <p className={`mt-1 text-sm transition-colors duration-150 ${
                isDarkMode ? 'text-gray-400' : 'text-gray-500'
             }`}>
                {helperText}
