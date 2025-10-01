@@ -225,6 +225,21 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          path: '/monitoring'
       },
       {
+         id: 'proponent-dashboard',
+         label: 'Proponent Dashboard',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M8 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M16 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/proponent-dashboard',
+         roles: ['proponent'] // Only show for proponent users
+      },
+      {
          id: 'applications',
          label: 'My Applications',
          icon: (
