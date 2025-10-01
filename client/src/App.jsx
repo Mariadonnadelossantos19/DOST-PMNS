@@ -67,7 +67,13 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
          console.log('App.jsx - Passing currentPath to DostMimaropaDashboard:', dostCurrentPath);
          return <DostMimaropaDashboard currentPath={dostCurrentPath} />;
       } else if (currentUser.role === 'proponent') {
-         return <ProponentMainPage onNavigateToProfile={handleNavigateToProfile} />;
+         const proponentCurrentPath = `/${currentPage}`;
+         console.log('App.jsx - Passing currentPath to ProponentMainPage:', proponentCurrentPath);
+         return <ProponentMainPage 
+            onNavigateToProfile={handleNavigateToProfile} 
+            currentUser={currentUser}
+            currentPath={proponentCurrentPath}
+         />;
       } else if (currentUser.role === 'psto') {
          return renderPSTODashboard();
       } else {

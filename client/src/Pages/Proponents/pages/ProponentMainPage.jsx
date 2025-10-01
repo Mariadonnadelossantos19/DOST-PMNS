@@ -3,9 +3,12 @@ import { ProponentDashboard, ProponentRegistrationForm, EnterpriseProfile } from
 import { ProgramSelection } from '../../../Component/ProgramSelection';
 import { MultiStepForm, ApplicationStatusTracker } from '../../../Component/ProgramApplication';
 import ProponentTNAViewer from '../../../Component/ProgramApplication/components/ProponentTNAViewer';
+import ApplicationMonitor from '../../../Component/ProgramApplication/ApplicationMonitor';
+import NotificationsPage from '../../NotificationsPage';
 import { Button, Card, Modal } from '../../../Component/UI';
+import Sidebar from '../../../Component/layouts/Sidebar';
 
-const ProponentMainPage = ({ onNavigateToProfile }) => {
+const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/applications' }) => {
    const [userData, setUserData] = useState(null);
    const [showRegistrationForm, setShowRegistrationForm] = useState(false);
    const [loading, setLoading] = useState(true);
@@ -14,6 +17,7 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
    const [showApplicationForm, setShowApplicationForm] = useState(false);
    const [selectedProgram, setSelectedProgram] = useState(null);
    const [applications, setApplications] = useState([]);
+   const [sidebarOpen, setSidebarOpen] = useState(true);
 
    // Debug modal state changes
    useEffect(() => {
@@ -214,12 +218,157 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
             setShowApplicationForm(false);
             setShowProgramSelection(false);
             setSelectedProgram(null);
+            
+            // Refresh applications
+            fetchApplications();
          } else {
             alert(`Error submitting application: ${result.message}`);
          }
       } catch (error) {
          console.error('Error submitting application:', error);
          alert('Error submitting application. Please try again.');
+      }
+   };
+
+   // Navigation handler for sidebar
+   const handleNavigate = (path) => {
+      window.location.hash = path;
+   };
+
+   // Render content based on current path
+   const renderContent = () => {
+      // Handle specific forms first, as they are modal-like or full-page overrides
+      if (showRegistrationForm) {
+         return <ProponentRegistrationForm currentUser={currentUser} handleLoginSuccess={handleLoginSuccess} setShowRegistrationForm={setShowRegistrationForm} />;
+      }
+      if (showApplicationForm) {
+         return <MultiStepForm currentUser={currentUser} setShowApplicationForm={setShowApplicationForm} />;
+      }
+      if (showEnterpriseProfile) {
+         return <EnterpriseProfile currentUser={currentUser} setShowEnterpriseProfile={setShowEnterpriseProfile} />;
+      }
+
+      // Then handle sidebar navigation
+      switch (currentPath) {
+         case '/applications':
+         case '/my-applications':
+            // This is the default dashboard view with "New Application" button and application list
+            return (
+               <div className="container mx-auto p-6">
+                  <div className="flex justify-between items-center mb-6">
+                     <h1 className="text-3xl font-bold text-gray-800">My Applications</h1>
+                     <Button onClick={() => setShowApplicationForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                        New Application
+                     </Button>
+                  </div>
+                  {loading && <p>Loading applications...</p>}
+                  {applications.length === 0 && !loading && (
+                     <div className="text-center py-10">
+                        <div className="text-4xl mb-4">📝</div>
+                        <h3 className="text-lg font-medium mb-2">No Applications Yet</h3>
+                        <p className="mb-4">Start by creating your first program application</p>
+                        <Button onClick={() => setShowApplicationForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                           Create Application
+                        </Button>
+                     </div>
+                  )}
+                  {applications.length > 0 && (
+                     <div className="space-y-4">
+                        {applications.map((application) => (
+                           <div key={application._id} className="space-y-4">
+                              <Card className="p-4">
+                                 <div className="flex justify-between items-start">
+                                    <div>
+                                       <h3 className="font-medium text-gray-900">
+                                          {application.programName} Application
+                                       </h3>
+                                       <p className="text-sm text-gray-600">
+                                          Submitted: {new Date(application.createdAt).toLocaleDateString()}
+                                       </p>
+                                    </div>
+                                    <ApplicationStatusTracker application={application} />
+                                 </div>
+                              </Card>
+                              
+                              {/* TNA Viewer for approved applications */}
+                              <ProponentTNAViewer application={application} />
+                           </div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+            );
+         case '/monitoring':
+         case '/application-monitoring':
+            return <ApplicationMonitor currentUser={currentUser} />;
+         case '/notifications':
+            return <NotificationsPage currentUser={currentUser} />;
+         case '/reports':
+            return (
+               <div className="container mx-auto p-6">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-6">Reports</h1>
+                  <div className="bg-white rounded-lg shadow p-6">
+                     <p className="text-gray-600">Reports functionality will be available here.</p>
+                  </div>
+               </div>
+            );
+         case '/settings':
+            return (
+               <div className="container mx-auto p-6">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
+                  <div className="bg-white rounded-lg shadow p-6">
+                     <p className="text-gray-600">User settings will be managed here.</p>
+                  </div>
+               </div>
+            );
+         default:
+            // Default to the Proponent Dashboard if path is not recognized
+            return (
+               <div className="container mx-auto p-6">
+                  <div className="flex justify-between items-center mb-6">
+                     <h1 className="text-3xl font-bold text-gray-800">Proponent Dashboard</h1>
+                     <Button onClick={() => setShowApplicationForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                        New Application
+                     </Button>
+                  </div>
+                  {loading && <p>Loading applications...</p>}
+                  {applications.length === 0 && !loading && (
+                     <div className="text-center py-10">
+                        <div className="text-4xl mb-4">📝</div>
+                        <h3 className="text-lg font-medium mb-2">No Applications Yet</h3>
+                        <p className="mb-4">Start by creating your first program application</p>
+                        <Button onClick={() => setShowApplicationForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                           Create Application
+                        </Button>
+                     </div>
+                  )}
+                  {applications.length > 0 && (
+                     <div className="space-y-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Your Applications</h2>
+                        {applications.map((application) => (
+                           <div key={application._id} className="space-y-4">
+                              <Card className="p-4">
+                                 <div className="flex justify-between items-start">
+                                    <div>
+                                       <h3 className="font-medium text-gray-900">
+                                          {application.programName} Application
+                                       </h3>
+                                       <p className="text-sm text-gray-600">
+                                          Submitted: {new Date(application.createdAt).toLocaleDateString()}
+                                       </p>
+                                    </div>
+                                    <ApplicationStatusTracker application={application} />
+                                 </div>
+                              </Card>
+                              
+                              {/* TNA Viewer for approved applications */}
+                              <ProponentTNAViewer application={application} />
+                           </div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+            );
       }
    };
 
@@ -231,13 +380,57 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
       );
    }
 
-   // If user is logged in as proponent, show dashboard
+   // If user is logged in as proponent, show dashboard with sidebar
    if (userData) {
       return (
-         <div className="min-h-screen bg-gray-50">
-            {/* Main Dashboard Content */}
-            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-               <div className="px-6">
+         <div className="min-h-screen bg-gray-50 flex">
+            {/* Sidebar */}
+            <Sidebar
+               isOpen={sidebarOpen}
+               onClose={() => setSidebarOpen(false)}
+               currentPath={currentPath}
+               userRole="proponent"
+               isCollapsed={false}
+               onNavigate={handleNavigate}
+               user={userData}
+            />
+            
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col">
+               {/* Header */}
+               <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center space-x-4">
+                        <button
+                           onClick={() => setSidebarOpen(!sidebarOpen)}
+                           className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                        >
+                           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                           </svg>
+                        </button>
+                        <h1 className="text-xl font-semibold text-gray-900">
+                           {currentPath === '/applications' || currentPath === '/my-applications' ? 'My Applications' :
+                            currentPath === '/monitoring' || currentPath === '/application-monitoring' ? 'Application Monitoring' :
+                            currentPath === '/notifications' ? 'Notifications' :
+                            currentPath === '/reports' ? 'Reports' :
+                            currentPath === '/settings' ? 'Settings' :
+                            'Proponent Dashboard'}
+                        </h1>
+                     </div>
+                     <div className="flex items-center space-x-4">
+                        <div className="text-sm text-gray-600">
+                           Welcome, {userData.firstName} {userData.lastName}
+                        </div>
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                           {userData.firstName?.charAt(0)}{userData.lastName?.charAt(0)}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               {/* Content Area */}
+               <div className="flex-1 overflow-auto">
                   {showApplicationForm ? (
                      <MultiStepForm
                         selectedProgram={selectedProgram}
@@ -252,61 +445,7 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
                         onBack={handleProgramBack}
                      />
                   ) : (
-                     <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                           <h1 className="text-2xl font-bold text-gray-900">Proponent Dashboard</h1>
-                           <div className="flex space-x-3">
-                              <Button
-                                 onClick={() => setShowProgramSelection(true)}
-                                 className="bg-blue-600 hover:bg-blue-700"
-                              >
-                                 New Application
-                              </Button>
-                           </div>
-                        </div>
-
-                        {applications.length > 0 && (
-                           <div className="space-y-4">
-                              <h2 className="text-lg font-semibold text-gray-900">Your Applications</h2>
-                              {applications.map((application) => (
-                                 <div key={application._id} className="space-y-4">
-                                    <Card className="p-4">
-                                       <div className="flex justify-between items-start">
-                                          <div>
-                                             <h3 className="font-medium text-gray-900">
-                                                {application.programName} Application
-                                             </h3>
-                                             <p className="text-sm text-gray-600">
-                                                Submitted: {new Date(application.createdAt).toLocaleDateString()}
-                                             </p>
-                                          </div>
-                                          <ApplicationStatusTracker application={application} />
-                                       </div>
-                                    </Card>
-                                    
-                                    {/* TNA Viewer for approved applications */}
-                                    <ProponentTNAViewer application={application} />
-                                 </div>
-                              ))}
-                           </div>
-                        )}
-
-                        {applications.length === 0 && (
-                           <Card className="p-8 text-center">
-                              <div className="text-gray-500">
-                                 <div className="text-4xl mb-4">📝</div>
-                                 <h3 className="text-lg font-medium mb-2">No Applications Yet</h3>
-                                 <p className="mb-4">Start by creating your first program application</p>
-                                 <Button
-                                    onClick={() => setShowProgramSelection(true)}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                 >
-                                    Create Application
-                                 </Button>
-                              </div>
-                           </Card>
-                        )}
-                     </div>
+                     renderContent()
                   )}
                </div>
             </div>
