@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ProponentDashboard, ProponentRegistrationForm, EnterpriseProfile } from '../Components';
 import { ProgramSelection } from '../../../Component/ProgramSelection';
 import { MultiStepForm, ApplicationStatusTracker } from '../../../Component/ProgramApplication';
+import ProponentTNAViewer from '../../../Component/ProgramApplication/components/ProponentTNAViewer';
 import { Button, Card, Modal } from '../../../Component/UI';
 
 const ProponentMainPage = ({ onNavigateToProfile }) => {
@@ -268,19 +269,24 @@ const ProponentMainPage = ({ onNavigateToProfile }) => {
                            <div className="space-y-4">
                               <h2 className="text-lg font-semibold text-gray-900">Your Applications</h2>
                               {applications.map((application) => (
-                                 <Card key={application._id} className="p-4">
-                                    <div className="flex justify-between items-start">
-                                       <div>
-                                          <h3 className="font-medium text-gray-900">
-                                             {application.programName} Application
-                                          </h3>
-                                          <p className="text-sm text-gray-600">
-                                             Submitted: {new Date(application.createdAt).toLocaleDateString()}
-                                          </p>
+                                 <div key={application._id} className="space-y-4">
+                                    <Card className="p-4">
+                                       <div className="flex justify-between items-start">
+                                          <div>
+                                             <h3 className="font-medium text-gray-900">
+                                                {application.programName} Application
+                                             </h3>
+                                             <p className="text-sm text-gray-600">
+                                                Submitted: {new Date(application.createdAt).toLocaleDateString()}
+                                             </p>
+                                          </div>
+                                          <ApplicationStatusTracker application={application} />
                                        </div>
-                                       <ApplicationStatusTracker application={application} />
-                                    </div>
-                                 </Card>
+                                    </Card>
+                                    
+                                    {/* TNA Viewer for approved applications */}
+                                    <ProponentTNAViewer application={application} />
+                                 </div>
                               ))}
                            </div>
                         )}

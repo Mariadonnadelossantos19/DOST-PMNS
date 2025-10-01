@@ -74,6 +74,12 @@ const ApplicationStatusTracker = ({ application, onStatusUpdate }) => {
             description: 'Your application was rejected by DOST MIMAROPA',
             icon: '❌'
          },
+         'rd_signed': {
+            label: 'RD Signed',
+            color: 'emerald',
+            description: 'TNA report has been signed by the Regional Director',
+            icon: '✍️'
+         },
          'rtec_approved': {
             label: 'RTEC Approved',
             color: 'green',
@@ -303,15 +309,15 @@ const ApplicationStatusTracker = ({ application, onStatusUpdate }) => {
                )}
 
                {/* DOST MIMAROPA Review */}
-               {['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus) && (
+               {['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rd_signed', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus) && (
                   <div className="flex items-start space-x-3">
                      <div className="flex-shrink-0">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                           ['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
+                           ['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rd_signed', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
                               ? 'bg-green-100' : 'bg-gray-100'
                         }`}>
                            <span className={`text-sm ${
-                              ['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
+                              ['dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rd_signed', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
                                  ? 'text-green-600' : 'text-gray-400'
                            }`}>
                               ✓
@@ -324,7 +330,27 @@ const ApplicationStatusTracker = ({ application, onStatusUpdate }) => {
                         </p>
                         <p className="text-xs text-gray-500">
                            {currentStatus === 'dost_mimaropa_approved' ? 'Approved' : 
-                            currentStatus === 'dost_mimaropa_rejected' ? 'Rejected' : 'Completed'}
+                            currentStatus === 'dost_mimaropa_rejected' ? 'Rejected' : 
+                            currentStatus === 'rd_signed' ? 'RD Signed' : 'Completed'}
+                        </p>
+                     </div>
+                  </div>
+               )}
+
+               {/* RD Signature */}
+               {currentStatus === 'rd_signed' && (
+                  <div className="flex items-start space-x-3">
+                     <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                           <span className="text-emerald-600 text-sm">✍️</span>
+                        </div>
+                     </div>
+                     <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                           RD Signature
+                        </p>
+                        <p className="text-xs text-gray-500">
+                           TNA report has been signed by the Regional Director
                         </p>
                      </div>
                   </div>
