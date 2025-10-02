@@ -526,6 +526,14 @@ rtecSchema.methods.submitDocument = function(documentType, file, submittedBy, re
       preMeetingDoc.file = file;
       preMeetingDoc.remarks = remarks;
       preMeetingDoc.status = 'submitted';
+      
+      // Check if all pre-meeting documents are now submitted
+      const allPreMeetingDocsSubmitted = this.preMeetingDocuments.every(doc => doc.isSubmitted);
+      if (allPreMeetingDocsSubmitted && this.status === 'documents_requested') {
+         this.status = 'documents_submitted';
+         console.log(`✅ All pre-meeting documents submitted for RTEC ${this._id}, status updated to 'documents_submitted'`);
+      }
+      
       return this.save();
    }
 
@@ -551,6 +559,14 @@ rtecSchema.methods.reviewDocument = function(documentType, status, reviewedBy, r
    if (preMeetingDoc) {
       preMeetingDoc.status = status;
       preMeetingDoc.remarks = remarks;
+      
+      // Check if all pre-meeting documents are now approved
+      const allPreMeetingDocsApproved = this.preMeetingDocuments.every(doc => doc.status === 'approved');
+      if (allPreMeetingDocsApproved && this.status === 'documents_requested') {
+         this.status = 'documents_approved';
+         console.log(`✅ All pre-meeting documents approved for RTEC ${this._id}, status updated to 'documents_approved'`);
+      }
+      
       return this.save();
    }
 
