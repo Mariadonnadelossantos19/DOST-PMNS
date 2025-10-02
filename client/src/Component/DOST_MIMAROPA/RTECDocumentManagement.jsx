@@ -37,7 +37,9 @@ const RTECDocumentManagement = () => {
          if (filters.status) params.append('status', filters.status);
          
          const response = await api.get(`/rtec-documents/list?${params}`);
+         console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
+            console.log('RTEC Documents Data:', response.data.data.docs);
             setRtecDocuments(response.data.data.docs || []);
          }
       } catch (error) {
@@ -188,12 +190,12 @@ const RTECDocumentManagement = () => {
       {
          key: 'companyName',
          label: 'Company',
-         render: (item) => item?.applicationId?.enterpriseName || 'N/A'
+         render: (item) => item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A'
       },
       {
          key: 'projectTitle',
          label: 'Project',
-         render: (item) => item?.applicationId?.projectTitle || 'N/A'
+         render: (item) => item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A'
       },
       {
          key: 'proponent',
