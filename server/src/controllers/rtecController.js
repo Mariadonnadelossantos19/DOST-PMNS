@@ -638,9 +638,18 @@ const getDocumentStatus = async (req, res) => {
    }
 };
 
-// Get TNAs ready for RTEC scheduling (signed by RD with documents submitted)
+// Get TNAs ready for RTEC scheduling (signed by RD)
 const getTNAsReadyForRTEC = async (req, res) => {
    try {
+      console.log('=== STARTING getTNAsReadyForRTEC ===');
+      
+      // STEP 1: Clean up ALL draft RTEC records immediately
+      console.log('STEP 1: Cleaning up draft RTEC records...');
+      const draftCleanup = await RTEC.deleteMany({ status: 'draft' });
+      console.log(`✅ Cleaned up ${draftCleanup.deletedCount} draft RTEC records`);
+
+      // STEP 2: Get all TNAs with signed_by_rd status
+      console.log('STEP 2: Fetching TNAs with signed_by_rd status...');
       const tnas = await TNA.find({ status: 'signed_by_rd' })
          .populate([
             { path: 'applicationId', select: 'applicationId enterpriseName status' },
@@ -649,25 +658,53 @@ const getTNAsReadyForRTEC = async (req, res) => {
          ])
          .sort({ rdSignedAt: -1 });
 
-      // Check which TNAs have RTEC with all pre-meeting documents submitted AND approved
-      const tnasWithDocuments = [];
+      console.log(`✅ Found ${tnas.length} TNAs with signed_by_rd status`);
       
-      console.log('getTNAsReadyForRTEC - Found TNAs with signed_by_rd status:', tnas.length);
-      
-      for (const tna of tnas) {
-         // Simply add all TNAs with signed_by_rd status to ready list
-         // RTEC will be created only when actually scheduling the meeting
-         tnasWithDocuments.push(tna);
-         console.log(`TNA ${tna._id} - ADDED to ready list (signed by RD)`);
+      if (tnas.length === 0) {
+         console.log('❌ No TNAs found with signed_by_rd status');
+         return res.json({ success: true, data: [] });
       }
+
+      // STEP 3: Process each TNA
+      console.log('STEP 3: Processing each TNA...');
+      const readyTNAs = [];
+      
+      for (let i = 0; i < tnas.length; i++) {
+         const tna = tnas[i];
+         console.log(`\n--- TNA ${i + 1}/${tnas.length}: ${tna._id} ---`);
+         
+         // Log TNA details
+         console.log(`📋 Application: ${tna.applicationId?.applicationId || 'MISSING'}`);
+         console.log(`🏢 Enterprise: ${tna.applicationId?.enterpriseName || 'MISSING'}`);
+         console.log(`👤 Proponent: ${tna.proponentId?.firstName || 'MISSING'} ${tna.proponentId?.lastName || ''}`);
+         console.log(`🏛️ PSTO: ${tna.scheduledBy?.firstName || 'MISSING'} ${tna.scheduledBy?.lastName || ''}`);
+         
+         // Check for existing RTEC (only scheduled/completed, not draft since we deleted those)
+         const existingRTEC = await RTEC.findOne({ 
+            tnaId: tna._id, 
+            status: { $in: ['scheduled', 'completed', 'cancelled'] } 
+         });
+         
+         if (existingRTEC) {
+            console.log(`⏭️ SKIPPED - Already has RTEC with status: ${existingRTEC.status}`);
+            continue;
+         }
+
+         // Add to ready list (we'll be more lenient with missing data for now)
+         readyTNAs.push(tna);
+         console.log(`✅ ADDED to ready list`);
+      }
+
+      console.log(`\n🎯 FINAL RESULT: ${readyTNAs.length} TNAs ready for RTEC scheduling`);
+      console.log('Ready TNA IDs:', readyTNAs.map(tna => tna._id.toString()));
 
       res.json({
          success: true,
-         data: tnasWithDocuments
+         data: readyTNAs
       });
 
    } catch (error) {
-      console.error('Error fetching TNAs ready for RTEC:', error);
+      console.error('❌ ERROR in getTNAsReadyForRTEC:', error);
       res.status(500).json({
          success: false,
          message: 'Failed to fetch TNAs ready for RTEC',
@@ -954,6 +991,33 @@ const createRTECForDocuments = async (req, res) => {
    }
 };
 
+// Clean up draft RTEC records
+const cleanupDraftRTECs = async (req, res) => {
+   try {
+      console.log('=== CLEANUP DRAFT RTEC RECORDS ===');
+      
+      const draftRTECs = await RTEC.find({ status: 'draft' });
+      console.log(`Found ${draftRTECs.length} draft RTEC records to clean up`);
+      
+      const deleteResult = await RTEC.deleteMany({ status: 'draft' });
+      console.log(`Deleted ${deleteResult.deletedCount} draft RTEC records`);
+      
+      res.json({
+         success: true,
+         message: `Cleaned up ${deleteResult.deletedCount} draft RTEC records`,
+         deletedCount: deleteResult.deletedCount
+      });
+
+   } catch (error) {
+      console.error('Error cleaning up draft RTECs:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Cleanup failed',
+         error: error.message
+      });
+   }
+};
+
 // Debug endpoint to check TNA data
 const debugTNAData = async (req, res) => {
    try {
@@ -1040,5 +1104,6 @@ module.exports = {
    getRTECStatistics,
    createRTECForDocuments,
    requestDocumentSubmission,
-   debugTNAData
+   debugTNAData,
+   cleanupDraftRTECs
 };
