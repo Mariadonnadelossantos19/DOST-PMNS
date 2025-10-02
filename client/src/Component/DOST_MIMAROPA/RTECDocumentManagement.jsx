@@ -188,32 +188,32 @@ const RTECDocumentManagement = () => {
       {
          key: 'companyName',
          label: 'Company',
-         render: (item) => item.applicationId?.companyName || 'N/A'
+         render: (item) => item?.applicationId?.enterpriseName || 'N/A'
       },
       {
          key: 'projectTitle',
          label: 'Project',
-         render: (item) => item.applicationId?.projectTitle || 'N/A'
+         render: (item) => item?.applicationId?.projectTitle || 'N/A'
       },
       {
          key: 'proponent',
          label: 'Proponent',
-         render: (item) => `${item.proponentId?.firstName || ''} ${item.proponentId?.lastName || ''}`.trim() || 'N/A'
+         render: (item) => `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim() || 'N/A'
       },
       {
          key: 'status',
          label: 'Status',
-         render: (item) => getStatusBadge(item.status)
+         render: (item) => getStatusBadge(item?.status)
       },
       {
          key: 'requestedAt',
          label: 'Requested',
-         render: (item) => new Date(item.requestedAt).toLocaleDateString()
+         render: (item) => item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A'
       },
       {
          key: 'dueDate',
          label: 'Due Date',
-         render: (item) => item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A'
+         render: (item) => item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A'
       },
       {
          key: 'actions',
