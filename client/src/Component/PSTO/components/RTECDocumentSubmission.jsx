@@ -168,80 +168,162 @@ const RTECDocumentSubmission = () => {
                         </div>
 
                         {/* Application Details */}
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                           <h4 className="text-md font-medium text-gray-900 mb-3">Application Details</h4>
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Company Name</label>
-                                 <p className="text-sm text-gray-900">{rtecDoc.applicationId?.companyName || 'N/A'}</p>
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+                           <div className="flex items-center mb-4">
+                              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                 </svg>
                               </div>
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Project Title</label>
-                                 <p className="text-sm text-gray-900">{rtecDoc.applicationId?.projectTitle || 'N/A'}</p>
+                              <h4 className="text-lg font-semibold text-blue-900">Application Details</h4>
+                           </div>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Company Name</label>
+                                 <p className="text-sm text-gray-900 font-medium">{rtecDoc.applicationId?.companyName || 'N/A'}</p>
                               </div>
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Business Activity</label>
-                                 <p className="text-sm text-gray-900">{rtecDoc.applicationId?.businessActivity || 'N/A'}</p>
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Project Title</label>
+                                 <p className="text-sm text-gray-900 font-medium">{rtecDoc.applicationId?.projectTitle || 'N/A'}</p>
                               </div>
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Program</label>
-                                 <p className="text-sm text-gray-900">{rtecDoc.programName || 'SETUP'}</p>
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Business Activity</label>
+                                 <p className="text-sm text-gray-900 font-medium">{rtecDoc.applicationId?.businessActivity || 'N/A'}</p>
                               </div>
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Proponent</label>
-                                 <p className="text-sm text-gray-900">
-                                    {rtecDoc.proponentId?.firstName} {rtecDoc.proponentId?.lastName}
-                                 </p>
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Program</label>
+                                 <div className="flex items-center">
+                                    <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                       {rtecDoc.programName || 'SETUP'}
+                                    </span>
+                                 </div>
                               </div>
-                              <div>
-                                 <label className="block text-sm font-medium text-gray-700">Email</label>
-                                 <p className="text-sm text-gray-900">{rtecDoc.proponentId?.email || 'N/A'}</p>
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Proponent</label>
+                                 <div className="flex items-center">
+                                    <div className="bg-gray-100 rounded-full p-1 mr-2">
+                                       <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                       </svg>
+                                    </div>
+                                    <p className="text-sm text-gray-900 font-medium">
+                                       {rtecDoc.proponentId?.firstName} {rtecDoc.proponentId?.lastName}
+                                    </p>
+                                 </div>
+                              </div>
+                              <div className="bg-white rounded-lg p-4 border border-blue-100">
+                                 <label className="block text-sm font-semibold text-blue-700 mb-1">Email</label>
+                                 <div className="flex items-center">
+                                    <div className="bg-gray-100 rounded-full p-1 mr-2">
+                                       <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                       </svg>
+                                    </div>
+                                    <p className="text-sm text-gray-900 font-medium">{rtecDoc.proponentId?.email || 'N/A'}</p>
+                                 </div>
                               </div>
                            </div>
                         </div>
 
                         {/* Document Information */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                           <div>
-                              <label className="block text-sm font-medium text-gray-700">Requested Date</label>
-                              <p className="text-sm text-gray-900">
-                                 {new Date(rtecDoc.requestedAt).toLocaleDateString()}
-                              </p>
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-6 shadow-sm">
+                           <div className="flex items-center mb-4">
+                              <div className="bg-green-100 p-2 rounded-lg mr-3">
+                                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                 </svg>
+                              </div>
+                              <h4 className="text-lg font-semibold text-green-900">Request Information</h4>
                            </div>
-                           <div>
-                              <label className="block text-sm font-medium text-gray-700">Due Date</label>
-                              <p className={`text-sm ${isOverdue(rtecDoc.dueDate) ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
-                                 {rtecDoc.dueDate ? new Date(rtecDoc.dueDate).toLocaleDateString() : 'N/A'}
-                              </p>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="bg-white rounded-lg p-4 border border-green-100">
+                                 <div className="flex items-center mb-2">
+                                    <div className="bg-blue-100 rounded-full p-1 mr-2">
+                                       <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                       </svg>
+                                    </div>
+                                    <label className="block text-sm font-semibold text-green-700">Requested Date</label>
+                                 </div>
+                                 <p className="text-sm text-gray-900 font-medium ml-6">
+                                    {new Date(rtecDoc.requestedAt).toLocaleDateString()}
+                                 </p>
+                              </div>
+                              <div className="bg-white rounded-lg p-4 border border-green-100">
+                                 <div className="flex items-center mb-2">
+                                    <div className={`rounded-full p-1 mr-2 ${isOverdue(rtecDoc.dueDate) ? 'bg-red-100' : 'bg-orange-100'}`}>
+                                       <svg className={`w-4 h-4 ${isOverdue(rtecDoc.dueDate) ? 'text-red-600' : 'text-orange-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                       </svg>
+                                    </div>
+                                    <label className="block text-sm font-semibold text-green-700">Due Date</label>
+                                 </div>
+                                 <p className={`text-sm font-medium ml-6 ${isOverdue(rtecDoc.dueDate) ? 'text-red-600' : 'text-gray-900'}`}>
+                                    {rtecDoc.dueDate ? new Date(rtecDoc.dueDate).toLocaleDateString() : 'N/A'}
+                                    {isOverdue(rtecDoc.dueDate) && (
+                                       <span className="ml-2 bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                          OVERDUE
+                                       </span>
+                                    )}
+                                 </p>
+                              </div>
                            </div>
                         </div>
 
                         {/* Required Documents */}
-                        <div>
-                           <h4 className="text-md font-medium text-gray-900 mb-3">Required Documents</h4>
-                           <div className="space-y-3">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+                           <div className="flex items-center mb-6">
+                              <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                              </div>
+                              <h4 className="text-lg font-semibold text-purple-900">Required Documents</h4>
+                           </div>
+                           <div className="space-y-4">
                               {rtecDoc.partialdocsrtec?.map((doc, index) => (
-                                 <div key={index} className="border border-gray-200 rounded-lg p-4">
+                                 <div key={index} className="bg-white border border-purple-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                                     <div className="flex justify-between items-start">
                                        <div className="flex-1">
-                                          <div className="flex items-center space-x-2 mb-1">
-                                             <h5 className="font-medium text-gray-900">{doc.name}</h5>
-                                             {getDocumentStatusBadge(doc.documentStatus)}
+                                          <div className="flex items-center space-x-3 mb-3">
+                                             <div className="bg-indigo-100 p-2 rounded-lg">
+                                                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                             </div>
+                                             <div className="flex-1">
+                                                <h5 className="font-semibold text-gray-900 text-base">{doc.name}</h5>
+                                                {getDocumentStatusBadge(doc.documentStatus)}
+                                             </div>
                                           </div>
                                           <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
                                           
                                           {doc.filename && (
-                                             <div className="text-sm text-gray-600">
-                                                <p><strong>Uploaded File:</strong> {doc.originalName}</p>
-                                                <p><strong>Upload Date:</strong> {new Date(doc.uploadedAt).toLocaleString()}</p>
+                                             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                                                <div className="flex items-center mb-2">
+                                                   <div className="bg-green-100 p-1 rounded-full mr-2">
+                                                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                      </svg>
+                                                   </div>
+                                                   <span className="text-sm font-medium text-green-800">File Uploaded</span>
+                                                </div>
+                                                <p className="text-sm text-green-700"><strong>File:</strong> {doc.originalName}</p>
+                                                <p className="text-sm text-green-700"><strong>Date:</strong> {new Date(doc.uploadedAt).toLocaleString()}</p>
                                              </div>
                                           )}
 
                                           {doc.reviewComments && (
-                                             <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                                <p className="text-sm text-yellow-800">
-                                                   <strong>Review Comments:</strong> {doc.reviewComments}
-                                                </p>
+                                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                                <div className="flex items-center mb-2">
+                                                   <div className="bg-yellow-100 p-1 rounded-full mr-2">
+                                                      <svg className="w-3 h-3 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                      </svg>
+                                                   </div>
+                                                   <span className="text-sm font-medium text-yellow-800">Review Comments</span>
+                                                </div>
+                                                <p className="text-sm text-yellow-700">{doc.reviewComments}</p>
                                              </div>
                                           )}
                                        </div>
