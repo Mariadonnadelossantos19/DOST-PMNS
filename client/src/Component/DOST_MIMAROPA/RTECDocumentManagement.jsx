@@ -44,9 +44,24 @@ const RTECDocumentManagement = () => {
          console.log('RTEC Documents Response:', response.data);
          
          if (response.data.success) {
-            console.log('RTEC Documents Data:', response.data.data.docs);
-            console.log('Number of documents:', response.data.data.docs?.length || 0);
-            setRtecDocuments(response.data.data.docs || []);
+            const documents = response.data.data?.docs || response.data.data || [];
+            console.log('RTEC Documents Data:', documents);
+            console.log('Number of documents:', documents.length);
+            
+            // Log each document for debugging
+            documents.forEach((doc, index) => {
+               console.log(`Document ${index + 1}:`, {
+                  id: doc._id,
+                  status: doc.status,
+                  companyName: doc.applicationId?.enterpriseName || doc.applicationId?.companyName,
+                  projectTitle: doc.applicationId?.projectTitle || doc.applicationId?.programName,
+                  proponent: `${doc.proponentId?.firstName || ''} ${doc.proponentId?.lastName || ''}`.trim(),
+                  requestedAt: doc.requestedAt,
+                  dueDate: doc.dueDate
+               });
+            });
+            
+            setRtecDocuments(documents);
          } else {
             console.log('API call unsuccessful:', response.data);
             setRtecDocuments([]);
@@ -403,8 +418,8 @@ const RTECDocumentManagement = () => {
                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                            <option value="">All Statuses</option>
-                           <option value="documents_requested">Requested</option>
-                           <option value="documents_submitted">Submitted</option>
+                           <option value="documents_requested">Requested (Pending PSTO Submission)</option>
+                           <option value="documents_submitted">Submitted (Ready for Review)</option>
                            <option value="documents_under_review">Under Review</option>
                            <option value="documents_approved">Approved</option>
                            <option value="documents_rejected">Rejected</option>
@@ -430,6 +445,21 @@ const RTECDocumentManagement = () => {
          {/* Content based on active tab */}
          {activeTab === 'requests' ? (
             <Card>
+               <div className="p-4 bg-blue-50 border-b border-blue-200">
+                  <div className="flex items-center space-x-2">
+                     <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                     </div>
+                     <div>
+                        <p className="text-sm text-blue-800">
+                           <strong>Documents submitted by PSTO</strong> will appear here with status "Submitted (Ready for Review)". 
+                           Click "View Details" to review and approve/reject individual documents.
+                        </p>
+                     </div>
+                  </div>
+               </div>
                <DataTable
                   columns={rtecDocumentsColumns}
                   data={rtecDocuments}
@@ -460,12 +490,18 @@ const RTECDocumentManagement = () => {
                   {/* Basic Information */}
                   <div className="grid grid-cols-2 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Company</label>
-                        <p className="mt-1 text-sm text-gray-900">{selectedDocument.applicationId?.companyName}</p>
+                        <label className="block text-sm font-medium text-gray-700">Enterprise Name</label>
+                        <p className="mt-1 text-sm text-gray-900">
+                           {selectedDocument.applicationId?.enterpriseName || 
+                            selectedDocument.applicationId?.companyName || 'N/A'}
+                        </p>
                      </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Project</label>
-                        <p className="mt-1 text-sm text-gray-900">{selectedDocument.applicationId?.projectTitle}</p>
+                        <p className="mt-1 text-sm text-gray-900">
+                           {selectedDocument.applicationId?.projectTitle || 
+                            selectedDocument.applicationId?.programName || 'N/A'}
+                        </p>
                      </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Status</label>
