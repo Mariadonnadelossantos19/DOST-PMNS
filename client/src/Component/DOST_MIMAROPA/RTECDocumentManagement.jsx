@@ -39,8 +39,8 @@ const RTECDocumentManagement = () => {
          const response = await api.get(`/rtec-documents/list?${params}`);
          console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
-            console.log('RTEC Documents Data:', response.data.data);
-            setRtecDocuments(response.data.data || []);
+            console.log('RTEC Documents Data:', response.data.data.docs);
+            setRtecDocuments(response.data.data.docs || []);
          }
       } catch (error) {
          console.error('Error fetching RTEC documents:', error);
