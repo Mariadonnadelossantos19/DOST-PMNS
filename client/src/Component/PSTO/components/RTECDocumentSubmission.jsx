@@ -167,64 +167,27 @@ const RTECDocumentSubmission = () => {
                            </div>
                         </div>
 
-                        {/* Application Details */}
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm">
-                           <div className="flex items-center mb-3">
-                              <div className="bg-blue-100 p-1.5 rounded-lg mr-2">
-                                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                 </svg>
+                        {/* Combined Application & Request Details */}
+                        <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3 mb-3 shadow-sm">
+                           <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                 <span className="font-semibold text-blue-700">Company:</span>
+                                 <p className="text-gray-900 truncate">{rtecDoc.applicationId?.companyName || 'N/A'}</p>
                               </div>
-                              <h4 className="text-base font-semibold text-blue-900">Application Details</h4>
-                           </div>
-                           <div className="grid grid-cols-1 gap-3">
-                              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                                 <label className="block text-xs font-semibold text-blue-700 mb-1">Company</label>
-                                 <p className="text-sm text-gray-900 font-medium">{rtecDoc.applicationId?.companyName || 'N/A'}</p>
+                              <div>
+                                 <span className="font-semibold text-blue-700">Project:</span>
+                                 <p className="text-gray-900 truncate">{rtecDoc.applicationId?.projectTitle || 'N/A'}</p>
                               </div>
-                              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                                 <label className="block text-xs font-semibold text-blue-700 mb-1">Project</label>
-                                 <p className="text-sm text-gray-900 font-medium">{rtecDoc.applicationId?.projectTitle || 'N/A'}</p>
+                              <div>
+                                 <span className="font-semibold text-blue-700">Proponent:</span>
+                                 <p className="text-gray-900 truncate">{rtecDoc.proponentId?.firstName} {rtecDoc.proponentId?.lastName}</p>
                               </div>
-                              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                                 <label className="block text-xs font-semibold text-blue-700 mb-1">Proponent</label>
-                                 <div className="flex items-center">
-                                    <div className="bg-gray-100 rounded-full p-1 mr-2">
-                                       <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                       </svg>
-                                    </div>
-                                    <p className="text-sm text-gray-900 font-medium">
-                                       {rtecDoc.proponentId?.firstName} {rtecDoc.proponentId?.lastName}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-
-                        {/* Document Information */}
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-4 shadow-sm">
-                           <div className="flex items-center mb-3">
-                              <div className="bg-green-100 p-1.5 rounded-lg mr-2">
-                                 <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                 </svg>
-                              </div>
-                              <h4 className="text-base font-semibold text-green-900">Request Information</h4>
-                           </div>
-                           <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-white rounded-lg p-3 border border-green-100">
-                                 <label className="block text-xs font-semibold text-green-700 mb-1">Requested</label>
-                                 <p className="text-sm text-gray-900 font-medium">
-                                    {new Date(rtecDoc.requestedAt).toLocaleDateString()}
-                                 </p>
-                              </div>
-                              <div className="bg-white rounded-lg p-3 border border-green-100">
-                                 <label className="block text-xs font-semibold text-green-700 mb-1">Due Date</label>
-                                 <p className={`text-sm font-medium ${isOverdue(rtecDoc.dueDate) ? 'text-red-600' : 'text-gray-900'}`}>
+                              <div>
+                                 <span className="font-semibold text-green-700">Due:</span>
+                                 <p className={`font-medium truncate ${isOverdue(rtecDoc.dueDate) ? 'text-red-600' : 'text-gray-900'}`}>
                                     {rtecDoc.dueDate ? new Date(rtecDoc.dueDate).toLocaleDateString() : 'N/A'}
                                     {isOverdue(rtecDoc.dueDate) && (
-                                       <span className="ml-1 bg-red-100 text-red-800 text-xs font-semibold px-1.5 py-0.5 rounded-full">
+                                       <span className="ml-1 bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded">
                                           OVERDUE
                                        </span>
                                     )}
@@ -234,87 +197,53 @@ const RTECDocumentSubmission = () => {
                         </div>
 
                         {/* Required Documents */}
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 shadow-sm">
-                           <div className="flex items-center mb-4">
-                              <div className="bg-purple-100 p-1.5 rounded-lg mr-2">
-                                 <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                 </svg>
-                              </div>
-                              <h4 className="text-base font-semibold text-purple-900">Required Documents</h4>
-                           </div>
-                           <div className="space-y-3">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-2 shadow-sm">
+                           <h4 className="text-sm font-semibold text-purple-900 mb-2">Documents</h4>
+                           <div className="space-y-2">
                               {rtecDoc.partialdocsrtec?.map((doc, index) => (
-                                 <div key={index} className="bg-white border border-purple-100 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                    <div className="flex justify-between items-start">
-                                       <div className="flex-1">
-                                          <div className="flex items-center space-x-2 mb-2">
-                                             <div className="bg-indigo-100 p-1 rounded-lg">
-                                                <svg className="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                             </div>
-                                             <div className="flex-1">
-                                                <h5 className="font-semibold text-gray-900 text-sm">{doc.name}</h5>
-                                                {getDocumentStatusBadge(doc.documentStatus)}
-                                             </div>
-                                          </div>
-                                          <p className="text-xs text-gray-600 mb-2">{doc.description}</p>
-                                          
-                                          {doc.filename && (
-                                             <div className="bg-green-50 border border-green-200 rounded-lg p-2 mb-2">
-                                                <div className="flex items-center mb-1">
-                                                   <div className="bg-green-100 p-0.5 rounded-full mr-1">
-                                                      <svg className="w-2 h-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                      </svg>
-                                                   </div>
-                                                   <span className="text-xs font-medium text-green-800">Uploaded</span>
-                                                </div>
-                                                <p className="text-xs text-green-700">{doc.originalName}</p>
-                                             </div>
-                                          )}
-
-                                          {doc.reviewComments && (
-                                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-                                                <div className="flex items-center mb-1">
-                                                   <div className="bg-yellow-100 p-0.5 rounded-full mr-1">
-                                                      <svg className="w-2 h-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                                      </svg>
-                                                   </div>
-                                                   <span className="text-xs font-medium text-yellow-800">Comments</span>
-                                                </div>
-                                                <p className="text-xs text-yellow-700">{doc.reviewComments}</p>
-                                             </div>
-                                          )}
+                                 <div key={index} className="bg-white border border-purple-100 rounded p-2 flex justify-between items-center">
+                                    <div className="flex-1 min-w-0">
+                                       <div className="flex items-center justify-between mb-1">
+                                          <h5 className="font-medium text-gray-900 text-xs truncate">{doc.name}</h5>
+                                          {getDocumentStatusBadge(doc.documentStatus)}
                                        </div>
                                        
-                                       <div className="ml-4">
-                                          {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' ? (
-                                             <Button
-                                                size="sm"
-                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
-                                             >
-                                                {doc.documentStatus === 'rejected' ? 'Resubmit' : 'Upload'}
-                                             </Button>
-                                          ) : doc.documentStatus === 'submitted' ? (
-                                             <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
-                                             >
-                                                Replace
-                                             </Button>
-                                          ) : doc.documentStatus === 'approved' ? (
-                                             <Button
-                                                size="sm"
-                                                variant="success"
-                                                disabled
-                                             >
-                                                Approved
-                                             </Button>
-                                          ) : null}
+                                       {doc.filename && (
+                                          <div className="bg-green-50 rounded p-1 mb-1">
+                                             <p className="text-xs text-green-700 truncate">✓ {doc.originalName}</p>
+                                          </div>
+                                       )}
+
+                                       {doc.reviewComments && (
+                                          <div className="bg-yellow-50 rounded p-1">
+                                             <p className="text-xs text-yellow-700 truncate">💬 {doc.reviewComments}</p>
+                                          </div>
+                                       )}
+                                    </div>
+                                    
+                                    <div className="ml-2 flex-shrink-0">
+                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' ? (
+                                          <Button
+                                             size="sm"
+                                             onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                             className="text-xs px-2 py-1"
+                                          >
+                                             {doc.documentStatus === 'rejected' ? 'Resubmit' : 'Upload'}
+                                          </Button>
+                                       ) : doc.documentStatus === 'submitted' ? (
+                                          <Button
+                                             size="sm"
+                                             variant="outline"
+                                             onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                             className="text-xs px-2 py-1"
+                                          >
+                                             Replace
+                                          </Button>
+                                       ) : (
+                                          <span className="text-xs font-medium">
+                                             {doc.documentStatus === 'approved' ? '✅' : '⏳'}
+                                          </span>
+                                       )}
                                        </div>
                                     </div>
                                  </div>
