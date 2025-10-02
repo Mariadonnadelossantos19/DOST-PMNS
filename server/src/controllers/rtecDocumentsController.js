@@ -149,7 +149,8 @@ const getRTECDocumentsByTNA = async (req, res) => {
 // Submit RTEC document
 const submitRTECDocument = async (req, res) => {
    try {
-      const { tnaId, documentType } = req.params;
+      const { tnaId, documentType: rawDocumentType } = req.params;
+      const documentType = decodeURIComponent(rawDocumentType);
       const userId = req.user.id;
 
       console.log('=== SUBMIT RTEC DOCUMENT DEBUG ===');
@@ -242,7 +243,8 @@ const submitRTECDocument = async (req, res) => {
 // Review RTEC document (approve/reject)
 const reviewRTECDocument = async (req, res) => {
    try {
-      const { tnaId, documentType } = req.params;
+      const { tnaId, documentType: rawDocumentType } = req.params;
+      const documentType = decodeURIComponent(rawDocumentType);
       const { action, comments } = req.body; // action: 'approve' or 'reject'
       const userId = req.user.id;
 
