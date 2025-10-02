@@ -721,6 +721,7 @@ const getTNAsReadyForRTEC = async (req, res) => {
                   needsApproval: rtec.preMeetingDocuments.filter(doc => doc.status !== 'approved').map(doc => `${doc.documentType}:${doc.status}`)
                });
             }
+         }
          } catch (error) {
             console.error(`Error processing TNA ${tna._id}:`, error);
             continue; // Skip this TNA and continue with the next one
