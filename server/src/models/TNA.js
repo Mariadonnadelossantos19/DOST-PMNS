@@ -78,7 +78,7 @@ const tnaSchema = new mongoose.Schema({
    // TNA status
    status: {
       type: String,
-      // Expanded to include DOST MIMAROPA review outcomes
+      // Expanded to include DOST MIMAROPA review outcomes and RTEC document flow
       enum: [
          'pending',
          'scheduled',
@@ -91,6 +91,11 @@ const tnaSchema = new mongoose.Schema({
          'returned_to_psto',
          'signed_by_rd',
          'forwarded_to_rtec',
+         'rtec_documents_requested',
+         'rtec_documents_submitted',
+         'rtec_documents_under_review',
+         'rtec_documents_approved',
+         'rtec_documents_rejected',
          'rtec_scheduled',
          'rtec_completed',
          'cancelled'
@@ -314,6 +319,41 @@ tnaSchema.methods.forwardToRTEC = function(userId) {
 // Method to mark RTEC as scheduled
 tnaSchema.methods.markRTECScheduled = function(userId) {
    this.status = 'rtec_scheduled';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to request RTEC documents
+tnaSchema.methods.requestRTECDocuments = function(userId) {
+   this.status = 'rtec_documents_requested';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to mark RTEC documents as submitted
+tnaSchema.methods.markRTECDocumentsSubmitted = function(userId) {
+   this.status = 'rtec_documents_submitted';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to mark RTEC documents under review
+tnaSchema.methods.markRTECDocumentsUnderReview = function(userId) {
+   this.status = 'rtec_documents_under_review';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to approve RTEC documents
+tnaSchema.methods.approveRTECDocuments = function(userId) {
+   this.status = 'rtec_documents_approved';
+   this.updatedBy = userId;
+   return this.save();
+};
+
+// Method to reject RTEC documents
+tnaSchema.methods.rejectRTECDocuments = function(userId) {
+   this.status = 'rtec_documents_rejected';
    this.updatedBy = userId;
    return this.save();
 };

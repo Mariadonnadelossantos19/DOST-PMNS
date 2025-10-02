@@ -152,10 +152,11 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       <TNAReportUpload currentUser={currentUser} />
    ), [currentUser]);
 
-   // Render RTEC Document Submission
+   // Render RTEC documents content
    const renderRTECDocuments = useCallback(() => (
       <RTECDocumentSubmission currentUser={currentUser} />
    ), [currentUser]);
+
 
    // Render proponents content
    const renderProponents = useCallback(() => (

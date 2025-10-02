@@ -8,7 +8,6 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const programRoutes = require('./routes/programRoutes');
 const tnaRoutes = require('./routes/tnaRoutes');
-const rtecRoutes = require('./routes/rtecRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
 // Import seed functions
@@ -35,8 +34,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/programs', programRoutes);
 app.use('/api/tna', tnaRoutes);
-app.use('/api/rtec', rtecRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/rtec-documents', require('./routes/rtecDocumentsRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

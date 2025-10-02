@@ -1,5 +1,44 @@
+import axios from 'axios';
+
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
+// Create axios instance
+const api = axios.create({
+   baseURL: API_BASE_URL,
+   timeout: 30000,
+   headers: {
+      'Content-Type': 'application/json',
+   },
+});
+
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+   (config) => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+         config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+   },
+   (error) => {
+      return Promise.reject(error);
+   }
+);
+
+// Add response interceptor to handle auth errors
+api.interceptors.response.use(
+   (response) => response,
+   (error) => {
+      if (error.response?.status === 401) {
+         localStorage.removeItem('authToken');
+         localStorage.removeItem('isLoggedIn');
+         localStorage.removeItem('userData');
+         window.location.reload();
+      }
+      return Promise.reject(error);
+   }
+);
 
 export const API_ENDPOINTS = {
    // Auth endpoints
@@ -47,4 +86,5 @@ export const API_ENDPOINTS = {
    DOST_MIMAROPA_REVIEW: (id) => `${API_BASE_URL}/programs/dost-mimaropa/applications/${id}/review`,
 };
 
-export default API_BASE_URL;
+export { API_BASE_URL };
+export default api;

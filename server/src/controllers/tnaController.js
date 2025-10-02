@@ -965,12 +965,29 @@ const getApprovedTNAs = async (req, res) => {
             $in: ['dost_mimaropa_approved', 'signed_by_rd'] 
          } 
       })
-      .populate('applicationId', 'applicationId enterpriseName status')
+      .populate('applicationId', 'applicationId enterpriseName companyName projectTitle programName businessActivity status')
       .populate('proponentId', 'firstName lastName email province')
       .populate('scheduledBy', 'firstName lastName')
       .sort({ dostMimaropaApprovedAt: -1, updatedAt: -1 });
 
       console.log('Found approved TNAs:', approvedTNAs.length);
+      console.log('TNAs by status:');
+      const statusCounts = {};
+      approvedTNAs.forEach(tna => {
+         statusCounts[tna.status] = (statusCounts[tna.status] || 0) + 1;
+      });
+      console.log('Status counts:', statusCounts);
+      
+      // Log first few TNAs for debugging
+      if (approvedTNAs.length > 0) {
+         console.log('Sample TNA data:', {
+            id: approvedTNAs[0]._id,
+            status: approvedTNAs[0].status,
+            applicationId: approvedTNAs[0].applicationId,
+            proponentId: approvedTNAs[0].proponentId,
+            rdSignedAt: approvedTNAs[0].rdSignedAt
+         });
+      }
 
       res.json({
          success: true,
@@ -991,8 +1008,21 @@ const getApprovedTNAs = async (req, res) => {
 // Upload signed TNA report by DOST MIMAROPA
 const uploadSignedTNAReport = async (req, res) => {
    try {
+      console.log('=== UPLOAD SIGNED TNA REPORT DEBUG ===');
+      console.log('Request params:', req.params);
+      console.log('Request file:', req.file);
+      console.log('User:', req.user);
+
       const { tnaId } = req.params;
       const signedTnaReport = req.file;
+
+      // Validate TNA ID
+      if (!tnaId || !mongoose.Types.ObjectId.isValid(tnaId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID provided'
+         });
+      }
 
       if (!signedTnaReport) {
          return res.status(400).json({
@@ -1010,14 +1040,29 @@ const uploadSignedTNAReport = async (req, res) => {
          });
       }
 
+      console.log('TNA found:', {
+         id: tna._id,
+         status: tna.status,
+         tnaId: tna.tnaId,
+         hasSignedReport: !!tna.signedTnaReport
+      });
+
       // Check if TNA is approved by DOST MIMAROPA
-      console.log(`TNA ${tnaId} current status: ${tna.status}`);
       if (tna.status !== 'dost_mimaropa_approved') {
          return res.status(400).json({
             success: false,
             message: `TNA must be approved by DOST MIMAROPA before uploading signed report. Current status: ${tna.status}`,
             currentStatus: tna.status,
             requiredStatus: 'dost_mimaropa_approved'
+         });
+      }
+
+      // Check if already has signed report
+      if (tna.signedTnaReport && tna.signedTnaReport.filename) {
+         return res.status(400).json({
+            success: false,
+            message: 'TNA already has a signed report. Cannot upload another one.',
+            existingReport: tna.signedTnaReport.originalName
          });
       }
 
@@ -1035,11 +1080,28 @@ const uploadSignedTNAReport = async (req, res) => {
 
       await tna.save();
 
-      // Update application status to reflect RD signature
-      // Application status remains 'dost_mimaropa_approved' - the TNA status is what changes to 'signed_by_rd'
-      // No need to update application status here since TNA signing is a separate process
-
       console.log(`Signed TNA report uploaded for TNA ${tnaId} by DOST MIMAROPA`);
+
+      // Create notification for PSTO who scheduled the TNA
+      try {
+         if (tna.scheduledBy) {
+            await Notification.createNotification({
+               title: 'Signed TNA Report Available',
+               message: `The signed TNA report for ${tna.applicationId?.enterpriseName || 'application'} is now available for download.`,
+               recipientId: tna.scheduledBy,
+               recipientType: 'psto',
+               type: 'signed_tna_available',
+               relatedEntityType: 'tna',
+               relatedEntityId: tna._id,
+               actionUrl: '/tna-management',
+               priority: 'high'
+            });
+            console.log('Notification created for PSTO');
+         }
+      } catch (notificationError) {
+         console.error('Error creating notification:', notificationError);
+         // Don't fail the upload if notification creation fails
+      }
 
       res.json({
          success: true,

@@ -1104,7 +1104,7 @@ const TNAManagement = ({ currentUser }) => {
                                     </div>
                                  )}
                                  
-                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
+                                 {tna.tnaReport && !tna.signedTnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
                               <Button
                                  onClick={() => forwardTNAToDostMimaropa(tna._id)}
                                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -1283,7 +1283,7 @@ const TNAManagement = ({ currentUser }) => {
                                     </div>
                                  )}
                                  
-                                 {tna.tnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
+                                 {tna.tnaReport && !tna.signedTnaReport && tna.status !== 'forwarded_to_dost_mimaropa' && tna.status !== 'dost_mimaropa_approved' && tna.status !== 'dost_mimaropa_rejected' && tna.status !== 'returned_to_psto' && tna.status !== 'signed_by_rd' && (
                                  <Button
                                     onClick={() => forwardTNAToDostMimaropa(tna._id)}
                                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm"
