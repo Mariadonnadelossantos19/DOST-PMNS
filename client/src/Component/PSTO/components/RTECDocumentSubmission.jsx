@@ -137,7 +137,7 @@ const RTECDocumentSubmission = () => {
                </div>
             </Card>
          ) : (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                {rtecDocuments.map((rtecDoc) => (
                   <Card key={rtecDoc._id}>
                      <div className="p-6">
