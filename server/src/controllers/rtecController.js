@@ -652,15 +652,78 @@ const getTNAsReadyForRTEC = async (req, res) => {
       // Check which TNAs have RTEC with all pre-meeting documents submitted AND approved
       const tnasWithDocuments = [];
       
+      console.log('getTNAsReadyForRTEC - Found TNAs with signed_by_rd status:', tnas.length);
+      
       for (const tna of tnas) {
-         const rtec = await RTEC.findOne({ tnaId: tna._id });
+         try {
+            let rtec = await RTEC.findOne({ tnaId: tna._id });
+            
+            console.log(`TNA ${tna._id}: RTEC exists:`, !!rtec);
+            
+            // If no RTEC exists, create one automatically for this TNA
+            if (!rtec) {
+               console.log(`Creating RTEC record for TNA ${tna._id}`);
+               
+               // Check for required references
+               if (!tna.applicationId || !tna.proponentId || !tna.scheduledBy) {
+                  console.log(`TNA ${tna._id} - Missing required references:`, {
+                     applicationId: !!tna.applicationId,
+                     proponentId: !!tna.proponentId,
+                     scheduledBy: !!tna.scheduledBy
+                  });
+                  continue; // Skip this TNA if missing required references
+               }
+            
+               rtec = new RTEC({
+                  tnaId: tna._id,
+                  applicationId: tna.applicationId._id,
+                  proponentId: tna.proponentId._id,
+                  pstoId: tna.scheduledBy._id,
+                  meetingTitle: `RTEC Document Submission - ${tna.applicationId?.enterpriseName || 'Enterprise'}`,
+                  meetingDate: new Date(),
+                  meetingTime: 'TBD',
+                  meetingLocation: 'TBD',
+                  status: 'draft',
+                  scheduledBy: req.user._id || req.user.id,
+                  contactPerson: {
+                     name: 'TBD',
+                     position: 'TBD',
+                     email: 'TBD',
+                     phone: 'TBD'
+                  }
+               });
+               
+               // Initialize required documents
+               rtec.initializeRequiredDocuments();
+               await rtec.save();
+               console.log(`RTEC record created for TNA ${tna._id}`);
+            }
          
          if (rtec && rtec.preMeetingDocuments) {
+            console.log(`TNA ${tna._id} - Pre-meeting documents:`, rtec.preMeetingDocuments.map(doc => ({
+               type: doc.documentType,
+               submitted: doc.isSubmitted,
+               status: doc.status
+            })));
+            
             const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
             const allDocumentsApproved = rtec.preMeetingDocuments.every(doc => doc.status === 'approved');
+            
+            console.log(`TNA ${tna._id} - All submitted:`, allDocumentsSubmitted, 'All approved:', allDocumentsApproved);
+            console.log(`TNA ${tna._id} - Document details:`, rtec.preMeetingDocuments.map(doc => `${doc.documentType}: submitted=${doc.isSubmitted}, status=${doc.status}`));
+            
             if (allDocumentsSubmitted && allDocumentsApproved) {
                tnasWithDocuments.push(tna);
+               console.log(`TNA ${tna._id} - ADDED to ready list`);
+            } else {
+               console.log(`TNA ${tna._id} - NOT READY - Missing requirements:`, {
+                  needsSubmission: rtec.preMeetingDocuments.filter(doc => !doc.isSubmitted).map(doc => doc.documentType),
+                  needsApproval: rtec.preMeetingDocuments.filter(doc => doc.status !== 'approved').map(doc => `${doc.documentType}:${doc.status}`)
+               });
             }
+         } catch (error) {
+            console.error(`Error processing TNA ${tna._id}:`, error);
+            continue; // Skip this TNA and continue with the next one
          }
       }
 
@@ -957,6 +1020,68 @@ const createRTECForDocuments = async (req, res) => {
    }
 };
 
+// Debug endpoint to check TNA data
+const debugTNAData = async (req, res) => {
+   try {
+      console.log('=== DEBUG TNA DATA ===');
+      
+      // Get all TNAs with signed_by_rd status
+      const tnas = await TNA.find({ status: 'signed_by_rd' })
+         .populate([
+            { path: 'applicationId', select: 'applicationId enterpriseName status' },
+            { path: 'proponentId', select: 'firstName lastName email' },
+            { path: 'scheduledBy', select: 'firstName lastName email' }
+         ]);
+
+      console.log(`Found ${tnas.length} TNAs with signed_by_rd status`);
+      
+      for (const tna of tnas) {
+         console.log(`\n--- TNA ${tna._id} ---`);
+         console.log('Application ID:', tna.applicationId);
+         console.log('Proponent ID:', tna.proponentId);
+         console.log('Scheduled By:', tna.scheduledBy);
+         
+         // Check RTEC
+         const rtec = await RTEC.findOne({ tnaId: tna._id });
+         console.log('RTEC exists:', !!rtec);
+         
+         if (rtec) {
+            console.log('RTEC status:', rtec.status);
+            console.log('Pre-meeting docs:', rtec.preMeetingDocuments?.length || 0);
+            if (rtec.preMeetingDocuments) {
+               rtec.preMeetingDocuments.forEach(doc => {
+                  console.log(`  - ${doc.documentType}: submitted=${doc.isSubmitted}, status=${doc.status}`);
+               });
+            }
+         }
+      }
+
+      res.json({
+         success: true,
+         data: {
+            tnasFound: tnas.length,
+            tnas: tnas.map(tna => ({
+               id: tna._id,
+               status: tna.status,
+               hasApplication: !!tna.applicationId,
+               hasProponent: !!tna.proponentId,
+               hasScheduledBy: !!tna.scheduledBy,
+               applicationId: tna.applicationId?.applicationId,
+               enterpriseName: tna.applicationId?.enterpriseName
+            }))
+         }
+      });
+
+   } catch (error) {
+      console.error('Debug TNA data error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Debug failed',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    createRTECMeeting,
    getRTECMeetings,
@@ -975,5 +1100,6 @@ module.exports = {
    getTNAsNeedingDocuments,
    getRTECStatistics,
    createRTECForDocuments,
-   requestDocumentSubmission
+   requestDocumentSubmission,
+   debugTNAData
 };
