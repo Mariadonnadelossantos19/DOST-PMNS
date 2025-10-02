@@ -93,8 +93,11 @@ const RTECManagement = () => {
             const result = await response.json();
             if (result.success) {
                console.log('Ready TNAs fetched:', result.data);
+               console.log('Ready TNAs count:', result.data?.length || 0);
                setReadyTNAs(result.data || []);
             }
+         } else {
+            console.error('Failed to fetch ready TNAs:', response.status, response.statusText);
          }
       } catch (error) {
          console.error('Error fetching ready TNAs:', error);
@@ -685,10 +688,10 @@ const RTECManagement = () => {
 
                   {/* TNAs Ready for RTEC Scheduling */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-                     <div className="px-3 py-2 border-b border-gray-100 bg-green-50">
-                        <h3 className="text-sm font-semibold text-gray-900">TNAs Ready for RTEC Scheduling</h3>
-                        <p className="text-xs text-gray-600 mt-1">TNAs with all pre-meeting documents submitted and approved</p>
-                     </div>
+                        <div className="px-3 py-2 border-b border-gray-100 bg-green-50">
+                           <h3 className="text-sm font-semibold text-gray-900">TNAs Ready for RTEC Scheduling</h3>
+                           <p className="text-xs text-gray-600 mt-1">TNAs signed by RD and ready for RTEC meeting scheduling</p>
+                        </div>
                      <div className="p-3">
                         {readyTNAs.length === 0 ? (
                            <div className="text-center py-8">
@@ -698,7 +701,7 @@ const RTECManagement = () => {
                                  </svg>
                               </div>
                               <h3 className="text-base font-medium text-gray-900 mb-1">No TNAs Ready for RTEC Scheduling</h3>
-                              <p className="text-sm text-gray-600">TNAs with all pre-meeting documents approved will appear here</p>
+                              <p className="text-sm text-gray-600">TNAs signed by RD will appear here for RTEC meeting scheduling</p>
                            </div>
                         ) : (
                            <div className="space-y-3">
@@ -710,12 +713,12 @@ const RTECManagement = () => {
                                           <StatusBadge status={tna.status} size="sm" />
                                        </div>
                                        <div className="flex items-center space-x-2">
-                                          {/* Document Status Indicator */}
+                                          {/* Ready Status Indicator */}
                                           <div className="flex items-center space-x-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                              </svg>
-                                             <span>Documents Approved</span>
+                                             <span>Ready for Scheduling</span>
                                           </div>
                                           <Button
                                              variant="outline"
@@ -767,30 +770,6 @@ const RTECManagement = () => {
                                        </div>
                                     </div>
 
-                                    {/* Pre-meeting Documents Status */}
-                                    <div className="mt-3 pt-3 border-t border-gray-100">
-                                       <p className="text-xs font-medium text-gray-600 mb-2">Pre-meeting Documents Status</p>
-                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                          <div className="flex items-center space-x-2 text-xs">
-                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                             <span className="text-gray-700">Approved TNA Report</span>
-                                             <span className="text-green-600 font-medium">✓ Approved</span>
-                                          </div>
-                                          <div className="flex items-center space-x-2 text-xs">
-                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                             <span className="text-gray-700">Risk Management Plan</span>
-                                             <span className="text-green-600 font-medium">✓ Approved</span>
-                                          </div>
-                                          <div className="flex items-center space-x-2 text-xs">
-                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                             <span className="text-gray-700">Financial Statements</span>
-                                             <span className="text-green-600 font-medium">✓ Approved</span>
-                                          </div>
-                                       </div>
-                                       <div className="mt-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                                          All pre-meeting documents have been reviewed and approved. Ready for RTEC scheduling.
-                                       </div>
-                                    </div>
                                  </div>
                               ))}
                            </div>
