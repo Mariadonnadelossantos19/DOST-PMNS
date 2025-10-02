@@ -1036,12 +1036,8 @@ const uploadSignedTNAReport = async (req, res) => {
       await tna.save();
 
       // Update application status to reflect RD signature
-      const Application = require('../models/SETUPApplication');
-      const application = await Application.findById(tna.applicationId);
-      if (application) {
-         application.status = 'rd_signed';
-         await application.save();
-      }
+      // Application status remains 'dost_mimaropa_approved' - the TNA status is what changes to 'signed_by_rd'
+      // No need to update application status here since TNA signing is a separate process
 
       console.log(`Signed TNA report uploaded for TNA ${tnaId} by DOST MIMAROPA`);
 
