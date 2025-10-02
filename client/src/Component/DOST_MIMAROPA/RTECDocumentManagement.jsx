@@ -39,12 +39,14 @@ const RTECDocumentManagement = () => {
          const response = await api.get(`/rtec-documents/list?${params}`);
          console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
-            console.log('RTEC Documents Data:', response.data.data.docs);
-            setRtecDocuments(response.data.data.docs || []);
+            console.log('RTEC Documents Data:', response.data.data);
+            setRtecDocuments(response.data.data || []);
          }
       } catch (error) {
          console.error('Error fetching RTEC documents:', error);
-         showToast('Failed to fetch RTEC documents', 'error');
+         console.error('Error response:', error.response?.data);
+         console.error('Error status:', error.response?.status);
+         showToast(`Failed to fetch RTEC documents: ${error.response?.data?.message || error.message}`, 'error');
       } finally {
          setLoading(false);
       }
