@@ -7,6 +7,12 @@ const upload = require('../middleware/upload');
 // Create RTEC meeting (DOST MIMAROPA)
 router.post('/create', auth, rtecController.createRTECMeeting);
 
+// Create RTEC for document submission (PSTO)
+router.post('/create-for-documents', auth, rtecController.createRTECForDocuments);
+
+// Request document submission from PSTO (DOST MIMAROPA)
+router.post('/request-documents', auth, rtecController.requestDocumentSubmission);
+
 // Get RTEC meetings (DOST MIMAROPA)
 router.get('/dost-mimaropa', auth, rtecController.getRTECMeetings);
 
@@ -42,6 +48,9 @@ router.get('/:id/documents', auth, rtecController.getDocumentStatus);
 
 // Get TNAs ready for RTEC scheduling
 router.get('/tna/ready-for-rtec', auth, rtecController.getTNAsReadyForRTEC);
+
+// Get TNAs needing document submission
+router.get('/tna/needing-documents', auth, rtecController.getTNAsNeedingDocuments);
 
 // Get RTEC statistics
 router.get('/statistics', auth, rtecController.getRTECStatistics);

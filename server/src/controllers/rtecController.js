@@ -60,6 +60,24 @@ const createRTECMeeting = async (req, res) => {
          });
       }
 
+      // Check if pre-meeting documents are submitted
+      const existingRTEC = await RTEC.findOne({ tnaId: tnaId });
+      if (existingRTEC) {
+         const preMeetingDocsSubmitted = existingRTEC.preMeetingDocuments.every(doc => doc.isSubmitted);
+         if (!preMeetingDocsSubmitted) {
+            return res.status(400).json({
+               success: false,
+               message: 'All pre-meeting documents must be submitted before scheduling RTEC meeting',
+               requiredDocuments: existingRTEC.preMeetingDocuments.map(doc => ({
+                  documentType: doc.documentType,
+                  documentName: doc.documentName,
+                  isSubmitted: doc.isSubmitted,
+                  status: doc.status
+               }))
+            });
+         }
+      }
+
       // Create RTEC meeting
       const rtecMeeting = new RTEC({
          tnaId,
@@ -562,7 +580,7 @@ const getDocumentStatus = async (req, res) => {
    }
 };
 
-// Get TNAs ready for RTEC scheduling (signed by RD)
+// Get TNAs ready for RTEC scheduling (signed by RD with documents submitted)
 const getTNAsReadyForRTEC = async (req, res) => {
    try {
       const tnas = await TNA.find({ status: 'signed_by_rd' })
@@ -573,9 +591,23 @@ const getTNAsReadyForRTEC = async (req, res) => {
          ])
          .sort({ rdSignedAt: -1 });
 
+      // Check which TNAs have RTEC with all pre-meeting documents submitted
+      const tnasWithDocuments = [];
+      
+      for (const tna of tnas) {
+         const rtec = await RTEC.findOne({ tnaId: tna._id });
+         
+         if (rtec && rtec.preMeetingDocuments) {
+            const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
+            if (allDocumentsSubmitted) {
+               tnasWithDocuments.push(tna);
+            }
+         }
+      }
+
       res.json({
          success: true,
-         data: tnas
+         data: tnasWithDocuments
       });
 
    } catch (error) {
@@ -583,6 +615,49 @@ const getTNAsReadyForRTEC = async (req, res) => {
       res.status(500).json({
          success: false,
          message: 'Failed to fetch TNAs ready for RTEC',
+         error: error.message
+      });
+   }
+};
+
+// Get TNAs that need document submission (signed by RD but no documents submitted)
+const getTNAsNeedingDocuments = async (req, res) => {
+   try {
+      const tnas = await TNA.find({ status: 'signed_by_rd' })
+         .populate([
+            { path: 'applicationId', select: 'applicationId enterpriseName status' },
+            { path: 'proponentId', select: 'firstName lastName email' },
+            { path: 'scheduledBy', select: 'firstName lastName email' }
+         ])
+         .sort({ rdSignedAt: -1 });
+
+      // Check which TNAs need document submission
+      const tnasNeedingDocuments = [];
+      
+      for (const tna of tnas) {
+         const rtec = await RTEC.findOne({ tnaId: tna._id });
+         
+         if (!rtec || !rtec.preMeetingDocuments) {
+            // No RTEC created yet or no documents initialized
+            tnasNeedingDocuments.push(tna);
+         } else {
+            const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
+            if (!allDocumentsSubmitted) {
+               tnasNeedingDocuments.push(tna);
+            }
+         }
+      }
+
+      res.json({
+         success: true,
+         data: tnasNeedingDocuments
+      });
+
+   } catch (error) {
+      console.error('Error fetching TNAs needing documents:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Failed to fetch TNAs needing documents',
          error: error.message
       });
    }
@@ -636,6 +711,187 @@ const getRTECStatistics = async (req, res) => {
    }
 };
 
+// Request document submission from PSTO (DOST MIMAROPA sends request)
+const requestDocumentSubmission = async (req, res) => {
+   try {
+      const { tnaId, message } = req.body;
+      const requestedBy = req.user._id || req.user.id;
+
+      // Validate TNA ID
+      if (!tnaId || !mongoose.Types.ObjectId.isValid(tnaId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID'
+         });
+      }
+
+      // Get TNA details
+      const tna = await TNA.findById(tnaId)
+         .populate('applicationId')
+         .populate('proponentId')
+         .populate('scheduledBy');
+
+      if (!tna) {
+         return res.status(404).json({
+            success: false,
+            message: 'TNA not found'
+         });
+      }
+
+      // Check if TNA is ready for RTEC (signed by RD)
+      if (tna.status !== 'signed_by_rd') {
+         return res.status(400).json({
+            success: false,
+            message: 'TNA must be signed by RD before requesting documents'
+         });
+      }
+
+      // Check if RTEC already exists
+      let rtecMeeting = await RTEC.findOne({ tnaId: tnaId });
+      
+      if (!rtecMeeting) {
+         // Create RTEC for document submission
+         rtecMeeting = new RTEC({
+            tnaId,
+            applicationId: tna.applicationId._id,
+            proponentId: tna.proponentId._id,
+            pstoId: tna.scheduledBy._id,
+            meetingTitle: `RTEC Document Submission - ${tna.applicationId.programName}`,
+            meetingDate: new Date(), // Placeholder date
+            meetingTime: 'TBD',
+            meetingLocation: 'TBD',
+            status: 'draft',
+            scheduledBy: requestedBy
+         });
+
+         // Initialize required documents
+         await rtecMeeting.initializeRequiredDocuments();
+      }
+
+      // Create notification for PSTO
+      const notification = new Notification({
+         recipientId: tna.scheduledBy._id,
+         senderId: requestedBy,
+         type: 'rtec_document_request',
+         title: 'RTEC Document Submission Required',
+         message: `Please submit the required pre-meeting documents for TNA ${tna.tnaId}. ${message || 'The following documents are required: Approved TNA Report, Risk Management Plan, and Financial Statements.'}`,
+         data: {
+            tnaId: tna._id,
+            rtecId: rtecMeeting._id,
+            requiredDocuments: [
+               'approved tna report',
+               'risk  management plan', 
+               'financial statements'
+            ]
+         },
+         isRead: false
+      });
+
+      await notification.save();
+
+      // Update TNA status
+      await tna.forwardToRTEC();
+
+      res.status(201).json({
+         success: true,
+         message: 'Document submission request sent to PSTO',
+         data: {
+            rtecId: rtecMeeting._id,
+            notificationId: notification._id
+         }
+      });
+
+   } catch (error) {
+      console.error('Error requesting document submission:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error requesting document submission',
+         error: error.message
+      });
+   }
+};
+
+// Create RTEC for document submission (PSTO submits pre-meeting documents)
+const createRTECForDocuments = async (req, res) => {
+   try {
+      const { tnaId } = req.body;
+      const pstoId = req.user._id || req.user.id;
+
+      // Validate TNA ID
+      if (!tnaId || !mongoose.Types.ObjectId.isValid(tnaId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID'
+         });
+      }
+
+      // Get TNA details
+      const tna = await TNA.findById(tnaId)
+         .populate('applicationId')
+         .populate('proponentId')
+         .populate('scheduledBy');
+
+      if (!tna) {
+         return res.status(404).json({
+            success: false,
+            message: 'TNA not found'
+         });
+      }
+
+      // Check if TNA is ready for RTEC (signed by RD)
+      if (tna.status !== 'signed_by_rd') {
+         return res.status(400).json({
+            success: false,
+            message: 'TNA must be signed by RD before submitting documents'
+         });
+      }
+
+      // Check if RTEC already exists
+      const existingRTEC = await RTEC.findOne({ tnaId: tnaId });
+      if (existingRTEC) {
+         return res.status(400).json({
+            success: false,
+            message: 'RTEC already exists for this TNA',
+            rtecId: existingRTEC._id
+         });
+      }
+
+      // Create RTEC for document submission
+      const rtecMeeting = new RTEC({
+         tnaId,
+         applicationId: tna.applicationId._id,
+         proponentId: tna.proponentId._id,
+         pstoId,
+         meetingTitle: `RTEC Document Submission - ${tna.applicationId.programName}`,
+         meetingDate: new Date(), // Placeholder date
+         meetingTime: 'TBD',
+         meetingLocation: 'TBD',
+         status: 'draft',
+         scheduledBy: pstoId
+      });
+
+      // Initialize required documents
+      await rtecMeeting.initializeRequiredDocuments();
+
+      // Update TNA status
+      await tna.forwardToRTEC();
+
+      res.status(201).json({
+         success: true,
+         message: 'RTEC created for document submission',
+         data: rtecMeeting
+      });
+
+   } catch (error) {
+      console.error('Error creating RTEC for documents:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error creating RTEC for documents',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    createRTECMeeting,
    getRTECMeetings,
@@ -650,5 +906,8 @@ module.exports = {
    cancelMeeting,
    getDocumentStatus,
    getTNAsReadyForRTEC,
-   getRTECStatistics
+   getTNAsNeedingDocuments,
+   getRTECStatistics,
+   createRTECForDocuments,
+   requestDocumentSubmission
 };
