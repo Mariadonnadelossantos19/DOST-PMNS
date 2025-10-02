@@ -372,9 +372,27 @@ const listRTECDocuments = async (req, res) => {
       console.log('Query:', query);
       console.log('Total found:', total);
       console.log('Documents found:', rtecDocuments.length);
-      if (rtecDocuments.length > 0) {
-         console.log('Sample document:', JSON.stringify(rtecDocuments[0], null, 2));
-      }
+      
+      rtecDocuments.forEach((doc, index) => {
+         console.log(`Document ${index + 1}:`, {
+            id: doc._id,
+            status: doc.status,
+            applicationId: doc.applicationId ? {
+               _id: doc.applicationId._id,
+               enterpriseName: doc.applicationId.enterpriseName,
+               companyName: doc.applicationId.companyName,
+               projectTitle: doc.applicationId.projectTitle,
+               programName: doc.applicationId.programName
+            } : null,
+            proponentId: doc.proponentId ? {
+               _id: doc.proponentId._id,
+               firstName: doc.proponentId.firstName,
+               lastName: doc.proponentId.lastName
+            } : null,
+            requestedAt: doc.requestedAt,
+            dueDate: doc.dueDate
+         });
+      });
 
       res.json({
          success: true,
@@ -423,6 +441,8 @@ const getRTECDocumentsForPSTO = async (req, res) => {
          .populate('applicationId', 'enterpriseName companyName projectTitle programName businessActivity')
          .populate('proponentId', 'firstName lastName email')
          .populate('requestedBy', 'firstName lastName')
+         .populate('submittedBy', 'firstName lastName')
+         .populate('reviewedBy', 'firstName lastName')
          .sort({ requestedAt: -1 })
          .skip(skip)
          .limit(limitNum);
