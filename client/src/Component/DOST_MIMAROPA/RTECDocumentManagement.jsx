@@ -149,8 +149,16 @@ const RTECDocumentManagement = () => {
 
    const submitReview = async () => {
       try {
+         const tnaId = selectedDocument.tnaId?._id || selectedDocument.tnaId;
+         console.log('Submitting review:', {
+            tnaId,
+            documentType: currentDocumentType,
+            action: reviewAction,
+            comments: reviewComments
+         });
+         
          const response = await api.post(
-            `/rtec-documents/review/${selectedDocument.tnaId._id}/${currentDocumentType}`,
+            `/rtec-documents/review/${tnaId}/${encodeURIComponent(currentDocumentType)}`,
             {
                action: reviewAction,
                comments: reviewComments
@@ -164,6 +172,7 @@ const RTECDocumentManagement = () => {
          }
       } catch (error) {
          console.error('Error reviewing document:', error);
+         console.error('Error details:', error.response?.data);
          showToast(error.response?.data?.message || 'Failed to review document', 'error');
       }
    };
