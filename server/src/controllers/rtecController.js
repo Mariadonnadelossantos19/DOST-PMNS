@@ -207,10 +207,26 @@ const getPSTORtecMeetings = async (req, res) => {
       const { status, page = 1, limit = 10 } = req.query;
       const userId = req.user._id || req.user.id;
 
+      console.log('=== PSTO RTEC MEETINGS DEBUG ===');
+      console.log('PSTO User ID:', userId);
+      console.log('Query status filter:', status);
+
       let query = { pstoId: userId };
       if (status) {
          query.status = status;
       }
+
+      console.log('Query:', query);
+
+      // First, let's see all RTEC records for debugging
+      const allRTECs = await RTEC.find({}).select('_id pstoId status tnaId meetingTitle');
+      console.log('All RTEC records:', allRTECs.map(r => ({
+         id: r._id,
+         pstoId: r.pstoId,
+         status: r.status,
+         tnaId: r.tnaId,
+         title: r.meetingTitle
+      })));
 
       const rtecMeetings = await RTEC.find(query)
          .populate([
@@ -223,6 +239,14 @@ const getPSTORtecMeetings = async (req, res) => {
          .sort({ meetingDate: -1 })
          .limit(limit * 1)
          .skip((page - 1) * limit);
+
+      console.log('Found RTEC meetings for PSTO:', rtecMeetings.length);
+      console.log('RTEC meetings:', rtecMeetings.map(r => ({
+         id: r._id,
+         status: r.status,
+         title: r.meetingTitle,
+         pstoId: r.pstoId
+      })));
 
       const total = await RTEC.countDocuments(query);
 
@@ -873,6 +897,11 @@ const requestDocumentSubmission = async (req, res) => {
       // Check if RTEC already exists
       let rtecMeeting = await RTEC.findOne({ tnaId: tnaId });
       
+      console.log('=== DOCUMENT REQUEST DEBUG ===');
+      console.log('TNA ID:', tnaId);
+      console.log('TNA scheduledBy (PSTO):', tna.scheduledBy);
+      console.log('Existing RTEC:', rtecMeeting ? rtecMeeting._id : 'None');
+      
       if (!rtecMeeting) {
          // Create RTEC for document submission
          rtecMeeting = new RTEC({
@@ -884,7 +913,7 @@ const requestDocumentSubmission = async (req, res) => {
             meetingDate: new Date(), // Placeholder date
             meetingTime: 'TBD',
             meetingLocation: 'TBD',
-            status: 'draft',
+            status: 'documents_requested',
             scheduledBy: requestedBy,
             contactPerson: {
                name: 'TBD',
@@ -896,6 +925,24 @@ const requestDocumentSubmission = async (req, res) => {
 
          // Initialize required documents
          await rtecMeeting.initializeRequiredDocuments();
+         await rtecMeeting.save();
+         
+         console.log('Created new RTEC:', {
+            id: rtecMeeting._id,
+            pstoId: rtecMeeting.pstoId,
+            status: rtecMeeting.status,
+            title: rtecMeeting.meetingTitle
+         });
+      } else {
+         // Update existing RTEC status
+         rtecMeeting.status = 'documents_requested';
+         await rtecMeeting.save();
+         
+         console.log('Updated existing RTEC:', {
+            id: rtecMeeting._id,
+            pstoId: rtecMeeting.pstoId,
+            status: rtecMeeting.status
+         });
       }
 
       // Create notification for PSTO
