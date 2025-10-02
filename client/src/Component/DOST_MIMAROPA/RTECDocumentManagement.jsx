@@ -226,24 +226,24 @@ const RTECDocumentManagement = () => {
    const rtecDocumentsColumns = [
       {
          key: 'companyName',
-         label: 'Enterprise Name',
-         render: (item) => {
+         header: 'Enterprise Name',
+         render: (value, item) => {
             console.log('Rendering company for item:', item);
             return item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A';
          }
       },
       {
          key: 'projectTitle',
-         label: 'Project',
-         render: (item) => {
+         header: 'Project',
+         render: (value, item) => {
             console.log('Rendering project for item:', item);
             return item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
          }
       },
       {
          key: 'proponent',
-         label: 'Proponent',
-         render: (item) => {
+         header: 'Proponent',
+         render: (value, item) => {
             console.log('Rendering proponent for item:', item);
             const fullName = `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim();
             return fullName || 'N/A';
@@ -251,32 +251,32 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'status',
-         label: 'Status',
-         render: (item) => {
+         header: 'Status',
+         render: (value, item) => {
             console.log('Rendering status for item:', item);
             return getStatusBadge(item?.status);
          }
       },
       {
          key: 'requestedAt',
-         label: 'Requested',
-         render: (item) => {
+         header: 'Requested',
+         render: (value, item) => {
             console.log('Rendering requestedAt for item:', item);
             return item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
          }
       },
       {
          key: 'dueDate',
-         label: 'Due Date',
-         render: (item) => {
+         header: 'Due Date',
+         render: (value, item) => {
             console.log('Rendering dueDate for item:', item);
             return item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
          }
       },
       {
          key: 'actions',
-         label: 'Actions',
-         render: (item) => (
+         header: 'Actions',
+         render: (value, item) => (
             <div className="flex space-x-2">
                <Button
                   size="sm"
@@ -293,8 +293,8 @@ const RTECDocumentManagement = () => {
    const approvedTNAsColumns = [
       {
          key: 'companyName',
-         label: 'Company',
-         render: (item) => {
+         header: 'Company',
+         render: (value, item) => {
             if (!item) return 'N/A';
             return item.applicationId?.enterpriseName || 
                    item.applicationId?.companyName || 
@@ -305,8 +305,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'projectTitle',
-         label: 'Project',
-         render: (item) => {
+         header: 'Project',
+         render: (value, item) => {
             if (!item) return 'N/A';
             return item.applicationId?.projectTitle || 
                    item.applicationId?.programName || 
@@ -317,8 +317,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'proponent',
-         label: 'Proponent',
-         render: (item) => {
+         header: 'Proponent',
+         render: (value, item) => {
             if (!item || !item.proponentId) return 'N/A';
             const firstName = item.proponentId.firstName || '';
             const lastName = item.proponentId.lastName || '';
@@ -327,8 +327,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'scheduledDate',
-         label: 'TNA Date',
-         render: (item) => {
+         header: 'TNA Date',
+         render: (value, item) => {
             if (!item || !item.scheduledDate) return 'N/A';
             try {
                return new Date(item.scheduledDate).toLocaleDateString();
@@ -339,8 +339,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'rdSignedAt',
-         label: 'RD Signed',
-         render: (item) => {
+         header: 'RD Signed',
+         render: (value, item) => {
             if (!item || !item.rdSignedAt) return 'N/A';
             try {
                return new Date(item.rdSignedAt).toLocaleDateString();
@@ -351,8 +351,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'rtecStatus',
-         label: 'RTEC Status',
-         render: (item) => {
+         header: 'RTEC Status',
+         render: (value, item) => {
             if (!item) return 'N/A';
             if (item.hasRTECRequest) {
                return <Badge color="blue">Documents Requested</Badge>;
@@ -363,8 +363,8 @@ const RTECDocumentManagement = () => {
       },
       {
          key: 'actions',
-         label: 'Actions',
-         render: (item) => {
+         header: 'Actions',
+         render: (value, item) => {
             if (!item) return null;
             return (
                <div className="flex space-x-2">
