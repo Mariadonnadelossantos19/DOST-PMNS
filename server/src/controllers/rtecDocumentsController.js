@@ -436,16 +436,38 @@ const getRTECDocumentsForPSTO = async (req, res) => {
       const limitNum = parseInt(limit);
       const skip = (pageNum - 1) * limitNum;
 
+      console.log('=== BEFORE POPULATION ===');
+      
       const rtecDocuments = await RTECDocuments.find(query)
-         .populate('tnaId', 'scheduledDate location programName status')
-         .populate('applicationId', 'enterpriseName companyName projectTitle programName businessActivity')
-         .populate('proponentId', 'firstName lastName email')
-         .populate('requestedBy', 'firstName lastName')
-         .populate('submittedBy', 'firstName lastName')
-         .populate('reviewedBy', 'firstName lastName')
+         .populate({
+            path: 'tnaId',
+            select: 'scheduledDate location programName status'
+         })
+         .populate({
+            path: 'applicationId',
+            select: 'enterpriseName companyName projectTitle programName businessActivity'
+         })
+         .populate({
+            path: 'proponentId', 
+            select: 'firstName lastName email'
+         })
+         .populate({
+            path: 'requestedBy',
+            select: 'firstName lastName'
+         })
+         .populate({
+            path: 'submittedBy',
+            select: 'firstName lastName'
+         })
+         .populate({
+            path: 'reviewedBy',
+            select: 'firstName lastName'
+         })
          .sort({ requestedAt: -1 })
          .skip(skip)
          .limit(limitNum);
+
+      console.log('=== AFTER POPULATION ===');
 
       const total = await RTECDocuments.countDocuments(query);
 
