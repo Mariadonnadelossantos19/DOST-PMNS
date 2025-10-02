@@ -244,7 +244,6 @@ const RTECDocumentSubmission = () => {
                                              {doc.documentStatus === 'approved' ? '✅' : '⏳'}
                                           </span>
                                        )}
-                                       </div>
                                     </div>
                                  </div>
                               ))}
