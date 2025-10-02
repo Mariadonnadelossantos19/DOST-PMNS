@@ -61,6 +61,9 @@ router.get('/statistics', auth, rtecController.getRTECStatistics);
 // Debug TNA data
 router.get('/debug/tna-data', auth, rtecController.debugTNAData);
 
+// Debug RTEC data
+router.get('/debug/rtec-data', auth, rtecController.debugRTECData);
+
 // Cleanup draft RTEC records
 router.delete('/debug/cleanup-drafts', auth, rtecController.cleanupDraftRTECs);
 

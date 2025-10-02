@@ -1163,6 +1163,59 @@ const debugTNAData = async (req, res) => {
    }
 };
 
+// Debug RTEC data
+const debugRTECData = async (req, res) => {
+   try {
+      console.log('=== DEBUG RTEC DATA ===');
+      console.log('Current user:', req.user);
+      
+      const rtecs = await RTEC.find({})
+         .populate('tnaId', 'tnaId status')
+         .populate('applicationId', 'applicationId enterpriseName')
+         .populate('proponentId', 'firstName lastName email')
+         .populate('pstoId', 'firstName lastName email')
+         .sort({ createdAt: -1 });
+
+      console.log(`Found ${rtecs.length} RTEC records:`);
+      
+      for (const rtec of rtecs) {
+         console.log(`\nRTEC ${rtec._id}:`);
+         console.log(`  Status: ${rtec.status}`);
+         console.log(`  Title: ${rtec.meetingTitle}`);
+         console.log(`  TNA: ${rtec.tnaId?._id || 'N/A'} (Status: ${rtec.tnaId?.status || 'N/A'})`);
+         console.log(`  Application: ${rtec.applicationId?.applicationId || 'N/A'}`);
+         console.log(`  PSTO ID: ${rtec.pstoId?._id || rtec.pstoId || 'N/A'}`);
+         console.log(`  PSTO Name: ${rtec.pstoId?.firstName || 'N/A'} ${rtec.pstoId?.lastName || ''}`);
+         console.log(`  Pre-meeting docs: ${rtec.preMeetingDocuments?.length || 0}`);
+         if (rtec.preMeetingDocuments?.length > 0) {
+            rtec.preMeetingDocuments.forEach(doc => {
+               console.log(`    - ${doc.documentName}: ${doc.status} (submitted: ${doc.isSubmitted})`);
+            });
+         }
+      }
+
+      res.json({
+         success: true,
+         message: 'RTEC debug data logged to console',
+         data: {
+            totalRTECs: rtecs.length,
+            rtecsByStatus: rtecs.reduce((acc, rtec) => {
+               acc[rtec.status] = (acc[rtec.status] || 0) + 1;
+               return acc;
+            }, {})
+         }
+      });
+
+   } catch (error) {
+      console.error('Error in debugRTECData:', error);
+      res.status(500).json({
+         success: false,
+         message: 'RTEC debug failed',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    createRTECMeeting,
    getRTECMeetings,
@@ -1183,5 +1236,6 @@ module.exports = {
    createRTECForDocuments,
    requestDocumentSubmission,
    debugTNAData,
+   debugRTECData,
    cleanupDraftRTECs
 };
