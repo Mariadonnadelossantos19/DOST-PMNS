@@ -58,4 +58,10 @@ router.get('/tna/needing-documents', auth, rtecController.getTNAsNeedingDocument
 // Get RTEC statistics
 router.get('/statistics', auth, rtecController.getRTECStatistics);
 
+// Debug TNA data
+router.get('/debug/tna-data', auth, rtecController.debugTNAData);
+
+// Cleanup draft RTEC records
+router.delete('/debug/cleanup-drafts', auth, rtecController.cleanupDraftRTECs);
+
 module.exports = router;

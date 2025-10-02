@@ -580,8 +580,8 @@ const RTECManagement = () => {
                   {/* TNAs Needing Document Submission */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                        <h3 className="text-sm font-semibold text-gray-900">TNAs Needing Document Submission</h3>
-                        <p className="text-xs text-gray-600 mt-1">Request PSTO to submit pre-meeting documents</p>
+                        <h3 className="text-sm font-semibold text-gray-900">TNAs Needing Document Request</h3>
+                        <p className="text-xs text-gray-600 mt-1">TNAs signed by RD that need document submission request to PSTO</p>
                      </div>
                      <div className="p-3">
                         {tnasNeedingDocuments.length === 0 ? (
@@ -592,7 +592,7 @@ const RTECManagement = () => {
                                  </svg>
                               </div>
                               <h3 className="text-base font-medium text-gray-900 mb-1">No TNAs Need Document Request</h3>
-                              <p className="text-sm text-gray-600">TNAs signed by RD that need document submission will appear here</p>
+                              <p className="text-sm text-gray-600">TNAs signed by RD will appear here for document request</p>
                            </div>
                         ) : (
                            <div className="space-y-3">
@@ -689,8 +689,8 @@ const RTECManagement = () => {
                   {/* TNAs Ready for RTEC Scheduling */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
                         <div className="px-3 py-2 border-b border-gray-100 bg-green-50">
-                           <h3 className="text-sm font-semibold text-gray-900">TNAs Ready for RTEC Scheduling</h3>
-                           <p className="text-xs text-gray-600 mt-1">TNAs signed by RD and ready for RTEC meeting scheduling</p>
+                           <h3 className="text-sm font-semibold text-gray-900">Applications Ready for RTEC Scheduling</h3>
+                           <p className="text-xs text-gray-600 mt-1">Applications with approved documents ready for RTEC meeting scheduling</p>
                         </div>
                      <div className="p-3">
                         {readyTNAs.length === 0 ? (
@@ -700,8 +700,8 @@ const RTECManagement = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                  </svg>
                               </div>
-                              <h3 className="text-base font-medium text-gray-900 mb-1">No TNAs Ready for RTEC Scheduling</h3>
-                              <p className="text-sm text-gray-600">TNAs signed by RD will appear here for RTEC meeting scheduling</p>
+                              <h3 className="text-base font-medium text-gray-900 mb-1">No Applications Ready for RTEC Scheduling</h3>
+                              <p className="text-sm text-gray-600">Applications with approved documents will appear here for RTEC meeting scheduling</p>
                            </div>
                         ) : (
                            <div className="space-y-3">

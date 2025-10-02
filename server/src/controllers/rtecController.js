@@ -665,8 +665,8 @@ const getTNAsReadyForRTEC = async (req, res) => {
          return res.json({ success: true, data: [] });
       }
 
-      // STEP 3: Process each TNA
-      console.log('STEP 3: Processing each TNA...');
+      // STEP 3: Process each TNA and check for approved documents
+      console.log('STEP 3: Processing each TNA and checking document status...');
       const readyTNAs = [];
       
       for (let i = 0; i < tnas.length; i++) {
@@ -679,10 +679,16 @@ const getTNAsReadyForRTEC = async (req, res) => {
          console.log(`👤 Proponent: ${tna.proponentId?.firstName || 'MISSING'} ${tna.proponentId?.lastName || ''}`);
          console.log(`🏛️ PSTO: ${tna.scheduledBy?.firstName || 'MISSING'} ${tna.scheduledBy?.lastName || ''}`);
          
+         // Skip TNAs with missing critical data
+         if (!tna.applicationId || !tna.proponentId || !tna.scheduledBy) {
+            console.log(`⏭️ SKIPPED - Missing critical data`);
+            continue;
+         }
+
          // Check for existing RTEC (only scheduled/completed, not draft since we deleted those)
-         const existingRTEC = await RTEC.findOne({ 
-            tnaId: tna._id, 
-            status: { $in: ['scheduled', 'completed', 'cancelled'] } 
+         const existingRTEC = await RTEC.findOne({
+            tnaId: tna._id,
+            status: { $in: ['scheduled', 'completed', 'cancelled'] }
          });
          
          if (existingRTEC) {
@@ -690,9 +696,24 @@ const getTNAsReadyForRTEC = async (req, res) => {
             continue;
          }
 
-         // Add to ready list (we'll be more lenient with missing data for now)
-         readyTNAs.push(tna);
-         console.log(`✅ ADDED to ready list`);
+         // Check if there's an RTEC with document submission status
+         const rtecWithDocuments = await RTEC.findOne({
+            tnaId: tna._id,
+            status: { $in: ['documents_requested', 'documents_submitted', 'documents_approved'] }
+         });
+
+         if (!rtecWithDocuments) {
+            console.log(`⏭️ SKIPPED - No document submission process started`);
+            continue;
+         }
+
+         // Only add to ready list if documents are approved
+         if (rtecWithDocuments.status === 'documents_approved') {
+            console.log(`✅ ADDED to ready list - Documents approved`);
+            readyTNAs.push(tna);
+         } else {
+            console.log(`⏭️ SKIPPED - Documents not yet approved (status: ${rtecWithDocuments.status})`);
+         }
       }
 
       console.log(`\n🎯 FINAL RESULT: ${readyTNAs.length} TNAs ready for RTEC scheduling`);
@@ -713,9 +734,12 @@ const getTNAsReadyForRTEC = async (req, res) => {
    }
 };
 
-// Get TNAs that need document submission (signed by RD but no documents submitted)
+// Get TNAs that need document submission request (signed by RD but no document process started)
 const getTNAsNeedingDocuments = async (req, res) => {
    try {
+      console.log('=== STARTING getTNAsNeedingDocuments ===');
+      
+      // Get all TNAs with signed_by_rd status
       const tnas = await TNA.find({ status: 'signed_by_rd' })
          .populate([
             { path: 'applicationId', select: 'applicationId enterpriseName status' },
@@ -724,22 +748,29 @@ const getTNAsNeedingDocuments = async (req, res) => {
          ])
          .sort({ rdSignedAt: -1 });
 
-      // Check which TNAs need document submission
+      console.log(`✅ Found ${tnas.length} TNAs with signed_by_rd status`);
+      
       const tnasNeedingDocuments = [];
       
       for (const tna of tnas) {
-         const rtec = await RTEC.findOne({ tnaId: tna._id });
+         // Skip TNAs with missing critical data
+         if (!tna.applicationId || !tna.proponentId || !tna.scheduledBy) {
+            continue;
+         }
+
+         // Check if there's already an RTEC record for this TNA
+         const existingRTEC = await RTEC.findOne({ tnaId: tna._id });
          
-         if (!rtec || !rtec.preMeetingDocuments) {
-            // No RTEC created yet or no documents initialized
+         if (!existingRTEC) {
+            // No RTEC record exists, so documents haven't been requested yet
             tnasNeedingDocuments.push(tna);
+            console.log(`✅ TNA ${tna._id} needs document request`);
          } else {
-            const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
-            if (!allDocumentsSubmitted) {
-               tnasNeedingDocuments.push(tna);
-            }
+            console.log(`⏭️ TNA ${tna._id} already has RTEC record with status: ${existingRTEC.status}`);
          }
       }
+
+      console.log(`\n🎯 FINAL RESULT: ${tnasNeedingDocuments.length} TNAs needing document requests`);
 
       res.json({
          success: true,
@@ -747,7 +778,7 @@ const getTNAsNeedingDocuments = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error fetching TNAs needing documents:', error);
+      console.error('❌ ERROR in getTNAsNeedingDocuments:', error);
       res.status(500).json({
          success: false,
          message: 'Failed to fetch TNAs needing documents',

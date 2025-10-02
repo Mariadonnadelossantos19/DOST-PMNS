@@ -1011,10 +1011,13 @@ const uploadSignedTNAReport = async (req, res) => {
       }
 
       // Check if TNA is approved by DOST MIMAROPA
+      console.log(`TNA ${tnaId} current status: ${tna.status}`);
       if (tna.status !== 'dost_mimaropa_approved') {
          return res.status(400).json({
             success: false,
-            message: 'TNA must be approved by DOST MIMAROPA before uploading signed report'
+            message: `TNA must be approved by DOST MIMAROPA before uploading signed report. Current status: ${tna.status}`,
+            currentStatus: tna.status,
+            requiredStatus: 'dost_mimaropa_approved'
          });
       }
 

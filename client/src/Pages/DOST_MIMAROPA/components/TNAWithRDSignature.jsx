@@ -185,7 +185,12 @@ const TNAWithRDSignature = () => {
                alert('Session expired. Please login again.');
                return;
             }
-            throw new Error(`Failed to upload signed report: ${response.status}`);
+            
+            // Get detailed error message from server
+            const errorData = await response.json();
+            const errorMessage = errorData.message || `Failed to upload signed report: ${response.status}`;
+            console.error('Server error details:', errorData);
+            throw new Error(errorMessage);
          }
 
          const result = await response.json();
