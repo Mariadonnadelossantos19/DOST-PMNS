@@ -10,6 +10,7 @@ import {
    Alert
 } from '../../../Component/UI';
 import { API_ENDPOINTS } from '../../../config/api';
+import api from '../../../config/api';
 
 const TNAWithRDSignature = () => {
    const [approvedTnas, setApprovedTnas] = useState([]);
@@ -21,6 +22,9 @@ const TNAWithRDSignature = () => {
    const [uploading, setUploading] = useState(false);
    const [activeTab, setActiveTab] = useState('approved'); // 'approved' or 'signature'
    const [showDetailsModal, setShowDetailsModal] = useState(false);
+   const [showRequestModal, setShowRequestModal] = useState(false);
+   const [selectedTnaForRequest, setSelectedTnaForRequest] = useState(null);
+   const [rtecRequests, setRtecRequests] = useState([]);
 
    // Fetch approved TNAs that need RD signature
    const fetchApprovedTnas = async () => {
@@ -73,7 +77,46 @@ const TNAWithRDSignature = () => {
 
    useEffect(() => {
       fetchApprovedTnas();
+      fetchRTECRequests();
    }, []);
+
+   // Fetch existing RTEC document requests
+   const fetchRTECRequests = async () => {
+      try {
+         const response = await api.get('/rtec-documents/list');
+         if (response.data.success) {
+            setRtecRequests(response.data.data.docs || []);
+         }
+      } catch (error) {
+         console.error('Error fetching RTEC requests:', error);
+      }
+   };
+
+   // Check if TNA already has RTEC document request
+   const hasRTECRequest = (tnaId) => {
+      return rtecRequests.some(request => request.tnaId._id === tnaId || request.tnaId === tnaId);
+   };
+
+   // Handle RTEC document request
+   const handleRequestDocuments = async (tna) => {
+      setSelectedTnaForRequest(tna);
+      setShowRequestModal(true);
+   };
+
+   // Submit RTEC document request
+   const submitRTECRequest = async () => {
+      try {
+         const response = await api.post(`/rtec-documents/request/${selectedTnaForRequest._id}`);
+         if (response.data.success) {
+            alert('RTEC documents requested successfully!');
+            setShowRequestModal(false);
+            fetchRTECRequests(); // Refresh RTEC requests
+         }
+      } catch (error) {
+         console.error('Error requesting RTEC documents:', error);
+         alert(error.response?.data?.message || 'Failed to request documents');
+      }
+   };
 
    // Download TNA report for printing
    const handleDownloadForSignature = async (tna) => {
@@ -168,6 +211,13 @@ const TNAWithRDSignature = () => {
             return;
          }
 
+         console.log('Uploading signed TNA report:', {
+            tnaId: selectedTna._id,
+            fileName: signedFile.name,
+            fileSize: signedFile.size,
+            fileType: signedFile.type
+         });
+
          const formData = new FormData();
          formData.append('signedTnaReport', signedFile);
          formData.append('tnaId', selectedTna._id);
@@ -180,6 +230,8 @@ const TNAWithRDSignature = () => {
             body: formData
          });
 
+         console.log('Upload response status:', response.status);
+
          if (!response.ok) {
             if (response.status === 401) {
                alert('Session expired. Please login again.');
@@ -187,13 +239,22 @@ const TNAWithRDSignature = () => {
             }
             
             // Get detailed error message from server
-            const errorData = await response.json();
-            const errorMessage = errorData.message || `Failed to upload signed report: ${response.status}`;
+            let errorData;
+            try {
+               errorData = await response.json();
+            } catch (parseError) {
+               console.error('Failed to parse error response:', parseError);
+               throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            
             console.error('Server error details:', errorData);
+            const errorMessage = errorData.message || `Failed to upload signed report: ${response.status}`;
             throw new Error(errorMessage);
          }
 
          const result = await response.json();
+         console.log('Upload result:', result);
+         
          if (result.success) {
             alert('Signed TNA report uploaded successfully! It has been forwarded to PSTO.');
             setShowUploadModal(false);
@@ -768,19 +829,48 @@ const TNAWithRDSignature = () => {
                               
                               <div className="flex items-center space-x-2 ml-4">
                                  {tna.status === 'signed_by_rd' && tna.signedTnaReport ? (
-                                    // Show "View Signed TNA" button if already signed
-                                    <Button
-                                       variant="outline"
-                                       size="sm"
-                                       onClick={() => handleDownloadSignedTNA(tna._id)}
-                                       className="border-green-300 text-green-600 hover:bg-green-50 text-xs px-3 py-1"
-                                    >
-                                       <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                       </svg>
-                                       View Signed TNA
-                                    </Button>
+                                    <>
+                                       {/* Show "View Signed TNA" button if already signed */}
+                                       <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleDownloadSignedTNA(tna._id)}
+                                          className="border-green-300 text-green-600 hover:bg-green-50 text-xs px-3 py-1"
+                                       >
+                                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                          </svg>
+                                          View Signed TNA
+                                       </Button>
+                                       
+                                       {/* Show "Request Documents" button for RTEC */}
+                                       {hasRTECRequest(tna._id) ? (
+                                          <Button
+                                             variant="outline"
+                                             size="sm"
+                                             disabled
+                                             className="border-blue-300 text-blue-600 bg-blue-50 text-xs px-3 py-1"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Documents Requested
+                                          </Button>
+                                       ) : (
+                                          <Button
+                                             variant="outline"
+                                             size="sm"
+                                             onClick={() => handleRequestDocuments(tna)}
+                                             className="border-blue-300 text-blue-600 hover:bg-blue-50 text-xs px-3 py-1"
+                                          >
+                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                             </svg>
+                                             Request Documents
+                                          </Button>
+                                       )}
+                                    </>
                                  ) : (
                                     // Show "Upload Signed" button if not yet signed
                                     <Button
@@ -793,7 +883,8 @@ const TNAWithRDSignature = () => {
                                        className="border-blue-300 text-blue-600 hover:bg-blue-50 text-xs px-3 py-1"
                                     >
                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                        </svg>
                                        Upload Signed
                                     </Button>
@@ -1075,6 +1166,79 @@ const TNAWithRDSignature = () => {
                               Upload Signed TNA
                            </>
                         )}
+                     </Button>
+                  </div>
+               </div>
+            </Modal>
+         )}
+
+         {/* Request RTEC Documents Modal */}
+         {showRequestModal && selectedTnaForRequest && (
+            <Modal
+               isOpen={showRequestModal}
+               onClose={() => {
+                  setShowRequestModal(false);
+                  setSelectedTnaForRequest(null);
+               }}
+               title="Request RTEC Documents"
+               size="lg"
+            >
+               <div className="space-y-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                     <h4 className="font-medium text-blue-900 mb-2">TNA Information</h4>
+                     <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                           <span className="font-medium text-blue-800">Company:</span>
+                           <p className="text-blue-700">{selectedTnaForRequest.applicationId?.enterpriseName || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <span className="font-medium text-blue-800">Project:</span>
+                           <p className="text-blue-700">{selectedTnaForRequest.applicationId?.programName || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <span className="font-medium text-blue-800">TNA Date:</span>
+                           <p className="text-blue-700">
+                              {selectedTnaForRequest.scheduledDate ? new Date(selectedTnaForRequest.scheduledDate).toLocaleDateString() : 'N/A'}
+                           </p>
+                        </div>
+                        <div>
+                           <span className="font-medium text-blue-800">RD Signed:</span>
+                           <p className="text-blue-700">
+                              {selectedTnaForRequest.rdSignedAt ? new Date(selectedTnaForRequest.rdSignedAt).toLocaleDateString() : 'N/A'}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                     <h4 className="font-medium text-yellow-900 mb-2">Documents to be Requested</h4>
+                     <ul className="text-sm text-yellow-800 space-y-1">
+                        <li>• Approved TNA Report with Signature</li>
+                        <li>• Risk Management Plan</li>
+                        <li>• Financial Statements (3 years for SME, 1 year for micro-enterprises)</li>
+                     </ul>
+                     <p className="text-sm text-yellow-700 mt-2">
+                        The PSTO will have 14 days to submit all required documents.
+                     </p>
+                  </div>
+
+                  <p className="text-sm text-gray-600">
+                     Are you sure you want to request RTEC documents for this TNA? 
+                     This will notify the PSTO to submit the required documents.
+                  </p>
+
+                  <div className="flex justify-end space-x-3">
+                     <Button
+                        variant="outline"
+                        onClick={() => setShowRequestModal(false)}
+                     >
+                        Cancel
+                     </Button>
+                     <Button
+                        onClick={submitRTECRequest}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                     >
+                        Request Documents
                      </Button>
                   </div>
                </div>
