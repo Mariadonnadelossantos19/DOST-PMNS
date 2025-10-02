@@ -655,77 +655,10 @@ const getTNAsReadyForRTEC = async (req, res) => {
       console.log('getTNAsReadyForRTEC - Found TNAs with signed_by_rd status:', tnas.length);
       
       for (const tna of tnas) {
-         try {
-            let rtec = await RTEC.findOne({ tnaId: tna._id });
-            
-            console.log(`TNA ${tna._id}: RTEC exists:`, !!rtec);
-            
-            // If no RTEC exists, create one automatically for this TNA
-            if (!rtec) {
-               console.log(`Creating RTEC record for TNA ${tna._id}`);
-               
-               // Check for required references
-               if (!tna.applicationId || !tna.proponentId || !tna.scheduledBy) {
-                  console.log(`TNA ${tna._id} - Missing required references:`, {
-                     applicationId: !!tna.applicationId,
-                     proponentId: !!tna.proponentId,
-                     scheduledBy: !!tna.scheduledBy
-                  });
-                  continue; // Skip this TNA if missing required references
-               }
-            
-               rtec = new RTEC({
-                  tnaId: tna._id,
-                  applicationId: tna.applicationId._id,
-                  proponentId: tna.proponentId._id,
-                  pstoId: tna.scheduledBy._id,
-                  meetingTitle: `RTEC Document Submission - ${tna.applicationId?.enterpriseName || 'Enterprise'}`,
-                  meetingDate: new Date(),
-                  meetingTime: 'TBD',
-                  meetingLocation: 'TBD',
-                  status: 'draft',
-                  scheduledBy: req.user._id || req.user.id,
-                  contactPerson: {
-                     name: 'TBD',
-                     position: 'TBD',
-                     email: 'TBD',
-                     phone: 'TBD'
-                  }
-               });
-               
-               // Initialize required documents
-               rtec.initializeRequiredDocuments();
-               await rtec.save();
-               console.log(`RTEC record created for TNA ${tna._id}`);
-            }
-         
-         if (rtec && rtec.preMeetingDocuments) {
-            console.log(`TNA ${tna._id} - Pre-meeting documents:`, rtec.preMeetingDocuments.map(doc => ({
-               type: doc.documentType,
-               submitted: doc.isSubmitted,
-               status: doc.status
-            })));
-            
-            const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
-            const allDocumentsApproved = rtec.preMeetingDocuments.every(doc => doc.status === 'approved');
-            
-            console.log(`TNA ${tna._id} - All submitted:`, allDocumentsSubmitted, 'All approved:', allDocumentsApproved);
-            console.log(`TNA ${tna._id} - Document details:`, rtec.preMeetingDocuments.map(doc => `${doc.documentType}: submitted=${doc.isSubmitted}, status=${doc.status}`));
-            
-            if (allDocumentsSubmitted && allDocumentsApproved) {
-               tnasWithDocuments.push(tna);
-               console.log(`TNA ${tna._id} - ADDED to ready list`);
-            } else {
-               console.log(`TNA ${tna._id} - NOT READY - Missing requirements:`, {
-                  needsSubmission: rtec.preMeetingDocuments.filter(doc => !doc.isSubmitted).map(doc => doc.documentType),
-                  needsApproval: rtec.preMeetingDocuments.filter(doc => doc.status !== 'approved').map(doc => `${doc.documentType}:${doc.status}`)
-               });
-            }
-         }
-         } catch (error) {
-            console.error(`Error processing TNA ${tna._id}:`, error);
-            continue; // Skip this TNA and continue with the next one
-         }
+         // Simply add all TNAs with signed_by_rd status to ready list
+         // RTEC will be created only when actually scheduling the meeting
+         tnasWithDocuments.push(tna);
+         console.log(`TNA ${tna._id} - ADDED to ready list (signed by RD)`);
       }
 
       res.json({
@@ -1025,6 +958,11 @@ const createRTECForDocuments = async (req, res) => {
 const debugTNAData = async (req, res) => {
    try {
       console.log('=== DEBUG TNA DATA ===');
+      
+      // Get ALL TNAs first to see what exists
+      const allTnas = await TNA.find({}).select('_id status rdSignedAt');
+      console.log('All TNAs in database:', allTnas.length);
+      console.log('TNA statuses:', allTnas.map(tna => ({ id: tna._id, status: tna.status })));
       
       // Get all TNAs with signed_by_rd status
       const tnas = await TNA.find({ status: 'signed_by_rd' })
