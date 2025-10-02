@@ -226,33 +226,52 @@ const RTECDocumentManagement = () => {
    const rtecDocumentsColumns = [
       {
          key: 'companyName',
-         label: 'Company',
-         render: (item) => item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A'
+         label: 'Enterprise Name',
+         render: (item) => {
+            console.log('Rendering company for item:', item);
+            return item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A';
+         }
       },
       {
          key: 'projectTitle',
          label: 'Project',
-         render: (item) => item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A'
+         render: (item) => {
+            console.log('Rendering project for item:', item);
+            return item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
+         }
       },
       {
          key: 'proponent',
          label: 'Proponent',
-         render: (item) => `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim() || 'N/A'
+         render: (item) => {
+            console.log('Rendering proponent for item:', item);
+            const fullName = `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim();
+            return fullName || 'N/A';
+         }
       },
       {
          key: 'status',
          label: 'Status',
-         render: (item) => getStatusBadge(item?.status)
+         render: (item) => {
+            console.log('Rendering status for item:', item);
+            return getStatusBadge(item?.status);
+         }
       },
       {
          key: 'requestedAt',
          label: 'Requested',
-         render: (item) => item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A'
+         render: (item) => {
+            console.log('Rendering requestedAt for item:', item);
+            return item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
+         }
       },
       {
          key: 'dueDate',
          label: 'Due Date',
-         render: (item) => item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A'
+         render: (item) => {
+            console.log('Rendering dueDate for item:', item);
+            return item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
+         }
       },
       {
          key: 'actions',
