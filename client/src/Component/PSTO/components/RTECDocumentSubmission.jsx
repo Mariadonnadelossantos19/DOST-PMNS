@@ -145,7 +145,7 @@ const RTECDocumentSubmission = () => {
                         <div className="flex justify-between items-start mb-4">
                            <div>
                               <h3 className="text-lg font-semibold text-gray-900">
-                                 {rtecDoc.applicationId?.companyName}
+                                 {rtecDoc.applicationId?.enterpriseName}
                               </h3>
                               <p className="text-sm text-gray-600">
                                  {rtecDoc.applicationId?.projectTitle}
@@ -171,8 +171,8 @@ const RTECDocumentSubmission = () => {
                         <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3 mb-3 shadow-sm">
                            <div className="grid grid-cols-2 gap-2 text-xs">
                               <div>
-                                 <span className="font-semibold text-blue-700">Company:</span>
-                                 <p className="text-gray-900 truncate">{rtecDoc.applicationId?.companyName || 'N/A'}</p>
+                                 <span className="font-semibold text-blue-700">Enterprise:</span>
+                                 <p className="text-gray-900 truncate">{rtecDoc.applicationId?.enterpriseName || 'N/A'}</p>
                               </div>
                               <div>
                                  <span className="font-semibold text-blue-700">Project:</span>
