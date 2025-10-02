@@ -368,6 +368,14 @@ const listRTECDocuments = async (req, res) => {
 
       const total = await RTECDocuments.countDocuments(query);
 
+      console.log('=== LIST RTEC DOCUMENTS DEBUG ===');
+      console.log('Query:', query);
+      console.log('Total found:', total);
+      console.log('Documents found:', rtecDocuments.length);
+      if (rtecDocuments.length > 0) {
+         console.log('Sample document:', JSON.stringify(rtecDocuments[0], null, 2));
+      }
+
       res.json({
          success: true,
          data: {
