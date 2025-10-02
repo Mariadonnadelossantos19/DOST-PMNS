@@ -27,6 +27,8 @@ const RTECManagement = () => {
    const [showDetailsModal, setShowDetailsModal] = useState(false);
    const [showRequestModal, setShowRequestModal] = useState(false);
    const [requestMessage, setRequestMessage] = useState('');
+   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
+   const [selectedDocumentForPreview, setSelectedDocumentForPreview] = useState(null);
 
    // Fetch RTEC meetings
    const fetchRTECMeetings = async () => {
@@ -212,6 +214,58 @@ const RTECManagement = () => {
       }
    };
 
+   // Preview document
+   const handlePreviewDocument = (meeting, document) => {
+      setSelectedDocumentForPreview({
+         meeting: meeting,
+         document: document,
+         fileUrl: document.file ? `http://localhost:4000/uploads/${document.file.filename}` : null
+      });
+      setShowDocumentPreview(true);
+   };
+
+   // Review document (approve/reject)
+   const handleReviewDocument = async (rtecId, documentType, status, remarks) => {
+      try {
+         const token = localStorage.getItem('authToken');
+         if (!token) {
+            setError('Please login first');
+            return;
+         }
+
+         const response = await fetch(`http://localhost:4000/api/rtec/${rtecId}/review-document`, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+               documentType,
+               status,
+               remarks
+            })
+         });
+
+         if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+               // Refresh the data
+               fetchRTECMeetings();
+               fetchReadyTNAs();
+               fetchTNAsNeedingDocuments();
+               alert(`Document ${status} successfully!`);
+            } else {
+               setError(result.message || 'Failed to review document');
+            }
+         } else {
+            setError(`Failed to review document: ${response.status} ${response.statusText}`);
+         }
+      } catch (error) {
+         console.error('Error reviewing document:', error);
+         setError('Error reviewing document: ' + error.message);
+      }
+   };
+
 
    if (loading) {
       return (
@@ -319,6 +373,24 @@ const RTECManagement = () => {
                         <span>Schedule RTEC</span>
                         <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full">
                            {readyTNAs.length}
+                        </span>
+                     </div>
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('review')}
+                     className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === 'review'
+                           ? 'border-blue-500 text-blue-600'
+                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                     }`}
+                  >
+                     <div className="flex items-center space-x-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Document Review</span>
+                        <span className="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">
+                           {rtecMeetings.filter(meeting => meeting.preMeetingDocuments?.some(doc => doc.status === 'submitted')).length}
                         </span>
                      </div>
                   </button>
@@ -614,7 +686,7 @@ const RTECManagement = () => {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
                         <h3 className="text-sm font-semibold text-gray-900">TNAs Ready for RTEC Scheduling</h3>
-                        <p className="text-xs text-gray-600 mt-1">TNAs with all pre-meeting documents submitted</p>
+                        <p className="text-xs text-gray-600 mt-1">TNAs with all pre-meeting documents submitted and approved</p>
                      </div>
                      <div className="p-3">
                         {readyTNAs.length === 0 ? (
@@ -625,7 +697,7 @@ const RTECManagement = () => {
                                  </svg>
                               </div>
                               <h3 className="text-base font-medium text-gray-900 mb-1">No TNAs Ready for RTEC</h3>
-                              <p className="text-sm text-gray-600">TNAs with all pre-meeting documents submitted will appear here</p>
+                              <p className="text-sm text-gray-600">TNAs with all pre-meeting documents submitted and approved will appear here</p>
                            </div>
                         ) : (
                            <div className="space-y-3">
@@ -711,6 +783,122 @@ const RTECManagement = () => {
                                              <span className="text-gray-700">Financial Statements</span>
                                           </div>
                                        </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        )}
+                     </div>
+                  </div>
+               </div>
+            ) : activeTab === 'review' ? (
+               // Document Review Tab
+               <div className="space-y-3">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                     <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <h3 className="text-sm font-semibold text-gray-900">Documents Pending Review</h3>
+                        <p className="text-xs text-gray-600 mt-1">Review and approve/reject submitted pre-meeting documents</p>
+                     </div>
+                     <div className="p-3">
+                        {rtecMeetings.filter(meeting => meeting.preMeetingDocuments?.some(doc => doc.status === 'submitted')).length === 0 ? (
+                           <div className="text-center py-8">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                 </svg>
+                              </div>
+                              <h3 className="text-base font-medium text-gray-900 mb-1">No Documents to Review</h3>
+                              <p className="text-sm text-gray-600">Documents submitted by PSTO will appear here for review</p>
+                           </div>
+                        ) : (
+                           <div className="space-y-3">
+                              {rtecMeetings
+                                 .filter(meeting => meeting.preMeetingDocuments?.some(doc => doc.status === 'submitted'))
+                                 .map((meeting) => (
+                                 <div key={meeting._id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                    <div className="flex items-center justify-between mb-3">
+                                       <div>
+                                          <h4 className="text-base font-semibold text-gray-900">{meeting.meetingTitle}</h4>
+                                          <p className="text-sm text-gray-600">
+                                             Application: {meeting.applicationId?.applicationId || meeting.tnaId?.applicationId?.applicationId || 'N/A'}
+                                          </p>
+                                       </div>
+                                       <StatusBadge status={meeting.status} size="sm" />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                       <h5 className="text-sm font-medium text-gray-900">Pre-Meeting Documents</h5>
+                                       {meeting.preMeetingDocuments?.map((doc, index) => (
+                                          <div key={index} className="bg-gray-50 rounded-lg p-3 border">
+                                             <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center space-x-2">
+                                                   <div className={`w-3 h-3 rounded-full ${
+                                                      doc.status === 'approved' ? 'bg-green-500' :
+                                                      doc.status === 'rejected' ? 'bg-red-500' :
+                                                      doc.status === 'submitted' ? 'bg-blue-500' :
+                                                      'bg-orange-500'
+                                                   }`}></div>
+                                                   <span className="text-sm font-medium text-gray-900">{doc.documentName}</span>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                   <Badge 
+                                                      variant={
+                                                         doc.status === 'approved' ? 'success' :
+                                                         doc.status === 'rejected' ? 'error' :
+                                                         doc.status === 'submitted' ? 'info' :
+                                                         'warning'
+                                                      }
+                                                      size="sm"
+                                                   >
+                                                      {doc.status === 'submitted' ? 'Pending Review' : doc.status}
+                                                   </Badge>
+                                                   <div className="flex space-x-1">
+                                                      {doc.file && (
+                                                         <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handlePreviewDocument(meeting, doc)}
+                                                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1"
+                                                         >
+                                                            View
+                                                         </Button>
+                                                      )}
+                                                      {doc.status === 'submitted' && (
+                                                         <>
+                                                            <Button
+                                                               variant="outline"
+                                                               size="sm"
+                                                               onClick={() => handleReviewDocument(meeting._id, doc.documentType, 'approved', '')}
+                                                               className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1"
+                                                            >
+                                                               Approve
+                                                            </Button>
+                                                            <Button
+                                                               variant="outline"
+                                                               size="sm"
+                                                               onClick={() => handleReviewDocument(meeting._id, doc.documentType, 'rejected', 'Please resubmit with corrections')}
+                                                               className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1"
+                                                            >
+                                                               Reject
+                                                            </Button>
+                                                         </>
+                                                      )}
+                                                   </div>
+                                                </div>
+                                             </div>
+                                             <p className="text-xs text-gray-600 mb-2">{doc.description}</p>
+                                             {doc.submittedAt && (
+                                                <p className="text-xs text-gray-500">
+                                                   Submitted: {formatDate(doc.submittedAt)}
+                                                </p>
+                                             )}
+                                             {doc.remarks && (
+                                                <p className="text-xs text-gray-700 mt-1 bg-yellow-50 p-2 rounded">
+                                                   Remarks: {doc.remarks}
+                                                </p>
+                                             )}
+                                          </div>
+                                       ))}
                                     </div>
                                  </div>
                               ))}
@@ -1033,6 +1221,164 @@ const RTECManagement = () => {
                      >
                         Send Request
                      </Button>
+                  </div>
+               </div>
+            </Modal>
+         )}
+
+         {/* Document Preview Modal */}
+         {showDocumentPreview && selectedDocumentForPreview && (
+            <Modal
+               isOpen={showDocumentPreview}
+               onClose={() => {
+                  setShowDocumentPreview(false);
+                  setSelectedDocumentForPreview(null);
+               }}
+               title={`Preview: ${selectedDocumentForPreview.document.documentName}`}
+               size="large"
+            >
+               <div className="space-y-4">
+                  {/* Document Info */}
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                           <p className="text-sm font-medium text-gray-600">Document Type</p>
+                           <p className="text-sm text-gray-900">{selectedDocumentForPreview.document.documentName}</p>
+                        </div>
+                        <div>
+                           <p className="text-sm font-medium text-gray-600">Status</p>
+                           <Badge 
+                              variant={
+                                 selectedDocumentForPreview.document.status === 'approved' ? 'success' :
+                                 selectedDocumentForPreview.document.status === 'rejected' ? 'error' :
+                                 selectedDocumentForPreview.document.status === 'submitted' ? 'info' :
+                                 'warning'
+                              }
+                              size="sm"
+                           >
+                              {selectedDocumentForPreview.document.status === 'submitted' ? 'Pending Review' : selectedDocumentForPreview.document.status}
+                           </Badge>
+                        </div>
+                        <div>
+                           <p className="text-sm font-medium text-gray-600">Submitted Date</p>
+                           <p className="text-sm text-gray-900">
+                              {selectedDocumentForPreview.document.submittedAt ? formatDate(selectedDocumentForPreview.document.submittedAt) : 'N/A'}
+                           </p>
+                        </div>
+                        <div>
+                           <p className="text-sm font-medium text-gray-600">File Size</p>
+                           <p className="text-sm text-gray-900">
+                              {selectedDocumentForPreview.document.file?.size ? 
+                                 `${(selectedDocumentForPreview.document.file.size / 1024 / 1024).toFixed(2)} MB` : 
+                                 'N/A'
+                              }
+                           </p>
+                        </div>
+                     </div>
+                     
+                     {selectedDocumentForPreview.document.description && (
+                        <div className="mt-3">
+                           <p className="text-sm font-medium text-gray-600">Description</p>
+                           <p className="text-sm text-gray-900">{selectedDocumentForPreview.document.description}</p>
+                        </div>
+                     )}
+
+                     {selectedDocumentForPreview.document.remarks && (
+                        <div className="mt-3">
+                           <p className="text-sm font-medium text-gray-600">PSTO Remarks</p>
+                           <p className="text-sm text-gray-900 bg-yellow-50 p-2 rounded">{selectedDocumentForPreview.document.remarks}</p>
+                        </div>
+                     )}
+                  </div>
+
+                  {/* Document Preview */}
+                  <div className="border rounded-lg overflow-hidden">
+                     {selectedDocumentForPreview.fileUrl ? (
+                        <div className="bg-gray-100 p-4">
+                           {selectedDocumentForPreview.document.file?.mimetype?.includes('pdf') ? (
+                              <iframe
+                                 src={selectedDocumentForPreview.fileUrl}
+                                 className="w-full h-96 border rounded"
+                                 title="Document Preview"
+                              />
+                           ) : selectedDocumentForPreview.document.file?.mimetype?.includes('image') ? (
+                              <img
+                                 src={selectedDocumentForPreview.fileUrl}
+                                 alt="Document Preview"
+                                 className="max-w-full h-auto max-h-96 mx-auto rounded"
+                              />
+                           ) : (
+                              <div className="text-center py-8">
+                                 <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <p className="text-gray-600 mb-2">Preview not available for this file type</p>
+                                 <p className="text-sm text-gray-500">File: {selectedDocumentForPreview.document.file?.originalName}</p>
+                                 <Button
+                                    variant="outline"
+                                    onClick={() => window.open(selectedDocumentForPreview.fileUrl, '_blank')}
+                                    className="mt-3"
+                                 >
+                                    Download File
+                                 </Button>
+                              </div>
+                           )}
+                        </div>
+                     ) : (
+                        <div className="text-center py-8">
+                           <p className="text-gray-600">No file available for preview</p>
+                        </div>
+                     )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-between">
+                     <Button
+                        variant="outline"
+                        onClick={() => {
+                           setShowDocumentPreview(false);
+                           setSelectedDocumentForPreview(null);
+                        }}
+                     >
+                        Close
+                     </Button>
+                     
+                     {selectedDocumentForPreview.document.status === 'submitted' && (
+                        <div className="flex space-x-2">
+                           <Button
+                              onClick={() => {
+                                 handleReviewDocument(
+                                    selectedDocumentForPreview.meeting._id, 
+                                    selectedDocumentForPreview.document.documentType, 
+                                    'rejected', 
+                                    'Please resubmit with corrections'
+                                 );
+                                 setShowDocumentPreview(false);
+                                 setSelectedDocumentForPreview(null);
+                              }}
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                           >
+                              Reject
+                           </Button>
+                           <Button
+                              onClick={() => {
+                                 handleReviewDocument(
+                                    selectedDocumentForPreview.meeting._id, 
+                                    selectedDocumentForPreview.document.documentType, 
+                                    'approved', 
+                                    ''
+                                 );
+                                 setShowDocumentPreview(false);
+                                 setSelectedDocumentForPreview(null);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                           >
+                              Approve
+                           </Button>
+                        </div>
+                     )}
                   </div>
                </div>
             </Modal>

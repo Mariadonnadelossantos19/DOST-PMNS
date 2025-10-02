@@ -34,6 +34,9 @@ router.post('/:id/submit-document', auth, upload.single('file'), rtecController.
 // Review document (DOST MIMAROPA)
 router.post('/:id/review-document', auth, rtecController.reviewDocument);
 
+// Get documents for review (DOST MIMAROPA)
+router.get('/:id/documents-for-review', auth, rtecController.getDocumentsForReview);
+
 // Complete evaluation
 router.post('/:id/complete-evaluation', auth, rtecController.completeEvaluation);
 

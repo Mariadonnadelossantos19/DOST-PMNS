@@ -37,6 +37,10 @@ const notificationSchema = new mongoose.Schema({
          'tna_completed',
          'document_required',
          'status_update',
+         'rtec_scheduled',
+         'rtec_document_request',
+         'meeting_invitation',
+         'proposal_request',
          'general'
       ],
       required: true
@@ -45,7 +49,7 @@ const notificationSchema = new mongoose.Schema({
    // Related Entity
    relatedEntityType: {
       type: String,
-      enum: ['application', 'tna', 'user', 'general'],
+      enum: ['application', 'tna', 'user', 'rtec', 'general'],
       default: 'general'
    },
    relatedEntityId: {

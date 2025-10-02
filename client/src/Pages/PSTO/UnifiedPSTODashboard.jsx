@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePSTOData } from '../../hooks/usePSTOData';
 import { Card, Button, DataTable, StatusBadge } from '../../Component/UI';
-import { TNAManagement, DocumentValidation, TNAReportUpload } from '../../Component/PSTO/components';
+import { TNAManagement, DocumentValidation, TNAReportUpload, RTECDocumentSubmission } from '../../Component/PSTO/components';
 import ProponentManagement from '../../Component/PSTO/ProponentManagement';
 import PSTOStats from '../../Component/PSTO/PSTOStats';
 import PSTOManagementDashboard from './PSTOManagementDashboard';
@@ -152,6 +152,11 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       <TNAReportUpload currentUser={currentUser} />
    ), [currentUser]);
 
+   // Render RTEC Document Submission
+   const renderRTECDocuments = useCallback(() => (
+      <RTECDocumentSubmission currentUser={currentUser} />
+   ), [currentUser]);
+
    // Render proponents content
    const renderProponents = useCallback(() => (
       <div className="space-y-6">
@@ -209,6 +214,9 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       if (currentPage === 'tna-management') {
          return 'tna-management';
       }
+      if (currentPage === 'rtec-documents') {
+         return 'rtec-documents';
+      }
       if (currentPage === 'dashboard') {
          return 'overview';
       }
@@ -254,9 +262,10 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       'tna-management': renderTNAManagement,
       'document-validation': renderDocumentValidation,
       'tna-reports': renderTNAReports,
+      'rtec-documents': renderRTECDocuments,
       proponents: renderProponents,
       'proponent-management': renderProponentManagement
-   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderProponents, renderProponentManagement]);
+   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderRTECDocuments, renderProponents, renderProponentManagement]);
 
    const renderContent = useCallback(() => {
       const renderer = viewRenderers[currentView];

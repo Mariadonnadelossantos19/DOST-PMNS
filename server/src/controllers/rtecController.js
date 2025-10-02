@@ -60,14 +60,29 @@ const createRTECMeeting = async (req, res) => {
          });
       }
 
-      // Check if pre-meeting documents are submitted
+      // Check if pre-meeting documents are submitted AND approved
       const existingRTEC = await RTEC.findOne({ tnaId: tnaId });
       if (existingRTEC) {
          const preMeetingDocsSubmitted = existingRTEC.preMeetingDocuments.every(doc => doc.isSubmitted);
+         const preMeetingDocsApproved = existingRTEC.preMeetingDocuments.every(doc => doc.status === 'approved');
+         
          if (!preMeetingDocsSubmitted) {
             return res.status(400).json({
                success: false,
                message: 'All pre-meeting documents must be submitted before scheduling RTEC meeting',
+               requiredDocuments: existingRTEC.preMeetingDocuments.map(doc => ({
+                  documentType: doc.documentType,
+                  documentName: doc.documentName,
+                  isSubmitted: doc.isSubmitted,
+                  status: doc.status
+               }))
+            });
+         }
+         
+         if (!preMeetingDocsApproved) {
+            return res.status(400).json({
+               success: false,
+               message: 'All pre-meeting documents must be reviewed and approved before scheduling RTEC meeting',
                requiredDocuments: existingRTEC.preMeetingDocuments.map(doc => ({
                   documentType: doc.documentType,
                   documentName: doc.documentName,
@@ -87,7 +102,7 @@ const createRTECMeeting = async (req, res) => {
          meetingDate: new Date(meetingDate),
          meetingTime,
          meetingLocation,
-         meetingType: meetingType || 'physical',
+         meetingMode: meetingType || 'physical',
          meetingLink,
          committeeMembers,
          contactPerson,
@@ -110,12 +125,13 @@ const createRTECMeeting = async (req, res) => {
       // Create notification for PSTO
       const notification = new Notification({
          recipientId: tna.scheduledBy._id,
-         senderId: scheduledBy,
+         recipientType: 'psto',
+         sentBy: scheduledBy,
          type: 'rtec_scheduled',
          title: 'RTEC Meeting Scheduled',
          message: `RTEC meeting has been scheduled for ${meetingTitle} on ${new Date(meetingDate).toLocaleDateString()}`,
-         relatedId: rtecMeeting._id,
-         relatedType: 'RTEC'
+         relatedEntityId: rtecMeeting._id,
+         relatedEntityType: 'rtec'
       });
       await notification.save();
 
@@ -199,6 +215,8 @@ const getPSTORtecMeetings = async (req, res) => {
       const rtecMeetings = await RTEC.find(query)
          .populate([
             { path: 'tnaId', populate: ['applicationId', 'proponentId'] },
+            { path: 'applicationId', select: 'applicationId enterpriseName programName' },
+            { path: 'proponentId', select: 'firstName lastName email' },
             { path: 'scheduledBy', select: 'firstName lastName email' },
             { path: 'pstoId', select: 'firstName lastName email' }
          ])
@@ -286,12 +304,13 @@ const sendMeetingInvitation = async (req, res) => {
          if (user) {
             const notification = new Notification({
                recipientId: user._id,
-               senderId: userId,
+               recipientType: user.role,
+               sentBy: userId,
                type: 'meeting_invitation',
                title: 'RTEC Meeting Invitation',
                message: `You are invited to attend RTEC meeting: ${rtecMeeting.meetingTitle} on ${rtecMeeting.formattedMeetingDate}`,
-               relatedId: rtecMeeting._id,
-               relatedType: 'RTEC'
+               relatedEntityId: rtecMeeting._id,
+               relatedEntityType: 'RTEC'
             });
             await notification.save();
          }
@@ -332,12 +351,13 @@ const requestProposalSubmission = async (req, res) => {
       // Create notification for PSTO
       const notification = new Notification({
          recipientId: rtecMeeting.pstoId,
-         senderId: userId,
+         recipientType: 'psto',
+         sentBy: userId,
          type: 'proposal_request',
          title: 'Proposal Submission Requested',
          message: `Please submit the required documents for RTEC meeting: ${rtecMeeting.meetingTitle}`,
-         relatedId: rtecMeeting._id,
-         relatedType: 'RTEC'
+         relatedEntityId: rtecMeeting._id,
+         relatedEntityType: 'rtec'
       });
       await notification.save();
 
@@ -360,7 +380,7 @@ const requestProposalSubmission = async (req, res) => {
 const submitDocument = async (req, res) => {
    try {
       const { id } = req.params;
-      const { documentType } = req.body;
+      const { documentType, remarks } = req.body;
       const userId = req.user._id || req.user.id;
 
       if (!req.file) {
@@ -386,8 +406,8 @@ const submitDocument = async (req, res) => {
          mimetype: req.file.mimetype
       };
 
-      // Submit document
-      await rtecMeeting.submitDocument(documentType, fileData, userId);
+      // Submit document with remarks
+      await rtecMeeting.submitDocument(documentType, fileData, userId, remarks);
 
       res.json({
          success: true,
@@ -432,6 +452,44 @@ const reviewDocument = async (req, res) => {
       res.status(500).json({
          success: false,
          message: 'Failed to review document',
+         error: error.message
+      });
+   }
+};
+
+// Get documents for review (DOST MIMAROPA)
+const getDocumentsForReview = async (req, res) => {
+   try {
+      const { id } = req.params;
+      
+      const rtecMeeting = await RTEC.findById(id)
+         .populate([
+            { path: 'tnaId', populate: ['applicationId', 'proponentId'] },
+            { path: 'scheduledBy', select: 'firstName lastName email' },
+            { path: 'pstoId', select: 'firstName lastName email' }
+         ]);
+
+      if (!rtecMeeting) {
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC meeting not found'
+         });
+      }
+
+      res.json({
+         success: true,
+         data: {
+            rtecMeeting,
+            preMeetingDocuments: rtecMeeting.preMeetingDocuments || [],
+            postMeetingDocuments: rtecMeeting.postMeetingDocuments || []
+         }
+      });
+
+   } catch (error) {
+      console.error('Error fetching documents for review:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Failed to fetch documents for review',
          error: error.message
       });
    }
@@ -591,7 +649,7 @@ const getTNAsReadyForRTEC = async (req, res) => {
          ])
          .sort({ rdSignedAt: -1 });
 
-      // Check which TNAs have RTEC with all pre-meeting documents submitted
+      // Check which TNAs have RTEC with all pre-meeting documents submitted AND approved
       const tnasWithDocuments = [];
       
       for (const tna of tnas) {
@@ -599,7 +657,8 @@ const getTNAsReadyForRTEC = async (req, res) => {
          
          if (rtec && rtec.preMeetingDocuments) {
             const allDocumentsSubmitted = rtec.preMeetingDocuments.every(doc => doc.isSubmitted);
-            if (allDocumentsSubmitted) {
+            const allDocumentsApproved = rtec.preMeetingDocuments.every(doc => doc.status === 'approved');
+            if (allDocumentsSubmitted && allDocumentsApproved) {
                tnasWithDocuments.push(tna);
             }
          }
@@ -761,7 +820,13 @@ const requestDocumentSubmission = async (req, res) => {
             meetingTime: 'TBD',
             meetingLocation: 'TBD',
             status: 'draft',
-            scheduledBy: requestedBy
+            scheduledBy: requestedBy,
+            contactPerson: {
+               name: 'TBD',
+               position: 'TBD',
+               email: 'TBD',
+               phone: 'TBD'
+            }
          });
 
          // Initialize required documents
@@ -771,26 +836,20 @@ const requestDocumentSubmission = async (req, res) => {
       // Create notification for PSTO
       const notification = new Notification({
          recipientId: tna.scheduledBy._id,
-         senderId: requestedBy,
+         recipientType: 'psto',
+         sentBy: requestedBy,
          type: 'rtec_document_request',
          title: 'RTEC Document Submission Required',
          message: `Please submit the required pre-meeting documents for TNA ${tna.tnaId}. ${message || 'The following documents are required: Approved TNA Report, Risk Management Plan, and Financial Statements.'}`,
-         data: {
-            tnaId: tna._id,
-            rtecId: rtecMeeting._id,
-            requiredDocuments: [
-               'approved tna report',
-               'risk  management plan', 
-               'financial statements'
-            ]
-         },
+         relatedEntityId: rtecMeeting._id,
+         relatedEntityType: 'rtec',
          isRead: false
       });
 
       await notification.save();
 
       // Update TNA status
-      await tna.forwardToRTEC();
+      await tna.forwardToRTEC(requestedBy);
 
       res.status(201).json({
          success: true,
@@ -867,7 +926,13 @@ const createRTECForDocuments = async (req, res) => {
          meetingTime: 'TBD',
          meetingLocation: 'TBD',
          status: 'draft',
-         scheduledBy: pstoId
+         scheduledBy: pstoId,
+         contactPerson: {
+            name: 'TBD',
+            position: 'TBD',
+            email: 'TBD',
+            phone: 'TBD'
+         }
       });
 
       // Initialize required documents
@@ -901,6 +966,7 @@ module.exports = {
    requestProposalSubmission,
    submitDocument,
    reviewDocument,
+   getDocumentsForReview,
    completeEvaluation,
    rescheduleMeeting,
    cancelMeeting,

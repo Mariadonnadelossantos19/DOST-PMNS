@@ -42,13 +42,13 @@ const rtecSchema = new mongoose.Schema({
    
    applicationId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Application',
+      ref: 'SETUPApplication',
       required: true
    },
    
    proponentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Proponent',
+      ref: 'User',
       required: true
    },
    
@@ -124,19 +124,19 @@ const rtecSchema = new mongoose.Schema({
    contactPerson: {
       name: {
          type: String,
-         required: true
+         required: false
       },
       position: {
          type: String,
-         required: true
+         required: false
       },
       email: {
          type: String,
-         required: true
+         required: false
       },
       phone: {
          type: String,
-         required: true
+         required: false
       }
    },
    
