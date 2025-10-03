@@ -750,6 +750,7 @@ const RTECScheduleManagement = () => {
                         type="date"
                         value={formData.scheduledDate}
                         onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
                         required
                      />
                   </div>

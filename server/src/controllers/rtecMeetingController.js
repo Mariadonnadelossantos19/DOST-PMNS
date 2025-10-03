@@ -104,9 +104,11 @@ const createRTECMeeting = async (req, res) => {
       }
       
       if (meetingDate <= currentDate) {
+         const selectedDateStr = meetingDate.toLocaleDateString();
+         const currentDateStr = currentDate.toLocaleDateString();
          return res.status(400).json({
             success: false,
-            message: `Meeting must be scheduled for a future date. Selected: ${meetingDate.toISOString()}, Current: ${currentDate.toISOString()}`
+            message: `Meeting must be scheduled for a future date. You selected ${selectedDateStr}, but today is ${currentDateStr}. Please choose a date after today.`
          });
       }
 
