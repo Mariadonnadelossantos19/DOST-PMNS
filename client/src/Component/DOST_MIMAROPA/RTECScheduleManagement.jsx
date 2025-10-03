@@ -745,9 +745,21 @@ const RTECScheduleManagement = () => {
                   <DataTable
                      data={approvedRTECDocuments.filter(doc => {
                         // Filter out documents that already have meetings
-                        const hasMeeting = rtecMeetings.some(meeting => 
-                           meeting.rtecDocumentsId?.toString() === doc._id?.toString()
-                        );
+                        console.log('=== FILTERING DOCUMENT ===');
+                        console.log('Document ID:', doc._id);
+                        console.log('Document title:', doc.applicationId?.enterpriseName);
+                        
+                        const hasMeeting = rtecMeetings.some(meeting => {
+                           console.log('Checking meeting:', meeting.meetingTitle);
+                           console.log('Meeting rtecDocumentsId:', meeting.rtecDocumentsId);
+                           console.log('Comparing:', meeting.rtecDocumentsId?.toString(), '===', doc._id?.toString());
+                           const match = meeting.rtecDocumentsId?.toString() === doc._id?.toString();
+                           console.log('Match result:', match);
+                           return match;
+                        });
+                        
+                        console.log('Document has meeting:', hasMeeting);
+                        console.log('Will show document:', !hasMeeting);
                         return !hasMeeting;
                      })}
                      columns={approvedDocumentsColumns}
