@@ -329,8 +329,7 @@ const RTECScheduleManagement = () => {
          header: 'Program',
          accessor: 'programName',
          render: (value, item) => {
-            console.log('Program render - value:', value, 'item:', item);
-            const programName = value || item?.programName || 'SETUP';
+            const programName = item?.programName || value || 'SETUP';
             return <Badge color="blue">{programName}</Badge>;
          }
       },
@@ -338,13 +337,13 @@ const RTECScheduleManagement = () => {
          header: 'Proponent',
          accessor: 'proponentId',
          render: (value, item) => {
-            console.log('Proponent render - value:', value, 'item:', item);
+            const proponent = item?.proponentId || value;
             return (
                <div>
                   <div className="font-medium">
-                     {value?.firstName || item?.proponentId?.firstName || ''} {value?.lastName || item?.proponentId?.lastName || ''}
+                     {proponent?.firstName || ''} {proponent?.lastName || ''}
                   </div>
-                  <div className="text-sm text-gray-500">{value?.email || item?.proponentId?.email || 'N/A'}</div>
+                  <div className="text-sm text-gray-500">{proponent?.email || 'N/A'}</div>
                </div>
             );
          }
@@ -353,8 +352,6 @@ const RTECScheduleManagement = () => {
          header: 'Documents Status',
          accessor: 'status',
          render: (value, item) => {
-            console.log('Documents Status render - value:', value, 'item:', item);
-            console.log('item.status:', item?.status);
             const statusConfig = {
                'documents_approved': { color: 'green', text: 'Documents Approved' },
                'documents_requested': { color: 'yellow', text: 'Documents Requested' },
@@ -363,7 +360,6 @@ const RTECScheduleManagement = () => {
                'documents_rejected': { color: 'red', text: 'Documents Rejected' }
             };
             const statusValue = item?.status || value;
-            console.log('Final statusValue:', statusValue);
             const config = statusConfig[statusValue] || { color: 'gray', text: statusValue || 'Unknown' };
             return <Badge color={config.color}>{config.text}</Badge>;
          }
