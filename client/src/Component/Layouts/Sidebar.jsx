@@ -216,6 +216,19 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          path: '/rtec-documents'
       },
       {
+         id: 'rtec-scheduling',
+         label: 'RTEC Scheduling Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M17 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/rtec-scheduling',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA and Super Admin users
+      },
+      {
          id: 'monitoring',
          label: 'Application Monitoring',
          icon: (
