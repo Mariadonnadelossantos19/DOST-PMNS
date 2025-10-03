@@ -142,12 +142,18 @@ const RTECScheduleManagement = () => {
    };
 
    const handleScheduleMeeting = (rtecDocument) => {
+      console.log('=== HANDLE SCHEDULE MEETING ===');
+      console.log('RTEC Document:', rtecDocument);
+      console.log('TNA ID:', rtecDocument.tnaId?._id || rtecDocument.tnaId);
+      console.log('Application ID:', rtecDocument.applicationId?._id || rtecDocument.applicationId);
+      console.log('Proponent ID:', rtecDocument.proponentId?._id || rtecDocument.proponentId);
+      
       setSelectedRTECDocument(rtecDocument);
       setFormData({
-         tnaId: rtecDocument.tnaId._id,
+         tnaId: rtecDocument.tnaId?._id || rtecDocument.tnaId,
          rtecDocumentsId: rtecDocument._id,
-         applicationId: rtecDocument.applicationId._id,
-         proponentId: rtecDocument.proponentId._id,
+         applicationId: rtecDocument.applicationId?._id || rtecDocument.applicationId,
+         proponentId: rtecDocument.proponentId?._id || rtecDocument.proponentId,
          programName: rtecDocument.programName || 'SETUP',
          meetingTitle: `RTEC Meeting - ${rtecDocument.applicationId?.enterpriseName || 'Application'}`,
          meetingDescription: '',
@@ -165,7 +171,14 @@ const RTECScheduleManagement = () => {
 
    const handleCreateMeeting = async () => {
       try {
+         console.log('=== CREATE MEETING DEBUG ===');
+         console.log('Form Data:', formData);
+         console.log('TNA ID being sent:', formData.tnaId);
+         console.log('Meeting Title:', formData.meetingTitle);
+         
          const response = await api.post('/rtec-meetings/create', formData);
+         console.log('Create meeting response:', response.data);
+         
          if (response.data.success) {
             displayToast('RTEC meeting scheduled successfully', 'success');
             setShowCreateModal(false);
@@ -191,6 +204,8 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error creating meeting:', error);
+         console.error('Error response:', error.response?.data);
+         console.error('Error status:', error.response?.status);
          displayToast(error.response?.data?.message || 'Failed to create meeting', 'error');
       }
    };
