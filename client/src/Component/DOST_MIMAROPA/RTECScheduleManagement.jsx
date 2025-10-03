@@ -42,7 +42,7 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error fetching RTEC meetings:', error);
-         showToast('Failed to fetch RTEC meetings', 'error');
+         displayToast('Failed to fetch RTEC meetings', 'error');
       } finally {
          setLoading(false);
       }
@@ -57,7 +57,7 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error fetching PSTO users:', error);
-         showToast('Failed to fetch PSTO users', 'error');
+         displayToast('Failed to fetch PSTO users', 'error');
       }
    };
 
@@ -70,7 +70,7 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error fetching participants:', error);
-         showToast('Failed to fetch participants', 'error');
+         displayToast('Failed to fetch participants', 'error');
       }
       return [];
    };
@@ -80,7 +80,7 @@ const RTECScheduleManagement = () => {
       fetchAvailablePSTOUsers();
    }, []);
 
-   const showToast = (message, type = 'success') => {
+   const displayToast = (message, type = 'success') => {
       setToastMessage(message);
       setToastType(type);
       setShowToast(true);
@@ -91,7 +91,7 @@ const RTECScheduleManagement = () => {
       try {
          const response = await api.post('/rtec-meetings/create', formData);
          if (response.data.success) {
-            showToast('RTEC meeting scheduled successfully', 'success');
+            displayToast('RTEC meeting scheduled successfully', 'success');
             setShowCreateModal(false);
             setFormData({
                tnaId: '',
@@ -110,7 +110,7 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error creating meeting:', error);
-         showToast(error.response?.data?.message || 'Failed to create meeting', 'error');
+         displayToast(error.response?.data?.message || 'Failed to create meeting', 'error');
       }
    };
 
@@ -118,11 +118,11 @@ const RTECScheduleManagement = () => {
       try {
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-proponent`);
          if (response.data.success) {
-            showToast('Proponent invitation sent successfully', 'success');
+            displayToast('Proponent invitation sent successfully', 'success');
          }
       } catch (error) {
          console.error('Error inviting proponent:', error);
-         showToast('Failed to send proponent invitation', 'error');
+         displayToast('Failed to send proponent invitation', 'error');
       }
    };
 
@@ -130,11 +130,11 @@ const RTECScheduleManagement = () => {
       try {
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto`, { pstoId });
          if (response.data.success) {
-            showToast('PSTO invitation sent successfully', 'success');
+            displayToast('PSTO invitation sent successfully', 'success');
          }
       } catch (error) {
          console.error('Error inviting PSTO:', error);
-         showToast('Failed to send PSTO invitation', 'error');
+         displayToast('Failed to send PSTO invitation', 'error');
       }
    };
 
@@ -144,13 +144,13 @@ const RTECScheduleManagement = () => {
             pstoIds: selectedPSTOUsers 
          });
          if (response.data.success) {
-            showToast(`Invitations sent to ${response.data.data.invitationsSent} PSTO users`, 'success');
+            displayToast(`Invitations sent to ${response.data.data.invitationsSent} PSTO users`, 'success');
             setShowInviteModal(false);
             setSelectedPSTOUsers([]);
          }
       } catch (error) {
          console.error('Error bulk inviting PSTO:', error);
-         showToast('Failed to send bulk PSTO invitations', 'error');
+         displayToast('Failed to send bulk PSTO invitations', 'error');
       }
    };
 
@@ -158,12 +158,12 @@ const RTECScheduleManagement = () => {
       try {
          const response = await api.patch(`/rtec-meetings/${meetingId}/status`, { status });
          if (response.data.success) {
-            showToast('Meeting status updated successfully', 'success');
+            displayToast('Meeting status updated successfully', 'success');
             fetchRTECMeetings();
          }
       } catch (error) {
          console.error('Error updating meeting status:', error);
-         showToast('Failed to update meeting status', 'error');
+         displayToast('Failed to update meeting status', 'error');
       }
    };
 
@@ -171,12 +171,12 @@ const RTECScheduleManagement = () => {
       try {
          const response = await api.delete(`/rtec-meetings/${meetingId}`);
          if (response.data.success) {
-            showToast('Meeting deleted successfully', 'success');
+            displayToast('Meeting deleted successfully', 'success');
             fetchRTECMeetings();
          }
       } catch (error) {
          console.error('Error deleting meeting:', error);
-         showToast('Failed to delete meeting', 'error');
+         displayToast('Failed to delete meeting', 'error');
       }
    };
 
