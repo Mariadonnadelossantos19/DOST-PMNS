@@ -652,7 +652,12 @@ const RTECScheduleManagement = () => {
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                >
-                  Approved RTEC Documents ({approvedRTECDocuments.length})
+                  Approved RTEC Documents ({approvedRTECDocuments.filter(doc => {
+                     const hasMeeting = rtecMeetings.some(meeting => 
+                        meeting.rtecDocumentsId?.toString() === doc._id?.toString()
+                     );
+                     return !hasMeeting;
+                  }).length})
                </button>
                <button
                   onClick={() => setActiveTab('meetings')}
@@ -675,7 +680,12 @@ const RTECScheduleManagement = () => {
                      <div>
                         <h2 className="text-lg font-semibold">Approved RTEC Documents</h2>
                         <p className="text-sm text-gray-600 mt-1">
-                           Documents ready for meeting scheduling ({approvedRTECDocuments.length} approved)
+                           Documents ready for meeting scheduling ({approvedRTECDocuments.filter(doc => {
+                              const hasMeeting = rtecMeetings.some(meeting => 
+                                 meeting.rtecDocumentsId?.toString() === doc._id?.toString()
+                              );
+                              return !hasMeeting;
+                           }).length} ready)
                         </p>
                      </div>
                      <div className="flex space-x-2">
@@ -733,7 +743,13 @@ const RTECScheduleManagement = () => {
                   </div>
                ) : (
                   <DataTable
-                     data={approvedRTECDocuments}
+                     data={approvedRTECDocuments.filter(doc => {
+                        // Filter out documents that already have meetings
+                        const hasMeeting = rtecMeetings.some(meeting => 
+                           meeting.rtecDocumentsId?.toString() === doc._id?.toString()
+                        );
+                        return !hasMeeting;
+                     })}
                      columns={approvedDocumentsColumns}
                      searchable={true}
                      pagination={true}
