@@ -10,6 +10,7 @@ import TNAWithRDSignature from './components/TNAWithRDSignature';
 import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 import RTECDocumentManagement from '../../Component/DOST_MIMAROPA/RTECDocumentManagement';
+import RTECScheduleManagement from '../../Component/DOST_MIMAROPA/RTECScheduleManagement';
 
 const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const { isDarkMode } = useDarkMode();
@@ -333,6 +334,13 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
             return (
                <div className="space-y-6">
                   <RTECDocumentManagement />
+               </div>
+            );
+
+         case '/rtec-scheduling':
+            return (
+               <div className="space-y-6">
+                  <RTECScheduleManagement />
                </div>
             );
 

@@ -24,3 +24,6 @@ export * from './UserManagement';
 
 // PSTO Components
 export * from './PSTO';
+
+// DOST-MIMAROPA Components
+export * from './DOST_MIMAROPA';
