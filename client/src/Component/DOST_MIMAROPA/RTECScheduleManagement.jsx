@@ -676,6 +676,7 @@ const RTECScheduleManagement = () => {
 
          {/* Tab Content */}
          {console.log('=== RENDERING TABS ===', 'activeTab:', activeTab)}
+         {console.log('=== DATA STATE ===', 'approvedRTECDocuments:', approvedRTECDocuments.length, 'rtecMeetings:', rtecMeetings.length)}
          {activeTab === 'documents' && (
             <Card>
                <div className="p-6">
