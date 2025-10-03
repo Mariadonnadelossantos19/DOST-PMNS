@@ -474,18 +474,15 @@ const RTECScheduleManagement = () => {
          header: 'Scheduled Date',
          accessor: 'scheduledDate',
          render: (value, item) => {
-            console.log('Date value:', value, 'Type:', typeof value);
-            console.log('Item scheduledDate:', item.scheduledDate, 'scheduledTime:', item.scheduledTime);
-            
-            const date = new Date(value);
+            // Use item.scheduledDate directly since accessor is not working
+            const dateValue = item.scheduledDate || value;
+            const date = new Date(dateValue);
             const isValidDate = !isNaN(date.getTime());
-            
-            console.log('Parsed date:', date, 'Is valid:', isValidDate);
             
             return (
                <div>
                   <div className="font-medium">
-                     {isValidDate ? date.toLocaleDateString() : `Invalid Date (${value})`}
+                     {isValidDate ? date.toLocaleDateString() : `Invalid Date (${dateValue})`}
                   </div>
                   <div className="text-sm text-gray-500">{item.scheduledTime}</div>
                </div>
