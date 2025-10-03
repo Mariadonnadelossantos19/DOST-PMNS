@@ -403,17 +403,13 @@ const RTECScheduleManagement = () => {
          header: 'Meeting Status',
          accessor: '_id',
          render: (value, item) => {
-            console.log('=== MEETING STATUS CHECK ===');
-            console.log('Document ID:', value);
-            console.log('Document item:', item);
-            console.log('All meetings:', rtecMeetings);
-            
+            // Use item._id since accessor is not working
+            const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
-               console.log('Comparing:', meeting.rtecDocumentsId, '===', value);
-               return meeting.rtecDocumentsId === value;
+               // Convert both to strings for comparison
+               return meeting.rtecDocumentsId?.toString() === documentId?.toString();
             });
             
-            console.log('Has meeting:', hasMeeting);
             return hasMeeting ? (
                <Badge color="blue">Meeting Scheduled</Badge>
             ) : (
@@ -425,17 +421,14 @@ const RTECScheduleManagement = () => {
          header: 'Actions',
          accessor: '_id',
          render: (value, item) => {
-            console.log('=== ACTIONS CHECK ===');
-            console.log('Document ID:', value);
-            console.log('Document item:', item);
-            
+            // Use item._id since accessor is not working
+            const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
-               console.log('Actions - Comparing:', meeting.rtecDocumentsId, '===', value);
-               return meeting.rtecDocumentsId === value;
+               // Convert both to strings for comparison
+               return meeting.rtecDocumentsId?.toString() === documentId?.toString();
             });
             
             const isApproved = item.status === 'documents_approved';
-            console.log('Has meeting:', hasMeeting, 'Is approved:', isApproved);
             
             return (
                <div className="flex space-x-2">
