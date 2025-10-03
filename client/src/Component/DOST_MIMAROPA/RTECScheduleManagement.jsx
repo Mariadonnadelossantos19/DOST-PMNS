@@ -458,12 +458,24 @@ const RTECScheduleManagement = () => {
       {
          header: 'Scheduled Date',
          accessor: 'scheduledDate',
-         render: (value, item) => (
-            <div>
-               <div className="font-medium">{new Date(value).toLocaleDateString()}</div>
-               <div className="text-sm text-gray-500">{item.scheduledTime}</div>
-            </div>
-         )
+         render: (value, item) => {
+            console.log('Date value:', value, 'Type:', typeof value);
+            console.log('Item scheduledDate:', item.scheduledDate, 'scheduledTime:', item.scheduledTime);
+            
+            const date = new Date(value);
+            const isValidDate = !isNaN(date.getTime());
+            
+            console.log('Parsed date:', date, 'Is valid:', isValidDate);
+            
+            return (
+               <div>
+                  <div className="font-medium">
+                     {isValidDate ? date.toLocaleDateString() : `Invalid Date (${value})`}
+                  </div>
+                  <div className="text-sm text-gray-500">{item.scheduledTime}</div>
+               </div>
+            );
+         }
       },
       {
          header: 'Location',

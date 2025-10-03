@@ -103,12 +103,18 @@ const createRTECMeeting = async (req, res) => {
          });
       }
       
-      if (meetingDate <= currentDate) {
+      // Allow same day meetings but require the time to be in the future
+      // Compare just the date part (ignore time for date comparison)
+      const selectedDateOnly = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
+      const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      
+      // If it's the same date, allow it (time validation will be handled separately if needed)
+      if (selectedDateOnly < currentDateOnly) {
          const selectedDateStr = meetingDate.toLocaleDateString();
          const currentDateStr = currentDate.toLocaleDateString();
          return res.status(400).json({
             success: false,
-            message: `Meeting must be scheduled for a future date. You selected ${selectedDateStr}, but today is ${currentDateStr}. Please choose a date after today.`
+            message: `Meeting must be scheduled for today or a future date. You selected ${selectedDateStr}, but today is ${currentDateStr}. Please choose today or a future date.`
          });
       }
 
