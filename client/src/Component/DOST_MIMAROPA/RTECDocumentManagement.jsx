@@ -33,37 +33,15 @@ const RTECDocumentManagement = () => {
    const fetchRTECDocuments = async () => {
       try {
          setLoading(true);
-         console.log('Starting to fetch RTEC documents...');
-         console.log('Auth token exists:', !!localStorage.getItem('authToken'));
-         
          const params = new URLSearchParams();
          if (filters.status) params.append('status', filters.status);
          
-         console.log('Making API call to:', `/rtec-documents/list?${params}`);
          const response = await api.get(`/rtec-documents/list?${params}`);
-         console.log('RTEC Documents Response:', response.data);
          
          if (response.data.success) {
             const documents = response.data.data?.docs || response.data.data || [];
-            console.log('RTEC Documents Data:', documents);
-            console.log('Number of documents:', documents.length);
-            
-            // Log each document for debugging
-            documents.forEach((doc, index) => {
-               console.log(`Document ${index + 1}:`, {
-                  id: doc._id,
-                  status: doc.status,
-                  companyName: doc.applicationId?.enterpriseName || doc.applicationId?.companyName,
-                  projectTitle: doc.applicationId?.projectTitle || doc.applicationId?.programName,
-                  proponent: `${doc.proponentId?.firstName || ''} ${doc.proponentId?.lastName || ''}`.trim(),
-                  requestedAt: doc.requestedAt,
-                  dueDate: doc.dueDate
-               });
-            });
-            
             setRtecDocuments(documents);
          } else {
-            console.log('API call unsuccessful:', response.data);
             setRtecDocuments([]);
          }
       } catch (error) {
@@ -228,7 +206,6 @@ const RTECDocumentManagement = () => {
          key: 'companyName',
          header: 'Enterprise Name',
          render: (value, item) => {
-            console.log('Rendering company for item:', item);
             return item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A';
          }
       },
@@ -236,7 +213,6 @@ const RTECDocumentManagement = () => {
          key: 'projectTitle',
          header: 'Project',
          render: (value, item) => {
-            console.log('Rendering project for item:', item);
             return item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
          }
       },
@@ -244,7 +220,6 @@ const RTECDocumentManagement = () => {
          key: 'proponent',
          header: 'Proponent',
          render: (value, item) => {
-            console.log('Rendering proponent for item:', item);
             const fullName = `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim();
             return fullName || 'N/A';
          }
@@ -253,7 +228,6 @@ const RTECDocumentManagement = () => {
          key: 'status',
          header: 'Status',
          render: (value, item) => {
-            console.log('Rendering status for item:', item);
             return getStatusBadge(item?.status);
          }
       },
@@ -261,7 +235,6 @@ const RTECDocumentManagement = () => {
          key: 'requestedAt',
          header: 'Requested',
          render: (value, item) => {
-            console.log('Rendering requestedAt for item:', item);
             return item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
          }
       },
@@ -269,7 +242,6 @@ const RTECDocumentManagement = () => {
          key: 'dueDate',
          header: 'Due Date',
          render: (value, item) => {
-            console.log('Rendering dueDate for item:', item);
             return item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
          }
       },
