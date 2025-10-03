@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge } from '../UI';
 
 const ProponentNotificationCenter = ({ userId }) => {
@@ -7,7 +7,7 @@ const ProponentNotificationCenter = ({ userId }) => {
    const [unreadCount, setUnreadCount] = useState(0);
 
    // Fetch notifications for the proponent
-   const fetchNotifications = async () => {
+   const fetchNotifications = useCallback(async () => {
       try {
          setLoading(true);
          const response = await fetch(`http://localhost:4000/api/notifications/proponent/${userId}`, {
@@ -26,7 +26,7 @@ const ProponentNotificationCenter = ({ userId }) => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [userId]);
 
    // Mark notification as read
    const markAsRead = async (notificationId) => {
@@ -79,7 +79,7 @@ const ProponentNotificationCenter = ({ userId }) => {
       if (userId) {
          fetchNotifications();
       }
-   }, [userId]);
+   }, [userId, fetchNotifications]);
 
    const getNotificationIcon = (type) => {
       const icons = {
@@ -87,6 +87,11 @@ const ProponentNotificationCenter = ({ userId }) => {
          'application_approved': '✅',
          'application_rejected': '❌',
          'application_returned': '🔄',
+         'application_under_review': '👀',
+         'application_psto_approved': '✅',
+         'application_psto_rejected': '❌',
+         'application_dost_approved': '🎉',
+         'application_dost_rejected': '❌',
          'tna_scheduled': '📅',
          'tna_completed': '✅',
          'document_required': '📄',
@@ -96,20 +101,26 @@ const ProponentNotificationCenter = ({ userId }) => {
       return icons[type] || 'ℹ️';
    };
 
-   const getNotificationColor = (type) => {
-      const colors = {
-         'application_submitted': 'blue',
-         'application_approved': 'green',
-         'application_rejected': 'red',
-         'application_returned': 'orange',
-         'tna_scheduled': 'blue',
-         'tna_completed': 'green',
-         'document_required': 'yellow',
-         'status_update': 'blue',
-         'general': 'gray'
-      };
-      return colors[type] || 'gray';
-   };
+   // Get notification color (currently unused but available for future use)
+   // const getNotificationColor = (type) => {
+   //    const colors = {
+   //       'application_submitted': 'blue',
+   //       'application_approved': 'green',
+   //       'application_rejected': 'red',
+   //       'application_returned': 'orange',
+   //       'application_under_review': 'yellow',
+   //       'application_psto_approved': 'green',
+   //       'application_psto_rejected': 'red',
+   //       'application_dost_approved': 'green',
+   //       'application_dost_rejected': 'red',
+   //       'tna_scheduled': 'blue',
+   //       'tna_completed': 'green',
+   //       'document_required': 'yellow',
+   //       'status_update': 'blue',
+   //       'general': 'gray'
+   //    };
+   //    return colors[type] || 'gray';
+   // };
 
    const formatDate = (dateString) => {
       const date = new Date(dateString);

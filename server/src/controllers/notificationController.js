@@ -44,6 +44,90 @@ const getProponentNotifications = async (req, res) => {
    }
 };
 
+// Get notifications for PSTO
+const getPSTONotifications = async (req, res) => {
+   try {
+      const { pstoId } = req.params;
+      const { limit = 50, skip = 0, unreadOnly = false } = req.query;
+
+      // Verify PSTO - check if pstoId is a valid ObjectId or userId
+      let psto;
+      if (mongoose.Types.ObjectId.isValid(pstoId)) {
+         psto = await User.findById(pstoId);
+      } else {
+         psto = await User.findOne({ userId: pstoId });
+      }
+      
+      if (!psto || psto.role !== 'psto') {
+         return res.status(404).json({
+            success: false,
+            message: 'PSTO user not found'
+         });
+      }
+
+      const result = await Notification.getUserNotifications(psto._id, {
+         limit: parseInt(limit),
+         skip: parseInt(skip),
+         unreadOnly: unreadOnly === 'true'
+      });
+
+      res.json({
+         success: true,
+         notifications: result.notifications,
+         unreadCount: result.unreadCount
+      });
+
+   } catch (error) {
+      console.error('Get PSTO notifications error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
+// Get notifications for DOST-MIMAROPA
+const getDOSTNotifications = async (req, res) => {
+   try {
+      const { dostId } = req.params;
+      const { limit = 50, skip = 0, unreadOnly = false } = req.query;
+
+      // Verify DOST-MIMAROPA - check if dostId is a valid ObjectId or userId
+      let dost;
+      if (mongoose.Types.ObjectId.isValid(dostId)) {
+         dost = await User.findById(dostId);
+      } else {
+         dost = await User.findOne({ userId: dostId });
+      }
+      
+      if (!dost || dost.role !== 'dost_mimaropa') {
+         return res.status(404).json({
+            success: false,
+            message: 'DOST-MIMAROPA user not found'
+         });
+      }
+
+      const result = await Notification.getUserNotifications(dost._id, {
+         limit: parseInt(limit),
+         skip: parseInt(skip),
+         unreadOnly: unreadOnly === 'true'
+      });
+
+      res.json({
+         success: true,
+         notifications: result.notifications,
+         unreadCount: result.unreadCount
+      });
+
+   } catch (error) {
+      console.error('Get DOST notifications error:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error'
+      });
+   }
+};
+
 // Mark notification as read
 const markNotificationAsRead = async (req, res) => {
    try {
@@ -289,6 +373,8 @@ const createTNANotification = async (tna, type) => {
 
 module.exports = {
    getProponentNotifications,
+   getPSTONotifications,
+   getDOSTNotifications,
    markNotificationAsRead,
    markAllNotificationsAsRead,
    createNotification,

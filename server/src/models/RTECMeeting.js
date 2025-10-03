@@ -163,6 +163,27 @@ rtecMeetingSchema.index({ scheduledDate: 1 });
 rtecMeetingSchema.index({ status: 1 });
 rtecMeetingSchema.index({ 'participants.userId': 1 });
 
+// Pre-save middleware to automatically fix invalid participant statuses
+rtecMeetingSchema.pre('save', function(next) {
+   const validStatuses = ['invited', 'confirmed', 'declined', 'attended', 'absent'];
+   let fixedCount = 0;
+   
+   this.participants.forEach((participant, index) => {
+      if (!validStatuses.includes(participant.status)) {
+         console.log(`🔧 Pre-save: Fixing invalid status for participant ${index}: ${participant.status} -> invited`);
+         participant.status = 'invited';
+         participant.invitedAt = new Date();
+         fixedCount++;
+      }
+   });
+   
+   if (fixedCount > 0) {
+      console.log(`🔧 Pre-save: Fixed ${fixedCount} invalid participant statuses`);
+   }
+   
+   next();
+});
+
 // Method to add participant
 rtecMeetingSchema.methods.addParticipant = function(userId, role = 'member') {
    const existingParticipant = this.participants.find(p => p.userId.toString() === userId.toString());
@@ -195,6 +216,40 @@ rtecMeetingSchema.methods.confirmParticipant = function(userId, status = 'confir
 rtecMeetingSchema.methods.updateStatus = function(status) {
    this.status = status;
    return this.save();
+};
+
+// Method to resend invitation to a specific participant
+rtecMeetingSchema.methods.resendInvitation = function(participantId) {
+   const participant = this.participants.find(p => 
+      p.userId._id?.toString() === participantId || p.userId.toString() === participantId
+   );
+   
+   if (participant) {
+      participant.status = 'invited';
+      participant.invitedAt = new Date();
+   }
+   
+   return this.save();
+};
+
+// Method to validate and fix all participant statuses
+rtecMeetingSchema.methods.validateParticipantStatuses = function() {
+   const validStatuses = ['invited', 'confirmed', 'declined', 'attended', 'absent'];
+   let fixedCount = 0;
+   
+   this.participants.forEach((participant, index) => {
+      if (!validStatuses.includes(participant.status)) {
+         console.log(`🔧 Fixing invalid status for participant ${index}: ${participant.status} -> invited`);
+         participant.status = 'invited';
+         participant.invitedAt = new Date(); // Update the invited date
+         fixedCount++;
+      }
+   });
+   
+   // Mark the document as modified to ensure changes are saved
+   this.markModified('participants');
+   
+   return fixedCount;
 };
 
 // Static method to get meetings by date range

@@ -10,54 +10,43 @@ const RTECMeetingInterface = ({ currentUser }) => {
    const [showToast, setShowToast] = useState(false);
    const [toastMessage, setToastMessage] = useState('');
    const [toastType, setToastType] = useState('success');
+   const [autoRefreshing, setAutoRefreshing] = useState(false);
 
    // Fetch user's meetings
    const fetchMyMeetings = useCallback(async () => {
       try {
+         console.log('🔍 PSTO: Fetching my meetings...');
          setLoading(true);
          const response = await api.get('/rtec-meetings/user/my-meetings');
+         console.log('📡 PSTO: Meetings response:', response.data);
          if (response.data.success) {
-            setMyMeetings(response.data.data || []);
+            console.log('✅ PSTO: Meetings fetched successfully:', response.data.data.docs?.length || 0, 'meetings');
+            setMyMeetings(response.data.data.docs || []);
+            
+            // Debug: Show participants for each meeting
+            response.data.data.docs?.forEach((meeting, index) => {
+               console.log(`🔍 PSTO: Meeting ${index + 1} participants:`, meeting.participants?.map(p => ({
+                  userId: p.userId,
+                  userId_id: p.userId?._id,
+                  userId_string: p.userId?.toString(),
+                  status: p.status
+               })));
+            });
+         } else {
+            console.log('❌ PSTO: Failed to fetch meetings:', response.data.message);
+            displayToast('Failed to fetch meetings: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('Error fetching my meetings:', error);
-         displayToast('Failed to fetch meetings', 'error');
+         console.error('💥 PSTO: Error fetching my meetings:', error);
+         console.error('💥 PSTO: Error response:', error.response?.data);
+         console.error('💥 PSTO: Error status:', error.response?.status);
+         displayToast('Failed to fetch meetings: ' + (error.response?.data?.message || error.message), 'error');
       } finally {
          setLoading(false);
       }
    }, []);
 
-   // Accept meeting invitation
-   const handleAcceptMeeting = async (meetingId) => {
-      try {
-         const response = await api.patch(`/rtec-meetings/${meetingId}/participants/me`, { 
-            status: 'confirmed' 
-         });
-         if (response.data.success) {
-            displayToast('Meeting invitation accepted successfully', 'success');
-            fetchMyMeetings();
-         }
-      } catch (error) {
-         console.error('Error accepting meeting:', error);
-         displayToast('Failed to accept meeting invitation', 'error');
-      }
-   };
-
-   // Decline meeting invitation
-   const handleDeclineMeeting = async (meetingId) => {
-      try {
-         const response = await api.patch(`/rtec-meetings/${meetingId}/participants/me`, { 
-            status: 'declined' 
-         });
-         if (response.data.success) {
-            displayToast('Meeting invitation declined', 'success');
-            fetchMyMeetings();
-         }
-      } catch (error) {
-         console.error('Error declining meeting:', error);
-         displayToast('Failed to decline meeting invitation', 'error');
-      }
-   };
+   // PSTO users don't need accept/decline functionality as attendance is required
 
    // Display toast message
    const displayToast = (message, type = 'success') => {
@@ -82,9 +71,12 @@ const RTECMeetingInterface = ({ currentUser }) => {
    // Get participant status badge
    const getParticipantStatusBadge = (status) => {
       const statusConfig = {
+         'invited': { color: 'yellow', text: 'Invited' },
          'pending': { color: 'yellow', text: 'Pending' },
          'confirmed': { color: 'green', text: 'Confirmed' },
-         'declined': { color: 'red', text: 'Declined' }
+         'declined': { color: 'red', text: 'Declined' },
+         'attended': { color: 'blue', text: 'Attended' },
+         'absent': { color: 'red', text: 'Absent' }
       };
       const config = statusConfig[status] || { color: 'gray', text: status };
       return <Badge color={config.color}>{config.text}</Badge>;
@@ -107,14 +99,20 @@ const RTECMeetingInterface = ({ currentUser }) => {
       {
          header: 'Scheduled Date',
          accessor: 'scheduledDate',
-         render: (value, item) => (
-            <div>
-               <div className="font-medium">
-                  {new Date(value).toLocaleDateString()}
+         render: (value, item) => {
+            const dateValue = value || item.scheduledDate;
+            const date = new Date(dateValue);
+            const isValidDate = !isNaN(date.getTime());
+            
+            return (
+               <div>
+                  <div className="font-medium">
+                     {isValidDate ? date.toLocaleDateString() : 'Invalid Date'}
+                  </div>
+                  <div className="text-sm text-gray-500">{item.scheduledTime}</div>
                </div>
-               <div className="text-sm text-gray-500">{item.scheduledTime}</div>
-            </div>
-         )
+            );
+         }
       },
       {
          header: 'Location',
@@ -135,7 +133,15 @@ const RTECMeetingInterface = ({ currentUser }) => {
          header: 'My Status',
          accessor: 'participants',
          render: (value, item) => {
-            const myParticipant = value?.find(p => p.userId._id === currentUser.id);
+            // Use item.participants instead of value since value is undefined
+            const participants = item.participants || value;
+            
+            const myParticipant = participants?.find(p => {
+               const userIdMatch = p.userId._id?.toString() === currentUser.id?.toString();
+               const directUserIdMatch = p.userId?.toString() === currentUser.id?.toString();
+               return userIdMatch || directUserIdMatch;
+            });
+            
             return myParticipant ? getParticipantStatusBadge(myParticipant.status) : <Badge color="gray">Not Invited</Badge>;
          }
       },
@@ -143,9 +149,12 @@ const RTECMeetingInterface = ({ currentUser }) => {
          header: 'Actions',
          accessor: '_id',
          render: (value, item) => {
-            const myParticipant = item.participants?.find(p => p.userId._id === currentUser.id);
-            const isPending = myParticipant?.status === 'pending';
-            const isConfirmed = myParticipant?.status === 'confirmed';
+            const myParticipant = item.participants?.find(p => 
+               p.userId._id?.toString() === currentUser.id?.toString() || 
+               p.userId?.toString() === currentUser.id?.toString()
+            );
+            // PSTO users are automatically confirmed as part of their job responsibilities
+            const isConfirmed = myParticipant?.status === 'confirmed' || myParticipant?.status === 'invited' || myParticipant?.status === 'pending';
             
             return (
                <div className="flex space-x-2">
@@ -159,26 +168,9 @@ const RTECMeetingInterface = ({ currentUser }) => {
                   >
                      View Details
                   </Button>
-                  {isPending && (
-                     <>
-                        <Button
-                           size="sm"
-                           variant="success"
-                           onClick={() => handleAcceptMeeting(value)}
-                        >
-                           Accept
-                        </Button>
-                        <Button
-                           size="sm"
-                           variant="danger"
-                           onClick={() => handleDeclineMeeting(value)}
-                        >
-                           Decline
-                        </Button>
-                     </>
-                  )}
+                  <Badge color="blue">Required Attendance</Badge>
                   {isConfirmed && (
-                     <Badge color="green">Accepted</Badge>
+                     <Badge color="green">Confirmed</Badge>
                   )}
                </div>
             );
@@ -188,7 +180,21 @@ const RTECMeetingInterface = ({ currentUser }) => {
 
    useEffect(() => {
       fetchMyMeetings();
+      
+      // Set up automatic refresh every 30 seconds to catch resent invitations
+      const refreshInterval = setInterval(() => {
+         console.log('🔄 PSTO: Auto-refreshing meetings to check for updates...');
+         setAutoRefreshing(true);
+         fetchMyMeetings().finally(() => {
+            setAutoRefreshing(false);
+         });
+      }, 30000); // Refresh every 30 seconds
+      
+      return () => {
+         clearInterval(refreshInterval);
+      };
    }, [fetchMyMeetings]);
+
 
    return (
       <div className="space-y-6">
@@ -196,7 +202,22 @@ const RTECMeetingInterface = ({ currentUser }) => {
          <div className="flex justify-between items-center">
             <div>
                <h1 className="text-2xl font-bold text-gray-900">My RTEC Meetings</h1>
-               <p className="text-gray-600">View and manage your RTEC meeting invitations</p>
+               <p className="text-gray-600">View your required RTEC meeting attendance</p>
+            </div>
+            <div className="flex items-center space-x-2">
+               {autoRefreshing && (
+                  <div className="flex items-center text-sm text-blue-600">
+                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                     Auto-refreshing...
+                  </div>
+               )}
+               <Button
+                  variant="outline"
+                  onClick={fetchMyMeetings}
+                  disabled={loading}
+               >
+                  {loading ? 'Refreshing...' : 'Refresh'}
+               </Button>
             </div>
          </div>
 
@@ -227,8 +248,11 @@ const RTECMeetingInterface = ({ currentUser }) => {
                      <p className="text-sm font-medium text-gray-600">Pending</p>
                      <p className="text-2xl font-semibold text-gray-900">
                         {myMeetings.filter(m => {
-                           const myParticipant = m.participants?.find(p => p.userId._id === currentUser.id);
-                           return myParticipant?.status === 'pending';
+                           const myParticipant = m.participants?.find(p => 
+                              p.userId._id?.toString() === currentUser.id?.toString() || 
+                              p.userId?.toString() === currentUser.id?.toString()
+                           );
+                           return myParticipant?.status === 'invited' || myParticipant?.status === 'pending';
                         }).length}
                      </p>
                   </div>
@@ -246,7 +270,10 @@ const RTECMeetingInterface = ({ currentUser }) => {
                      <p className="text-sm font-medium text-gray-600">Accepted</p>
                      <p className="text-2xl font-semibold text-gray-900">
                         {myMeetings.filter(m => {
-                           const myParticipant = m.participants?.find(p => p.userId._id === currentUser.id);
+                           const myParticipant = m.participants?.find(p => 
+                              p.userId._id?.toString() === currentUser.id?.toString() || 
+                              p.userId?.toString() === currentUser.id?.toString()
+                           );
                            return myParticipant?.status === 'confirmed';
                         }).length}
                      </p>

@@ -501,11 +501,21 @@ const confirmParticipant = async (req, res) => {
 // Update participant's own status (for participants to accept/decline)
 const updateMyParticipantStatus = async (req, res) => {
    try {
+      console.log('🚀 UPDATE PARTICIPANT STATUS - FUNCTION CALLED');
+      console.log('🔍 UPDATE PARTICIPANT STATUS - Starting...');
+      console.log('🔍 REQUEST BODY:', req.body);
+      console.log('🔍 REQUEST PARAMS:', req.params);
+      console.log('🔍 REQUEST USER:', req.user);
       const { meetingId } = req.params;
       const { status } = req.body;
       const userId = req.user.id;
 
+      console.log('🔍 Meeting ID:', meetingId);
+      console.log('🔍 User ID:', userId);
+      console.log('🔍 Status:', status);
+
       if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+         console.log('❌ Invalid meeting ID');
          return res.status(400).json({
             success: false,
             message: 'Invalid meeting ID'
@@ -513,33 +523,104 @@ const updateMyParticipantStatus = async (req, res) => {
       }
 
       if (!['confirmed', 'declined'].includes(status)) {
+         console.log('❌ Invalid status:', status);
          return res.status(400).json({
             success: false,
             message: 'Invalid status. Must be "confirmed" or "declined"'
          });
       }
 
+      console.log('🔍 Finding meeting...');
       const rtecMeeting = await RTECMeeting.findById(meetingId);
 
       if (!rtecMeeting) {
+         console.log('❌ Meeting not found');
          return res.status(404).json({
             success: false,
             message: 'RTEC meeting not found'
          });
       }
 
-      // Find participant
-      const participant = rtecMeeting.participants.find(p => p.userId.toString() === userId);
+      console.log('🔍 Meeting found:', rtecMeeting.meetingTitle);
+      console.log('🔍 Participants:', rtecMeeting.participants.length);
+
+      // Find participant - handle both populated and non-populated userId
+      console.log('🔍 All participants:', rtecMeeting.participants.map(p => ({
+         userId: p.userId,
+         userId_id: p.userId?._id,
+         userId_string: p.userId?.toString(),
+         status: p.status
+      })));
+      
+      // Find participant using multiple comparison methods
+      const participant = rtecMeeting.participants.find(p => {
+         // Try multiple comparison methods
+         const participantId1 = p.userId._id?.toString();
+         const participantId2 = p.userId?.toString();
+         const participantId3 = p.userId?.id?.toString();
+         const currentUserId = userId.toString();
+         
+         console.log('🔍 Comparing:', {
+            participantId1,
+            participantId2,
+            participantId3,
+            currentUserId,
+            match1: participantId1 === currentUserId,
+            match2: participantId2 === currentUserId,
+            match3: participantId3 === currentUserId
+         });
+         
+         return participantId1 === currentUserId || participantId2 === currentUserId || participantId3 === currentUserId;
+      });
+      
+      console.log('🔍 Participant found:', participant ? 'YES' : 'NO');
+      
       if (!participant) {
+         console.log('❌ User not found in participants');
+         console.log('🔍 Current user ID:', userId);
+         console.log('🔍 Current user ID type:', typeof userId);
+         console.log('🔍 Available participants:', rtecMeeting.participants.map(p => ({
+            userId: p.userId,
+            userId_id: p.userId?._id,
+            userId_string: p.userId?.toString(),
+            userId_type: typeof p.userId,
+            status: p.status
+         })));
+         console.log('🔍 Meeting ID:', meetingId);
+         console.log('🔍 Meeting title:', rtecMeeting.meetingTitle);
+         console.log('🔍 Meeting participants count:', rtecMeeting.participants.length);
          return res.status(404).json({
             success: false,
-            message: 'You are not a participant in this meeting'
+            message: 'You are not a participant in this meeting. Please ensure you were properly invited to this meeting.',
+            debug: {
+               userId: userId,
+               participantsCount: rtecMeeting.participants.length,
+               meetingId: meetingId
+            }
          });
       }
 
-      // Update participant status
+      console.log('🔍 Participant found:', {
+         userId: participant.userId,
+         currentStatus: participant.status,
+         newStatus: status
+      });
+
+      // FIRST: Validate and fix all participant statuses BEFORE any operations
+      console.log('🔍 Validating all participant statuses FIRST...');
+      const fixedCount = rtecMeeting.validateParticipantStatuses();
+      if (fixedCount > 0) {
+         console.log(`🔧 Fixed ${fixedCount} invalid participant statuses`);
+      }
+      
+      // THEN: Update participant status
       participant.status = status;
+      participant.respondedAt = new Date();
+      
+      console.log('🔍 Saving meeting...');
       await rtecMeeting.save();
+
+      console.log('✅ Participant status updated successfully');
 
       res.json({
          success: true,
@@ -548,7 +629,8 @@ const updateMyParticipantStatus = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error updating participant status:', error);
+      console.error('💥 Error updating participant status:', error);
+      console.error('💥 Error stack:', error.stack);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -560,9 +642,14 @@ const updateMyParticipantStatus = async (req, res) => {
 // Resend invitation to participant
 const resendInvitation = async (req, res) => {
    try {
+      console.log('=== RESEND INVITATION DEBUG ===');
       const { meetingId } = req.params;
       const { participantId } = req.body;
       const userId = req.user.id;
+
+      console.log('Meeting ID:', meetingId);
+      console.log('Participant ID:', participantId);
+      console.log('User ID:', userId);
 
       if (!mongoose.Types.ObjectId.isValid(meetingId)) {
          return res.status(400).json({
@@ -583,32 +670,85 @@ const resendInvitation = async (req, res) => {
          .populate('applicationId', 'companyName enterpriseName');
 
       if (!rtecMeeting) {
+         console.log('❌ RTEC meeting not found');
          return res.status(404).json({
             success: false,
             message: 'RTEC meeting not found'
          });
       }
 
-      // Find participant
-      const participant = rtecMeeting.participants.find(p => p.userId.toString() === participantId);
+      console.log('✅ RTEC meeting found:', rtecMeeting.meetingTitle);
+      console.log('Participants count:', rtecMeeting.participants.length);
+      console.log('All participants:', rtecMeeting.participants.map(p => ({
+         userId: p.userId,
+         userId_id: p.userId?._id,
+         status: p.status
+      })));
+
+      // Find participant - handle both populated and non-populated userId
+      console.log('🔍 Finding participant with ID:', participantId);
+      console.log('🔍 Available participants:', rtecMeeting.participants.map(p => ({
+         userId: p.userId,
+         userId_id: p.userId?._id,
+         userId_string: p.userId?.toString(),
+         status: p.status
+      })));
+      
+      const participant = rtecMeeting.participants.find(p => {
+         const participantUserId1 = p.userId._id?.toString();
+         const participantUserId2 = p.userId?.toString();
+         const participantUserId3 = p.userId?.id?.toString();
+         const participantUserId = participantUserId1 || participantUserId2 || participantUserId3;
+         
+         console.log('🔍 Comparing participant:', {
+            participantUserId1,
+            participantUserId2,
+            participantUserId3,
+            participantUserId,
+            participantId,
+            match1: participantUserId1 === participantId,
+            match2: participantUserId2 === participantId,
+            match3: participantUserId3 === participantId,
+            finalMatch: participantUserId === participantId
+         });
+         return participantUserId === participantId;
+      });
+      
       if (!participant) {
+         console.log('❌ Participant not found');
          return res.status(404).json({
             success: false,
             message: 'Participant not found in this meeting'
          });
       }
 
-      // Reset participant status to pending
-      participant.status = 'pending';
-      await rtecMeeting.save();
+      console.log('✅ Participant found:', {
+         userId: participant.userId,
+         status: participant.status
+      });
 
-      // Create new notification for the participant
+      // FIRST: Validate and fix all participant statuses BEFORE any operations
+      console.log('🔍 Validating all participant statuses FIRST...');
+      const fixedCount = rtecMeeting.validateParticipantStatuses();
+      if (fixedCount > 0) {
+         console.log(`🔧 Fixed ${fixedCount} invalid participant statuses`);
+      }
+      
+      // THEN: Use the model's resend invitation method
+      console.log('🔍 Using RTECMeeting.resendInvitation method...');
+      await rtecMeeting.resendInvitation(participantId);
+      
+      // Create notification for the participant about the resent invitation
+      console.log('🔍 Creating notification for resent invitation...');
+      const participantUser = await User.findById(participantId);
+      const recipientType = participantUser?.role === 'proponent' ? 'proponent' : 'psto';
+      
       await Notification.createNotification({
          recipientId: participantId,
-         recipientType: participant.userId.role || 'psto',
+         recipientType: recipientType,
          type: 'rtec_scheduled',
          title: 'RTEC Meeting Invitation (Resent)',
-         message: `You have been invited to an RTEC meeting for application: ${rtecMeeting.applicationId.companyName || rtecMeeting.applicationId.enterpriseName}. Meeting scheduled for ${rtecMeeting.scheduledDate.toLocaleDateString()} at ${rtecMeeting.scheduledTime}`,
+         message: `You have been re-invited to an RTEC meeting for application: ${rtecMeeting.applicationId.companyName || rtecMeeting.applicationId.enterpriseName}. Meeting scheduled for ${rtecMeeting.scheduledDate.toLocaleDateString()} at ${rtecMeeting.scheduledTime}`,
          relatedEntityType: 'tna',
          relatedEntityId: rtecMeeting.tnaId,
          actionUrl: `/rtec-meetings`,
@@ -616,6 +756,10 @@ const resendInvitation = async (req, res) => {
          priority: 'high',
          sentBy: userId
       });
+      
+      console.log('✅ Resend invitation completed successfully');
+      console.log('✅ Notification created for participant');
+      console.log('✅ Participant will see the resent invitation in their interface');
 
       res.json({
          success: true,
@@ -624,11 +768,34 @@ const resendInvitation = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error resending invitation:', error);
+      console.error('💥 RESEND INVITATION ERROR:', error);
+      console.error('💥 Error name:', error.name);
+      console.error('💥 Error message:', error.message);
+      console.error('💥 Error stack:', error.stack);
+      
+      // Handle specific error types
+      if (error.name === 'ValidationError') {
+         return res.status(400).json({
+            success: false,
+            message: 'Database validation error',
+            error: error.message,
+            details: error.errors
+         });
+      }
+      
+      if (error.name === 'CastError') {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid ID format',
+            error: error.message
+         });
+      }
+      
       res.status(500).json({
          success: false,
          message: 'Internal server error',
-         error: error.message
+         error: error.message,
+         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
    }
 };
@@ -636,24 +803,52 @@ const resendInvitation = async (req, res) => {
 // Get meetings for user (PSTO/Proponent)
 const getUserMeetings = async (req, res) => {
    try {
+      console.log('🔍 GET USER MEETINGS - Starting...');
       const userId = req.user.id;
       const { status, page = 1, limit = 10 } = req.query;
+      
+      console.log('🔍 User ID:', userId);
+      console.log('🔍 User role:', req.user.role);
+      console.log('🔍 Query params:', { status, page, limit });
 
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
       const skip = (pageNum - 1) * limitNum;
+      
+      console.log('🔍 Pagination:', { pageNum, limitNum, skip });
 
-      const rtecMeetings = await RTECMeeting.getUserMeetings(userId, { status })
-         .skip(skip)
-         .limit(limitNum);
-
-      const total = await RTECMeeting.countDocuments({
+      console.log('🔍 Calling RTECMeeting.getUserMeetings...');
+      
+      // Use direct query instead of static method to avoid population issues
+      const query = {
          $or: [
             { proponentId: userId },
             { 'participants.userId': userId },
             { scheduledBy: userId }
          ]
-      });
+      };
+      
+      if (status) {
+         query.status = status;
+      }
+      
+      console.log('🔍 Query:', JSON.stringify(query, null, 2));
+      
+      const rtecMeetings = await RTECMeeting.find(query)
+         .populate('applicationId', 'enterpriseName companyName projectTitle programName businessActivity')
+         .populate('proponentId', 'firstName lastName email')
+         .populate('participants.userId', 'firstName lastName email')
+         .populate('scheduledBy', 'firstName lastName')
+         .sort({ scheduledDate: 1 })
+         .skip(skip)
+         .limit(limitNum);
+      
+      console.log('📊 Found meetings:', rtecMeetings.length);
+
+      console.log('🔍 Counting total meetings...');
+      const total = await RTECMeeting.countDocuments(query);
+      
+      console.log('📈 Total count:', total);
 
       res.json({
          success: true,
@@ -667,7 +862,8 @@ const getUserMeetings = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error fetching user meetings:', error);
+      console.error('💥 Error fetching user meetings:', error);
+      console.error('💥 Error stack:', error.stack);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -769,7 +965,14 @@ const sendPSTOInvitation = async (req, res) => {
       }
 
       // Add PSTO as participant
+      console.log('🔍 Adding PSTO as participant:', pstoId);
       await rtecMeeting.addParticipant(pstoId, 'member');
+      console.log('✅ PSTO added as participant successfully');
+      console.log('🔍 Meeting participants after adding:', rtecMeeting.participants.map(p => ({
+         userId: p.userId,
+         role: p.role,
+         status: p.status
+      })));
 
       // Create notification for PSTO
       await Notification.createNotification({
@@ -957,7 +1160,9 @@ const sendBulkPSTOInvitations = async (req, res) => {
       for (const pstoId of pstoIds) {
          if (mongoose.Types.ObjectId.isValid(pstoId)) {
             // Add PSTO as participant
+            console.log('🔍 Adding PSTO as participant (bulk):', pstoId);
             await rtecMeeting.addParticipant(pstoId, 'member');
+            console.log('✅ PSTO added as participant successfully (bulk)');
 
             // Create notification for PSTO
             const notification = await Notification.createNotification({

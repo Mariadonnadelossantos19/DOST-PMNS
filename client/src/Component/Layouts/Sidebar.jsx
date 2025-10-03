@@ -454,7 +454,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                               // Filter sections based on user role
                               if (userRole === 'proponent') {
                                  // For proponents, only show specific sections
-                                 const allowedSections = ['proponent-dashboard', 'monitoring', 'notifications', 'reports', 'settings', 'applications'];
+                                 const allowedSections = ['proponent-dashboard', 'monitoring', 'notifications', 'reports', 'settings', 'applications', 'rtec-meetings'];
                                  return allowedSections.includes(section.id);
                               }
                               // For DOST MIMAROPA, exclude Application Management, PSTO Applications Review, Application Monitoring, and Proponent Management

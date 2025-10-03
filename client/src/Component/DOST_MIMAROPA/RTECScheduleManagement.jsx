@@ -130,13 +130,21 @@ const RTECScheduleManagement = () => {
    // Fetch available PSTO users
    const fetchAvailablePSTOUsers = useCallback(async () => {
       try {
+         console.log('🔍 Fetching available PSTO users...');
          const response = await api.get('/rtec-meetings/available-psto-users');
+         console.log('📡 PSTO users response:', response.data);
          if (response.data.success) {
+            console.log('✅ PSTO users fetched successfully:', response.data.data);
             setAvailablePSTOUsers(response.data.data || []);
+         } else {
+            console.log('❌ PSTO users fetch failed:', response.data.message);
+            displayToast('Failed to fetch PSTO users: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('Error fetching PSTO users:', error);
-         displayToast('Failed to fetch PSTO users', 'error');
+         console.error('💥 Error fetching PSTO users:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         displayToast('Failed to fetch PSTO users: ' + (error.response?.data?.message || error.message), 'error');
       }
    }, [displayToast]);
 
@@ -279,33 +287,51 @@ const RTECScheduleManagement = () => {
 
    const handleBulkInvitePSTO = async (meetingId) => {
       try {
+         console.log('🔍 Sending bulk PSTO invitations...');
+         console.log('🔍 Meeting ID:', meetingId);
+         console.log('🔍 Selected PSTO users:', selectedPSTOUsers);
+         
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto-bulk`, { 
             pstoIds: selectedPSTOUsers 
          });
+         console.log('📡 Bulk invite response:', response.data);
+         
          if (response.data.success) {
             displayToast(`Invitations sent to ${response.data.data.invitationsSent} PSTO users`, 'success');
             setShowInviteModal(false);
             setSelectedPSTOUsers([]);
+            fetchRTECMeetings(); // Refresh meetings to show updated participants
+         } else {
+            console.log('❌ Bulk invite failed:', response.data.message);
+            displayToast('Failed to send invitations: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('Error bulk inviting PSTO:', error);
-         displayToast('Failed to send bulk PSTO invitations', 'error');
+         console.error('💥 Error bulk inviting PSTO:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         displayToast('Failed to send bulk PSTO invitations: ' + (error.response?.data?.message || error.message), 'error');
       }
    };
 
    // Resend invitation to participant
    const handleResendInvitation = async (meetingId, participantId) => {
       try {
+         console.log('🔍 Resending invitation for meeting:', meetingId, 'participant:', participantId);
          const response = await api.post(`/rtec-meetings/${meetingId}/resend-invitation`, { 
             participantId 
          });
+         console.log('📡 Resend response:', response.data);
          if (response.data.success) {
             displayToast('Invitation resent successfully', 'success');
             fetchRTECMeetings();
          }
       } catch (error) {
-         console.error('Error resending invitation:', error);
-         displayToast('Failed to resend invitation', 'error');
+         console.error('💥 Error resending invitation:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         
+         const errorMessage = error.response?.data?.message || 'Failed to resend invitation';
+         displayToast(errorMessage, 'error');
       }
    };
 
@@ -1202,6 +1228,9 @@ const RTECScheduleManagement = () => {
                         <p className="text-sm text-blue-700 mt-1">
                            Select PSTO users to invite to this meeting.
                         </p>
+                        <div className="mt-2 text-xs text-gray-600">
+                           Debug: Available PSTO users: {availablePSTOUsers.length}, Selected: {selectedPSTOUsers.length}
+                        </div>
                      </div>
                      
                      <div>

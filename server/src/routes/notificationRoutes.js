@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { 
    getProponentNotifications, 
+   getPSTONotifications,
+   getDOSTNotifications,
    markNotificationAsRead, 
    markAllNotificationsAsRead 
 } = require('../controllers/notificationController');
@@ -10,8 +12,12 @@ const auth = require('../middleware/auth');
 
 // Notification routes
 router.get('/proponent/:proponentId', auth, getProponentNotifications);
+router.get('/psto/:pstoId', auth, getPSTONotifications);
+router.get('/dost/:dostId', auth, getDOSTNotifications);
 router.patch('/:notificationId/read', auth, markNotificationAsRead);
 router.patch('/proponent/:proponentId/mark-all-read', auth, markAllNotificationsAsRead);
+router.patch('/psto/:pstoId/mark-all-read', auth, markAllNotificationsAsRead);
+router.patch('/dost/:dostId/mark-all-read', auth, markAllNotificationsAsRead);
 
 // Test endpoint for creating notifications
 router.post('/test', auth, async (req, res) => {

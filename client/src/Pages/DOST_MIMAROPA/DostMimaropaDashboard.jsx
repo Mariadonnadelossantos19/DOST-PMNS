@@ -11,6 +11,7 @@ import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 import RTECDocumentManagement from '../../Component/DOST_MIMAROPA/RTECDocumentManagement';
 import RTECScheduleManagement from '../../Component/DOST_MIMAROPA/RTECScheduleManagement';
+import { DOSTNotificationCenter } from '../../Component/Notifications';
 
 const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const { isDarkMode } = useDarkMode();
@@ -21,11 +22,26 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
    const [selectedApplication, setSelectedApplication] = useState(null);
    const [reviewStatus, setReviewStatus] = useState('');
    const [reviewComments, setReviewComments] = useState('');
+   const [currentUser, setCurrentUser] = useState(null);
    // Deprecated TNA review UI (now handled by TNAManagement)
    const detectIsTnaView = useCallback(() => (
       currentPath === '/tna-management' || (typeof window !== 'undefined' && window.location.pathname.includes('tna-management'))
    ), [currentPath]);
    const [activeView, setActiveView] = useState(detectIsTnaView() ? '/tna-management' : currentPath);
+
+   // Get current user data from localStorage
+   useEffect(() => {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+         try {
+            const parsedData = JSON.parse(userData);
+            const user = parsedData.user || parsedData;
+            setCurrentUser(user);
+         } catch (error) {
+            console.error('Error parsing user data:', error);
+         }
+      }
+   }, []);
 
    // Fetch applications for DOST MIMAROPA review
    const fetchApplications = async () => {
@@ -388,16 +404,7 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
 
          case '/notifications':
             return (
-               <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-pink-600 to-rose-600 rounded-2xl p-8 text-white">
-                     <h1 className="text-3xl font-bold mb-2">Notifications</h1>
-                     <p className="text-pink-100">View and manage system notifications</p>
-                  </div>
-                  
-                  <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
-                     <p className="text-gray-600 text-center">Notification features coming soon...</p>
-                  </div>
-               </div>
+               <DOSTNotificationCenter userId={currentUser?.id || currentUser?._id} />
             );
 
          case '/settings':

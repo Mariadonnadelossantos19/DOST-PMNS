@@ -5,6 +5,7 @@ import { TNAManagement, DocumentValidation, TNAReportUpload, RTECDocumentSubmiss
 import ProponentManagement from '../../Component/PSTO/ProponentManagement';
 import PSTOStats from '../../Component/PSTO/PSTOStats';
 import PSTOManagementDashboard from './PSTOManagementDashboard';
+import { PSTONotificationCenter } from '../../Component/Notifications';
 
 /**
  * Unified PSTO Dashboard - Main Container Component
@@ -202,7 +203,12 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
 
    // Render proponent management content
    const renderProponentManagement = useCallback(() => (
-      <ProponentManagement currentUser={currentUser} />
+<ProponentManagement currentUser={currentUser} />
+   ), [currentUser]);
+
+   // Render notifications content
+   const renderNotifications = useCallback(() => (
+      <PSTONotificationCenter userId={currentUser.id} />
    ), [currentUser]);
 
    // Get current view based on currentPage prop or URL hash
@@ -225,6 +231,9 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       }
       if (currentPage === 'rtec-meetings') {
          return 'rtec-meetings';
+      }
+      if (currentPage === 'notifications') {
+         return 'notifications';
       }
       if (currentPage === 'dashboard') {
          return 'overview';
@@ -274,8 +283,9 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       'rtec-documents': renderRTECDocuments,
       'rtec-meetings': renderRTECMeetings,
       proponents: renderProponents,
-      'proponent-management': renderProponentManagement
-   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderRTECDocuments, renderRTECMeetings, renderProponents, renderProponentManagement]);
+      'proponent-management': renderProponentManagement,
+      notifications: renderNotifications
+   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderRTECDocuments, renderRTECMeetings, renderProponents, renderProponentManagement, renderNotifications]);
 
    const renderContent = useCallback(() => {
       const renderer = viewRenderers[currentView];
