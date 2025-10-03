@@ -62,12 +62,18 @@ const RTECScheduleManagement = () => {
                if (doc.applicationId) {
                   console.log('applicationId.enterpriseName:', doc.applicationId.enterpriseName);
                   console.log('applicationId.projectTitle:', doc.applicationId.projectTitle);
+                  console.log('applicationId keys:', Object.keys(doc.applicationId));
+               } else {
+                  console.log('❌ applicationId is null/undefined');
                }
                
                if (doc.proponentId) {
                   console.log('proponentId.firstName:', doc.proponentId.firstName);
                   console.log('proponentId.lastName:', doc.proponentId.lastName);
                   console.log('proponentId.email:', doc.proponentId.email);
+                  console.log('proponentId keys:', Object.keys(doc.proponentId));
+               } else {
+                  console.log('❌ proponentId is null/undefined');
                }
             });
             
@@ -285,13 +291,14 @@ const RTECScheduleManagement = () => {
          accessor: 'applicationId',
          render: (value, item) => {
             console.log('Enterprise Name render - value:', value, 'item:', item);
+            console.log('Full item structure:', JSON.stringify(item, null, 2));
             return (
                <div>
                   <div className="font-medium text-gray-900">
-                     {value?.enterpriseName || 'N/A'}
+                     {value?.enterpriseName || item?.applicationId?.enterpriseName || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-500">
-                     {value?.projectTitle || 'N/A'}
+                     {value?.projectTitle || item?.applicationId?.projectTitle || 'N/A'}
                   </div>
                </div>
             );
@@ -312,9 +319,9 @@ const RTECScheduleManagement = () => {
             return (
                <div>
                   <div className="font-medium">
-                     {value?.firstName} {value?.lastName}
+                     {value?.firstName || item?.proponentId?.firstName || ''} {value?.lastName || item?.proponentId?.lastName || ''}
                   </div>
-                  <div className="text-sm text-gray-500">{value?.email}</div>
+                  <div className="text-sm text-gray-500">{value?.email || item?.proponentId?.email || 'N/A'}</div>
                </div>
             );
          }
