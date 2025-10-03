@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal, Input, Textarea, StatsCard, Alert } from '../UI';
 import api from '../../config/api';
 
@@ -42,7 +42,7 @@ const RTECScheduleManagement = () => {
    });
 
    // Fetch approved RTEC documents
-   const fetchApprovedRTECDocuments = async () => {
+   const fetchApprovedRTECDocuments = useCallback(async () => {
       try {
          console.log('=== FETCHING APPROVED RTEC DOCUMENTS ===');
          setLoading(true);
@@ -89,10 +89,10 @@ const RTECScheduleManagement = () => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [displayToast]);
 
    // Fetch RTEC meetings
-   const fetchRTECMeetings = async () => {
+   const fetchRTECMeetings = useCallback(async () => {
       try {
          const response = await api.get('/rtec-meetings/list');
          console.log('=== FETCH RTEC MEETINGS RESPONSE ===');
@@ -118,10 +118,10 @@ const RTECScheduleManagement = () => {
          console.error('Error fetching RTEC meetings:', error);
          displayToast('Failed to fetch RTEC meetings', 'error');
       }
-   };
+   }, [displayToast]);
 
    // Fetch available PSTO users
-   const fetchAvailablePSTOUsers = async () => {
+   const fetchAvailablePSTOUsers = useCallback(async () => {
       try {
          const response = await api.get('/rtec-meetings/available-psto-users');
          if (response.data.success) {
@@ -131,7 +131,7 @@ const RTECScheduleManagement = () => {
          console.error('Error fetching PSTO users:', error);
          displayToast('Failed to fetch PSTO users', 'error');
       }
-   };
+   }, [displayToast]);
 
    // Fetch meeting participants
    // const fetchMeetingParticipants = async (meetingId) => {
@@ -154,12 +154,12 @@ const RTECScheduleManagement = () => {
       fetchAvailablePSTOUsers();
    }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
 
-   const displayToast = (message, type = 'success') => {
+   const displayToast = useCallback((message, type = 'success') => {
       setToastMessage(message);
       setToastType(type);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-   };
+   }, []);
 
    const handleScheduleMeeting = (rtecDocument) => {
       console.log('=== HANDLE SCHEDULE MEETING ===');
@@ -169,7 +169,7 @@ const RTECScheduleManagement = () => {
       console.log('Proponent ID:', rtecDocument.proponentId?._id || rtecDocument.proponentId);
       console.log('Current showCreateModal state:', showCreateModal);
       
-      setSelectedRTECDocument(rtecDocument);
+      // setSelectedRTECDocument(rtecDocument);
       setFormData({
          tnaId: rtecDocument.tnaId?._id || rtecDocument.tnaId,
          rtecDocumentsId: rtecDocument._id,
