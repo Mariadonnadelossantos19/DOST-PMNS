@@ -726,8 +726,6 @@ const RTECScheduleManagement = () => {
          </div>
 
          {/* Tab Content */}
-         {console.log('=== RENDERING TABS ===', 'activeTab:', activeTab)}
-         {console.log('=== DATA STATE ===', 'approvedRTECDocuments:', approvedRTECDocuments.length, 'rtecMeetings:', rtecMeetings.length)}
          {activeTab === 'documents' && (
             <Card>
                <div className="p-6">
@@ -876,7 +874,6 @@ const RTECScheduleManagement = () => {
          )}
 
          {/* Create Meeting Modal */}
-         {console.log('Modal render - showCreateModal:', showCreateModal)}
          <Modal
             isOpen={showCreateModal}
             onClose={() => setShowCreateModal(false)}
