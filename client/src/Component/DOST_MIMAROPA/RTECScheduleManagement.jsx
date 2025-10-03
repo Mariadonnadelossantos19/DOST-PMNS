@@ -51,6 +51,28 @@ const RTECScheduleManagement = () => {
             
             // Show ALL documents for now to debug - remove filtering temporarily
             console.log('Setting ALL documents (no filtering):', allDocs);
+            
+            // Debug each document structure
+            allDocs.forEach((doc, index) => {
+               console.log(`\n=== Document ${index + 1} ===`);
+               console.log('Full document:', doc);
+               console.log('applicationId:', doc.applicationId);
+               console.log('proponentId:', doc.proponentId);
+               console.log('status:', doc.status);
+               console.log('programName:', doc.programName);
+               
+               if (doc.applicationId) {
+                  console.log('applicationId.enterpriseName:', doc.applicationId.enterpriseName);
+                  console.log('applicationId.projectTitle:', doc.applicationId.projectTitle);
+               }
+               
+               if (doc.proponentId) {
+                  console.log('proponentId.firstName:', doc.proponentId.firstName);
+                  console.log('proponentId.lastName:', doc.proponentId.lastName);
+                  console.log('proponentId.email:', doc.proponentId.email);
+               }
+            });
+            
             setApprovedRTECDocuments(allDocs);
          }
       } catch (error) {
@@ -262,16 +284,19 @@ const RTECScheduleManagement = () => {
       {
          header: 'Enterprise Name',
          accessor: 'applicationId',
-         render: (value, item) => (
-            <div>
-               <div className="font-medium text-gray-900">
-                  {value?.enterpriseName || 'N/A'}
+         render: (value, item) => {
+            console.log('Enterprise Name render - value:', value, 'item:', item);
+            return (
+               <div>
+                  <div className="font-medium text-gray-900">
+                     {value?.enterpriseName || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                     {value?.projectTitle || 'N/A'}
+                  </div>
                </div>
-               <div className="text-sm text-gray-500">
-                  {value?.projectTitle || 'N/A'}
-               </div>
-            </div>
-         )
+            );
+         }
       },
       {
          header: 'Program',
@@ -283,14 +308,17 @@ const RTECScheduleManagement = () => {
       {
          header: 'Proponent',
          accessor: 'proponentId',
-         render: (value) => (
-            <div>
-               <div className="font-medium">
-                  {value?.firstName} {value?.lastName}
+         render: (value, item) => {
+            console.log('Proponent render - value:', value, 'item:', item);
+            return (
+               <div>
+                  <div className="font-medium">
+                     {value?.firstName} {value?.lastName}
+                  </div>
+                  <div className="text-sm text-gray-500">{value?.email}</div>
                </div>
-               <div className="text-sm text-gray-500">{value?.email}</div>
-            </div>
-         )
+            );
+         }
       },
       {
          header: 'Documents Status',
