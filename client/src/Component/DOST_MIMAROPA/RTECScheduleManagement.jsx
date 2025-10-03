@@ -104,6 +104,7 @@ const RTECScheduleManagement = () => {
                console.log(`Meeting ${index + 1}:`, {
                   id: meeting._id,
                   title: meeting.meetingTitle,
+                  rtecDocumentsId: meeting.rtecDocumentsId,
                   scheduledDate: meeting.scheduledDate,
                   scheduledTime: meeting.scheduledTime,
                   location: meeting.location
@@ -742,9 +743,12 @@ const RTECScheduleManagement = () => {
                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
                ) : (
-                  <DataTable
-                     data={approvedRTECDocuments.filter(doc => {
-                        // Filter out documents that already have meetings
+                  (() => {
+                     console.log('=== RENDERING DOCUMENTS TAB ===');
+                     console.log('Approved RTEC Documents:', approvedRTECDocuments.length);
+                     console.log('RTEC Meetings:', rtecMeetings.length);
+                     
+                     const filteredDocs = approvedRTECDocuments.filter(doc => {
                         console.log('=== FILTERING DOCUMENT ===');
                         console.log('Document ID:', doc._id);
                         console.log('Document title:', doc.applicationId?.enterpriseName);
@@ -761,11 +765,19 @@ const RTECScheduleManagement = () => {
                         console.log('Document has meeting:', hasMeeting);
                         console.log('Will show document:', !hasMeeting);
                         return !hasMeeting;
-                     })}
-                     columns={approvedDocumentsColumns}
-                     searchable={true}
-                     pagination={true}
-                  />
+                     });
+                     
+                     console.log('Filtered documents count:', filteredDocs.length);
+                     
+                     return (
+                        <DataTable
+                           data={filteredDocs}
+                           columns={approvedDocumentsColumns}
+                           searchable={true}
+                           pagination={true}
+                        />
+                     );
+                  })()
                )}
                </div>
             </Card>
