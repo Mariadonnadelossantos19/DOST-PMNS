@@ -27,6 +27,12 @@ router.post('/create', auth, createRTECMeeting);
 // Get all RTEC meetings (DOST-MIMAROPA dashboard)
 router.get('/list', auth, getRTECMeetings);
 
+// Get available PSTO users for invitation (must be before /:meetingId routes)
+router.get('/available-psto-users', auth, getAvailablePSTOUsers);
+
+// Get meetings for user (PSTO/Proponent)
+router.get('/user/my-meetings', auth, getUserMeetings);
+
 // Get RTEC meeting by ID
 router.get('/:meetingId', auth, getRTECMeetingById);
 
@@ -48,9 +54,6 @@ router.patch('/:meetingId/participants/me', auth, updateMyParticipantStatus);
 // Resend invitation to participant
 router.post('/:meetingId/resend-invitation', auth, resendInvitation);
 
-// Get meetings for user (PSTO/Proponent)
-router.get('/user/my-meetings', auth, getUserMeetings);
-
 // Delete RTEC meeting
 router.delete('/:meetingId', auth, deleteRTECMeeting);
 
@@ -68,8 +71,5 @@ router.get('/:meetingId/participants', auth, getMeetingParticipants);
 
 // Remove participant from meeting
 router.delete('/:meetingId/participants/:participantId', auth, removeParticipant);
-
-// Get available PSTO users for invitation
-router.get('/available-psto-users', auth, getAvailablePSTOUsers);
 
 module.exports = router;

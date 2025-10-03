@@ -894,6 +894,9 @@ const removeParticipant = async (req, res) => {
 const getAvailablePSTOUsers = async (req, res) => {
    try {
       console.log('=== FETCHING AVAILABLE PSTO USERS ===');
+      console.log('Request user:', req.user);
+      console.log('Request method:', req.method);
+      console.log('Request URL:', req.url);
       
       const pstoUsers = await User.find({ 
          role: 'psto',
