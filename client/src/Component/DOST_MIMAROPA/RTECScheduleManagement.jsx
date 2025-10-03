@@ -403,7 +403,17 @@ const RTECScheduleManagement = () => {
          header: 'Meeting Status',
          accessor: '_id',
          render: (value, item) => {
-            const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            console.log('=== MEETING STATUS CHECK ===');
+            console.log('Document ID:', value);
+            console.log('Document item:', item);
+            console.log('All meetings:', rtecMeetings);
+            
+            const hasMeeting = rtecMeetings.some(meeting => {
+               console.log('Comparing:', meeting.rtecDocumentsId, '===', value);
+               return meeting.rtecDocumentsId === value;
+            });
+            
+            console.log('Has meeting:', hasMeeting);
             return hasMeeting ? (
                <Badge color="blue">Meeting Scheduled</Badge>
             ) : (
@@ -415,8 +425,17 @@ const RTECScheduleManagement = () => {
          header: 'Actions',
          accessor: '_id',
          render: (value, item) => {
-            const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            console.log('=== ACTIONS CHECK ===');
+            console.log('Document ID:', value);
+            console.log('Document item:', item);
+            
+            const hasMeeting = rtecMeetings.some(meeting => {
+               console.log('Actions - Comparing:', meeting.rtecDocumentsId, '===', value);
+               return meeting.rtecDocumentsId === value;
+            });
+            
             const isApproved = item.status === 'documents_approved';
+            console.log('Has meeting:', hasMeeting, 'Is approved:', isApproved);
             
             return (
                <div className="flex space-x-2">
