@@ -41,6 +41,7 @@ const RTECScheduleMeeting = () => {
    // Fetch approved RTEC documents
    const fetchApprovedRTECDocuments = async () => {
       try {
+         console.log('=== FETCHING APPROVED RTEC DOCUMENTS ===');
          setLoading(true);
          const response = await api.get('/rtec-documents/list');
          console.log('RTEC Documents Response:', response.data);
@@ -50,6 +51,7 @@ const RTECScheduleMeeting = () => {
             console.log('All RTEC Documents:', allDocs);
             const approvedDocs = allDocs.filter(doc => doc.status === 'documents_approved');
             console.log('Approved RTEC Documents:', approvedDocs);
+            console.log('Setting approved documents to state...');
             
             // Debug each approved document
             approvedDocs.forEach((doc, index) => {
@@ -61,6 +63,7 @@ const RTECScheduleMeeting = () => {
             });
             
             setApprovedRTECDocuments(approvedDocs);
+            console.log('State updated with approved documents');
          }
       } catch (error) {
          console.error('Error fetching approved RTEC documents:', error);
@@ -107,10 +110,19 @@ const RTECScheduleMeeting = () => {
          fetchApprovedRTECDocuments();
       };
       
+      // Listen for scheduled meetings refresh events
+      const handleRefreshScheduledMeetings = () => {
+         console.log('Refreshing scheduled meetings...');
+         fetchApprovedRTECDocuments();
+         fetchRTECMeetings();
+      };
+      
       window.addEventListener('rtecDocumentApproved', handleDocumentApproved);
+      window.addEventListener('refreshScheduledMeetings', handleRefreshScheduledMeetings);
       
       return () => {
          window.removeEventListener('rtecDocumentApproved', handleDocumentApproved);
+         window.removeEventListener('refreshScheduledMeetings', handleRefreshScheduledMeetings);
       };
    }, []);
 
@@ -438,7 +450,10 @@ const RTECScheduleMeeting = () => {
                   <div className="flex space-x-2">
                      <Button
                         variant="outline"
-                        onClick={fetchApprovedRTECDocuments}
+                        onClick={() => {
+                           console.log('Manual refresh triggered');
+                           fetchApprovedRTECDocuments();
+                        }}
                      >
                         Refresh
                      </Button>

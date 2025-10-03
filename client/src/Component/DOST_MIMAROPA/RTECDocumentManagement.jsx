@@ -29,7 +29,9 @@ const RTECDocumentManagement = () => {
       } else if (activeTab === 'approved-tnas') {
          fetchApprovedTNAs();
       } else if (activeTab === 'scheduled') {
-         // The RTECScheduleMeeting component will handle its own data fetching
+         // Trigger refresh of scheduled meetings when tab is activated
+         const event = new CustomEvent('refreshScheduledMeetings');
+         window.dispatchEvent(event);
       }
    }, [filters, activeTab]);
 
