@@ -45,9 +45,28 @@ const RTECScheduleManagement = () => {
          const response = await api.get('/rtec-documents/list');
          console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
-            // Filter for documents with 'documents_approved' status
-            const approvedDocs = response.data.data.docs?.filter(doc => doc.status === 'documents_approved') || [];
+            // Filter for documents with approved status (check multiple possible statuses)
+            const allDocs = response.data.data.docs || [];
+            console.log('All RTEC Documents:', allDocs);
+            
+            const approvedDocs = allDocs.filter(doc => 
+               doc.status === 'documents_approved' || 
+               doc.status === 'approved' ||
+               (doc.partialdocsrtec && doc.partialdocsrtec.some(d => d.status === 'approved'))
+            );
             console.log('Approved RTEC Documents:', approvedDocs);
+            
+            // Debug the structure of each document
+            approvedDocs.forEach((doc, index) => {
+               console.log(`Document ${index}:`, {
+                  id: doc._id,
+                  status: doc.status,
+                  applicationId: doc.applicationId,
+                  proponentId: doc.proponentId,
+                  programName: doc.programName
+               });
+            });
+            
             setApprovedRTECDocuments(approvedDocs);
          }
       } catch (error) {
