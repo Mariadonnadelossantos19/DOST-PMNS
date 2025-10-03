@@ -41,6 +41,13 @@ const RTECScheduleManagement = () => {
       notes: ''
    });
 
+   const displayToast = useCallback((message, type = 'success') => {
+      setToastMessage(message);
+      setToastType(type);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+   }, []);
+
    // Fetch approved RTEC documents
    const fetchApprovedRTECDocuments = useCallback(async () => {
       try {
@@ -153,13 +160,6 @@ const RTECScheduleManagement = () => {
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
    }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
-
-   const displayToast = useCallback((message, type = 'success') => {
-      setToastMessage(message);
-      setToastType(type);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-   }, []);
 
    const handleScheduleMeeting = (rtecDocument) => {
       console.log('=== HANDLE SCHEDULE MEETING ===');
