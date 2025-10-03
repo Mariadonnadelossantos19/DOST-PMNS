@@ -3,12 +3,14 @@ import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal, Input,
 import api from '../../config/api';
 
 const RTECScheduleManagement = () => {
+   const [approvedRTECDocuments, setApprovedRTECDocuments] = useState([]);
    const [rtecMeetings, setRtecMeetings] = useState([]);
    const [loading, setLoading] = useState(true);
    const [showCreateModal, setShowCreateModal] = useState(false);
    const [showParticipantsModal, setShowParticipantsModal] = useState(false);
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [selectedMeeting, setSelectedMeeting] = useState(null);
+   const [selectedRTECDocument, setSelectedRTECDocument] = useState(null);
    const [availablePSTOUsers, setAvailablePSTOUsers] = useState([]);
    const [selectedPSTOUsers, setSelectedPSTOUsers] = useState([]);
    const [showToast, setShowToast] = useState(false);
@@ -20,6 +22,10 @@ const RTECScheduleManagement = () => {
    // Form states for creating meeting
    const [formData, setFormData] = useState({
       tnaId: '',
+      rtecDocumentsId: '',
+      applicationId: '',
+      proponentId: '',
+      programName: '',
       meetingTitle: '',
       meetingDescription: '',
       scheduledDate: '',
@@ -32,10 +38,27 @@ const RTECScheduleManagement = () => {
       notes: ''
    });
 
+   // Fetch approved RTEC documents
+   const fetchApprovedRTECDocuments = async () => {
+      try {
+         setLoading(true);
+         const response = await api.get('/rtec-documents/list');
+         if (response.data.success) {
+            // Filter for documents with 'documents_approved' status
+            const approvedDocs = response.data.data.docs?.filter(doc => doc.status === 'documents_approved') || [];
+            setApprovedRTECDocuments(approvedDocs);
+         }
+      } catch (error) {
+         console.error('Error fetching approved RTEC documents:', error);
+         displayToast('Failed to fetch approved RTEC documents', 'error');
+      } finally {
+         setLoading(false);
+      }
+   };
+
    // Fetch RTEC meetings
    const fetchRTECMeetings = async () => {
       try {
-         setLoading(true);
          const response = await api.get('/rtec-meetings/list');
          if (response.data.success) {
             setRtecMeetings(response.data.data.docs || []);
@@ -43,8 +66,6 @@ const RTECScheduleManagement = () => {
       } catch (error) {
          console.error('Error fetching RTEC meetings:', error);
          displayToast('Failed to fetch RTEC meetings', 'error');
-      } finally {
-         setLoading(false);
       }
    };
 
@@ -76,6 +97,7 @@ const RTECScheduleManagement = () => {
    };
 
    useEffect(() => {
+      fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
    }, []);
@@ -87,6 +109,28 @@ const RTECScheduleManagement = () => {
       setTimeout(() => setShowToast(false), 3000);
    };
 
+   const handleScheduleMeeting = (rtecDocument) => {
+      setSelectedRTECDocument(rtecDocument);
+      setFormData({
+         tnaId: rtecDocument.tnaId._id,
+         rtecDocumentsId: rtecDocument._id,
+         applicationId: rtecDocument.applicationId._id,
+         proponentId: rtecDocument.proponentId._id,
+         programName: rtecDocument.programName || 'SETUP',
+         meetingTitle: `RTEC Meeting - ${rtecDocument.applicationId?.companyName || rtecDocument.applicationId?.enterpriseName || 'Application'}`,
+         meetingDescription: '',
+         scheduledDate: '',
+         scheduledTime: '',
+         location: '',
+         meetingType: 'physical',
+         virtualMeetingLink: '',
+         virtualMeetingId: '',
+         virtualMeetingPassword: '',
+         notes: ''
+      });
+      setShowCreateModal(true);
+   };
+
    const handleCreateMeeting = async () => {
       try {
          const response = await api.post('/rtec-meetings/create', formData);
@@ -95,6 +139,10 @@ const RTECScheduleManagement = () => {
             setShowCreateModal(false);
             setFormData({
                tnaId: '',
+               rtecDocumentsId: '',
+               applicationId: '',
+               proponentId: '',
+               programName: '',
                meetingTitle: '',
                meetingDescription: '',
                scheduledDate: '',
@@ -107,6 +155,7 @@ const RTECScheduleManagement = () => {
                notes: ''
             });
             fetchRTECMeetings();
+            fetchApprovedRTECDocuments();
          }
       } catch (error) {
          console.error('Error creating meeting:', error);
@@ -204,7 +253,90 @@ const RTECScheduleManagement = () => {
       return <Badge color={config.color}>{config.text}</Badge>;
    };
 
-   const columns = [
+   const approvedDocumentsColumns = [
+      {
+         header: 'Enterprise Name',
+         accessor: 'applicationId',
+         render: (value, item) => (
+            <div>
+               <div className="font-medium text-gray-900">
+                  {value?.companyName || value?.enterpriseName || 'N/A'}
+               </div>
+               <div className="text-sm text-gray-500">
+                  {value?.projectTitle || 'N/A'}
+               </div>
+            </div>
+         )
+      },
+      {
+         header: 'Program',
+         accessor: 'programName',
+         render: (value) => (
+            <Badge color="blue">{value || 'SETUP'}</Badge>
+         )
+      },
+      {
+         header: 'Proponent',
+         accessor: 'proponentId',
+         render: (value) => (
+            <div>
+               <div className="font-medium">
+                  {value?.firstName} {value?.lastName}
+               </div>
+               <div className="text-sm text-gray-500">{value?.email}</div>
+            </div>
+         )
+      },
+      {
+         header: 'Documents Status',
+         accessor: 'status',
+         render: (value) => (
+            <Badge color="green">Documents Approved</Badge>
+         )
+      },
+      {
+         header: 'Meeting Status',
+         accessor: '_id',
+         render: (value, item) => {
+            const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            return hasMeeting ? (
+               <Badge color="blue">Meeting Scheduled</Badge>
+            ) : (
+               <Badge color="yellow">No Meeting</Badge>
+            );
+         }
+      },
+      {
+         header: 'Actions',
+         accessor: '_id',
+         render: (value, item) => {
+            const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            return (
+               <div className="flex space-x-2">
+                  {!hasMeeting ? (
+                     <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => handleScheduleMeeting(item)}
+                     >
+                        Schedule Meeting
+                     </Button>
+                  ) : (
+                     <Button
+                        size="sm"
+                        variant="outline"
+                        disabled
+                     >
+                        Meeting Scheduled
+                     </Button>
+                  )}
+               </div>
+            );
+         }
+      }
+   ];
+
+   const meetingsColumns = [
       {
          header: 'Meeting Title',
          accessor: 'meetingTitle',
@@ -312,6 +444,11 @@ const RTECScheduleManagement = () => {
 
    const stats = [
       {
+         title: 'Approved Documents',
+         value: approvedRTECDocuments.length,
+         color: 'green'
+      },
+      {
          title: 'Total Meetings',
          value: rtecMeetings.length,
          color: 'blue'
@@ -350,7 +487,7 @@ const RTECScheduleManagement = () => {
          </div>
 
          {/* Stats Cards */}
-         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {stats.map((stat, index) => (
                <StatsCard
                   key={index}
@@ -361,7 +498,37 @@ const RTECScheduleManagement = () => {
             ))}
          </div>
 
-         {/* Meetings Table */}
+         {/* Approved RTEC Documents Table */}
+         <Card>
+            <div className="p-6">
+               <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Approved RTEC Documents</h2>
+                  <div className="flex space-x-2">
+                     <Button
+                        variant="outline"
+                        onClick={fetchApprovedRTECDocuments}
+                     >
+                        Refresh
+                     </Button>
+                  </div>
+               </div>
+               
+               {loading ? (
+                  <div className="flex justify-center py-8">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+               ) : (
+                  <DataTable
+                     data={approvedRTECDocuments}
+                     columns={approvedDocumentsColumns}
+                     searchable={true}
+                     pagination={true}
+                  />
+               )}
+            </div>
+         </Card>
+
+         {/* RTEC Meetings Table */}
          <Card>
             <div className="p-6">
                <div className="flex justify-between items-center mb-4">
@@ -383,7 +550,7 @@ const RTECScheduleManagement = () => {
                ) : (
                   <DataTable
                      data={rtecMeetings}
-                     columns={columns}
+                     columns={meetingsColumns}
                      searchable={true}
                      pagination={true}
                   />
@@ -399,29 +566,16 @@ const RTECScheduleManagement = () => {
             size="lg"
          >
             <div className="space-y-4">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        TNA ID
-                     </label>
-                     <Input
-                        value={formData.tnaId}
-                        onChange={(e) => setFormData({ ...formData, tnaId: e.target.value })}
-                        placeholder="Enter TNA ID"
-                        required
-                     />
-                  </div>
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Meeting Title
-                     </label>
-                     <Input
-                        value={formData.meetingTitle}
-                        onChange={(e) => setFormData({ ...formData, meetingTitle: e.target.value })}
-                        placeholder="Enter meeting title"
-                        required
-                     />
-                  </div>
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Meeting Title
+                  </label>
+                  <Input
+                     value={formData.meetingTitle}
+                     onChange={(e) => setFormData({ ...formData, meetingTitle: e.target.value })}
+                     placeholder="Enter meeting title"
+                     required
+                  />
                </div>
 
                <div>
