@@ -893,10 +893,15 @@ const removeParticipant = async (req, res) => {
 // Get available PSTO users for invitation
 const getAvailablePSTOUsers = async (req, res) => {
    try {
+      console.log('=== FETCHING AVAILABLE PSTO USERS ===');
+      
       const pstoUsers = await User.find({ 
          role: 'psto',
-         isActive: true 
-      }).select('firstName lastName email department');
+         status: 'active'
+      }).select('firstName lastName email department province');
+
+      console.log('Found PSTO users:', pstoUsers.length);
+      console.log('PSTO users:', pstoUsers);
 
       res.json({
          success: true,
