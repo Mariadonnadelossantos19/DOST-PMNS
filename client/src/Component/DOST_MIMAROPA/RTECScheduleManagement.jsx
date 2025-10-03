@@ -147,6 +147,7 @@ const RTECScheduleManagement = () => {
       console.log('TNA ID:', rtecDocument.tnaId?._id || rtecDocument.tnaId);
       console.log('Application ID:', rtecDocument.applicationId?._id || rtecDocument.applicationId);
       console.log('Proponent ID:', rtecDocument.proponentId?._id || rtecDocument.proponentId);
+      console.log('Current showCreateModal state:', showCreateModal);
       
       setSelectedRTECDocument(rtecDocument);
       setFormData({
@@ -166,7 +167,9 @@ const RTECScheduleManagement = () => {
          virtualMeetingPassword: '',
          notes: ''
       });
+      console.log('Setting showCreateModal to true');
       setShowCreateModal(true);
+      console.log('showCreateModal should now be true');
    };
 
    const handleCreateMeeting = async () => {
@@ -391,7 +394,11 @@ const RTECScheduleManagement = () => {
                         <Button
                            size="sm"
                            variant="primary"
-                           onClick={() => handleScheduleMeeting(item)}
+                           onClick={() => {
+                              console.log('=== SCHEDULE MEETING BUTTON CLICKED ===');
+                              console.log('Item clicked:', item);
+                              handleScheduleMeeting(item);
+                           }}
                         >
                            Schedule Meeting
                         </Button>
@@ -686,6 +693,7 @@ const RTECScheduleManagement = () => {
          </Card>
 
          {/* Create Meeting Modal */}
+         {console.log('Modal render - showCreateModal:', showCreateModal)}
          <Modal
             isOpen={showCreateModal}
             onClose={() => setShowCreateModal(false)}
