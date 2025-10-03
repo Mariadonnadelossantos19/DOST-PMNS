@@ -374,6 +374,16 @@ const listRTECDocuments = async (req, res) => {
       console.log('Total found:', total);
       console.log('Documents found:', rtecDocuments.length);
       
+      // Debug each document's populated fields
+      rtecDocuments.forEach((doc, index) => {
+         console.log(`\n--- Document ${index} ---`);
+         console.log('ID:', doc._id);
+         console.log('Status:', doc.status);
+         console.log('ApplicationId populated:', doc.applicationId);
+         console.log('ProponentId populated:', doc.proponentId);
+         console.log('TnaId populated:', doc.tnaId);
+      });
+      
       rtecDocuments.forEach((doc, index) => {
          console.log(`Document ${index + 1}:`, {
             id: doc._id,

@@ -58,13 +58,15 @@ const RTECScheduleManagement = () => {
             
             // Debug the structure of each document
             approvedDocs.forEach((doc, index) => {
-               console.log(`Document ${index}:`, {
-                  id: doc._id,
-                  status: doc.status,
-                  applicationId: doc.applicationId,
-                  proponentId: doc.proponentId,
-                  programName: doc.programName
-               });
+               console.log(`\n--- Frontend Document ${index} ---`);
+               console.log('Full document:', doc);
+               console.log('ApplicationId structure:', doc.applicationId);
+               console.log('ProponentId structure:', doc.proponentId);
+               console.log('ApplicationId enterpriseName:', doc.applicationId?.enterpriseName);
+               console.log('ApplicationId projectTitle:', doc.applicationId?.projectTitle);
+               console.log('ProponentId firstName:', doc.proponentId?.firstName);
+               console.log('ProponentId lastName:', doc.proponentId?.lastName);
+               console.log('ProponentId email:', doc.proponentId?.email);
             });
             
             setApprovedRTECDocuments(approvedDocs);
