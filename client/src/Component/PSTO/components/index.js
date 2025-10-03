@@ -3,3 +3,4 @@ export { default as DocumentValidation } from './DocumentValidation';
 export { default as TNAReportUpload } from './TNAReportUpload';
 export { default as TNASchedulerForm } from './TNASchedulerForm';
 export { default as RTECDocumentSubmission } from './RTECDocumentSubmission';
+export { default as RTECMeetingInterface } from './RTECMeetingInterface';

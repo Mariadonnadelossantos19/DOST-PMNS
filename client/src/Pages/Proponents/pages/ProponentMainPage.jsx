@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProponentDashboard, ProponentRegistrationForm, EnterpriseProfile } from '../Components';
+import { RTECMeetingInterface } from '../../../Component/Proponents';
 import { ProgramSelection } from '../../../Component/ProgramSelection';
 import { MultiStepForm, ApplicationStatusTracker } from '../../../Component/ProgramApplication';
 import ProponentTNAViewer from '../../../Component/ProgramApplication/components/ProponentTNAViewer';
@@ -417,6 +418,8 @@ const ProponentMainPage = ({ onNavigateToProfile, currentUser, currentPath = '/a
             return <ApplicationMonitor currentUser={currentUser} />;
          case '/notifications':
             return <NotificationsPage currentUser={currentUser} />;
+         case '/rtec-meetings':
+            return <RTECMeetingInterface currentUser={currentUser} />;
          case '/reports':
             return (
                <div className="container mx-auto p-6">

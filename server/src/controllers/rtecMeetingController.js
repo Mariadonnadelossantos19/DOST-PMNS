@@ -498,6 +498,65 @@ const confirmParticipant = async (req, res) => {
    }
 };
 
+// Update participant's own status (for participants to accept/decline)
+const updateMyParticipantStatus = async (req, res) => {
+   try {
+      const { meetingId } = req.params;
+      const { status } = req.body;
+      const userId = req.user.id;
+
+      if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid meeting ID'
+         });
+      }
+
+      if (!['confirmed', 'declined'].includes(status)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid status. Must be "confirmed" or "declined"'
+         });
+      }
+
+      const rtecMeeting = await RTECMeeting.findById(meetingId);
+
+      if (!rtecMeeting) {
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC meeting not found'
+         });
+      }
+
+      // Find participant
+      const participant = rtecMeeting.participants.find(p => p.userId.toString() === userId);
+      if (!participant) {
+         return res.status(404).json({
+            success: false,
+            message: 'You are not a participant in this meeting'
+         });
+      }
+
+      // Update participant status
+      participant.status = status;
+      await rtecMeeting.save();
+
+      res.json({
+         success: true,
+         message: `Meeting invitation ${status} successfully`,
+         data: rtecMeeting
+      });
+
+   } catch (error) {
+      console.error('Error updating participant status:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 // Get meetings for user (PSTO/Proponent)
 const getUserMeetings = async (req, res) => {
    try {
@@ -908,6 +967,7 @@ module.exports = {
    updateMeetingStatus,
    addParticipant,
    confirmParticipant,
+   updateMyParticipantStatus,
    getUserMeetings,
    deleteRTECMeeting,
    sendProponentInvitation,
