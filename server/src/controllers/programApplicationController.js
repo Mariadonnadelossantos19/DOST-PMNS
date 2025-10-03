@@ -1,6 +1,7 @@
 const SETUPApplication = require('../models/SETUPApplication');
 const User = require('../models/User');
 const PSTO = require('../models/PSTO');
+const Notification = require('../models/Notification');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -154,6 +155,48 @@ exports.submitApplication = async (req, res) => {
          const randomPSTO = pstos[Math.floor(Math.random() * pstos.length)];
          application.assignedPSTO = randomPSTO._id;
          await application.save();
+         
+         // Create notification for PSTO about new application
+         try {
+            await Notification.create({
+               recipientId: randomPSTO._id,
+               recipientType: 'psto',
+               type: 'application_submitted',
+               title: 'New Application Submitted',
+               message: `A new ${applicationData.programName} application has been submitted by ${applicationData.enterpriseName} and assigned to you for review.`,
+               relatedEntityType: 'application',
+               relatedEntityId: application._id,
+               actionUrl: `/psto/applications/${application._id}`,
+               actionText: 'Review Application',
+               priority: 'high',
+               sentBy: proponentId
+            });
+            console.log('✅ Notification created for PSTO about new application');
+         } catch (notificationError) {
+            console.error('❌ Error creating PSTO notification:', notificationError);
+            // Don't fail the application submission if notification creation fails
+         }
+         
+         // Create notification for proponent to confirm submission
+         try {
+            await Notification.create({
+               recipientId: proponentId,
+               recipientType: 'proponent',
+               type: 'application_submitted',
+               title: 'Application Submitted Successfully',
+               message: `Your ${applicationData.programName} application has been submitted successfully and assigned to PSTO for review. Application ID: ${application.applicationId}`,
+               relatedEntityType: 'application',
+               relatedEntityId: application._id,
+               actionUrl: `/applications/${application._id}`,
+               actionText: 'View Application',
+               priority: 'medium',
+               sentBy: proponentId
+            });
+            console.log('✅ Notification created for proponent about application submission');
+         } catch (notificationError) {
+            console.error('❌ Error creating proponent notification:', notificationError);
+            // Don't fail the application submission if notification creation fails
+         }
       }
       
       res.status(201).json({

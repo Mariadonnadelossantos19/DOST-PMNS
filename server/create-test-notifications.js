@@ -1,73 +1,85 @@
 const mongoose = require('mongoose');
 const Notification = require('./src/models/Notification');
+const User = require('./src/models/User');
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/pmns', {
+   useNewUrlParser: true,
+   useUnifiedTopology: true
+});
 
 async function createTestNotifications() {
    try {
-      await mongoose.connect('mongodb://localhost:27017/dost-pmns');
-      console.log('Connected to MongoDB');
-
-      const proponentId = '68cfa0919ebdc3e041207f9c';
-
-      // Create test notifications
-      const notifications = [
-         {
-            title: 'Application Submitted',
-            message: 'Your SETUP application has been successfully submitted and is now under review by PSTO Marinduque.',
-            recipientId: proponentId,
-            recipientType: 'proponent',
+      console.log('🔍 Creating test notifications for PSTO users...');
+      
+      // Find PSTO users
+      const pstoUsers = await User.find({ role: 'psto' });
+      console.log(`📋 Found ${pstoUsers.length} PSTO users`);
+      
+      if (pstoUsers.length === 0) {
+         console.log('❌ No PSTO users found');
+         return;
+      }
+      
+      // Create test notifications for each PSTO user
+      for (const psto of pstoUsers) {
+         console.log(`📝 Creating notifications for PSTO: ${psto.firstName} ${psto.lastName}`);
+         
+         // Create application submitted notification
+         await Notification.create({
+            recipientId: psto._id,
+            recipientType: 'psto',
             type: 'application_submitted',
+            title: 'New Application Submitted',
+            message: 'A new SETUP application has been submitted by Test Enterprise and assigned to you for review.',
             relatedEntityType: 'application',
             relatedEntityId: new mongoose.Types.ObjectId(),
-            actionUrl: '/dashboard',
-            actionText: 'View Application',
+            actionUrl: '/psto/applications',
+            actionText: 'Review Application',
             priority: 'high',
-            sentBy: proponentId
-         },
-         {
-            title: 'TNA Scheduled',
-            message: 'Your Technology Needs Assessment (TNA) has been scheduled for September 25, 2025 at 2:00 PM. Please prepare your documents.',
-            recipientId: proponentId,
-            recipientType: 'proponent',
+            sentBy: psto._id
+         });
+         
+         // Create TNA scheduled notification
+         await Notification.create({
+            recipientId: psto._id,
+            recipientType: 'psto',
             type: 'tna_scheduled',
+            title: 'TNA Assessment Scheduled',
+            message: 'A Technology Needs Assessment has been scheduled for Test Enterprise application.',
             relatedEntityType: 'tna',
             relatedEntityId: new mongoose.Types.ObjectId(),
-            actionUrl: '/dashboard',
+            actionUrl: '/psto/tna-management',
             actionText: 'View TNA Details',
-            priority: 'high',
-            sentBy: proponentId
-         },
-         {
-            title: 'Document Required',
-            message: 'Additional documents are required for your application. Please upload the missing documents.',
-            recipientId: proponentId,
-            recipientType: 'proponent',
-            type: 'document_required',
-            relatedEntityType: 'application',
-            relatedEntityId: new mongoose.Types.ObjectId(),
-            actionUrl: '/dashboard',
-            actionText: 'Upload Documents',
             priority: 'medium',
-            sentBy: proponentId
-         }
-      ];
-
-      for (const notifData of notifications) {
-         const notification = new Notification(notifData);
-         await notification.save();
-         console.log('✅ Created notification:', notification.title);
+            sentBy: psto._id
+         });
+         
+         // Create TNA completed notification
+         await Notification.create({
+            recipientId: psto._id,
+            recipientType: 'psto',
+            type: 'tna_completed',
+            title: 'TNA Assessment Completed',
+            message: 'The Technology Needs Assessment for Test Enterprise has been completed and is ready for review.',
+            relatedEntityType: 'tna',
+            relatedEntityId: new mongoose.Types.ObjectId(),
+            actionUrl: '/psto/tna-management',
+            actionText: 'Review TNA Report',
+            priority: 'medium',
+            sentBy: psto._id
+         });
+         
+         console.log(`✅ Created 3 test notifications for ${psto.firstName} ${psto.lastName}`);
       }
-
-      console.log('🎉 All test notifications created successfully!');
       
-      // Verify notifications were created
-      const count = await Notification.countDocuments({ recipientId: proponentId });
-      console.log(`📊 Total notifications for proponent: ${count}`);
-
+      console.log('🎉 Test notifications created successfully!');
+      console.log('📱 PSTO users should now see application and TNA notifications in their notification center.');
+      
    } catch (error) {
-      console.error('❌ Error creating notifications:', error);
+      console.error('❌ Error creating test notifications:', error);
    } finally {
-      await mongoose.disconnect();
-      process.exit(0);
+      mongoose.connection.close();
    }
 }
 

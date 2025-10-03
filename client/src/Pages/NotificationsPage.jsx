@@ -24,8 +24,27 @@ const NotificationsPage = ({ currentUser }) => {
          }
          
          console.log('Fetching notifications for user ID:', userId);
+         console.log('User role:', currentUser?.role);
          
-         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${userId}`, {
+         // Determine the correct endpoint based on user role
+         let endpoint;
+         switch (currentUser?.role) {
+            case 'proponent':
+               endpoint = `http://localhost:4000/api/notifications/proponent/${userId}`;
+               break;
+            case 'psto':
+               endpoint = `http://localhost:4000/api/notifications/psto/${userId}`;
+               break;
+            case 'dost_mimaropa':
+               endpoint = `http://localhost:4000/api/notifications/dost/${userId}`;
+               break;
+            default:
+               endpoint = `http://localhost:4000/api/notifications/proponent/${userId}`;
+         }
+         
+         console.log('Using endpoint:', endpoint);
+         
+         const response = await fetch(endpoint, {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
@@ -74,7 +93,25 @@ const NotificationsPage = ({ currentUser }) => {
    // Mark all as read
    const markAllAsRead = async () => {
       try {
-         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${currentUser.userId || currentUser._id || currentUser.id}/mark-all-read`, {
+         const userId = currentUser.userId || currentUser._id || currentUser.id;
+         
+         // Determine the correct endpoint based on user role
+         let endpoint;
+         switch (currentUser?.role) {
+            case 'proponent':
+               endpoint = `http://localhost:4000/api/notifications/proponent/${userId}/mark-all-read`;
+               break;
+            case 'psto':
+               endpoint = `http://localhost:4000/api/notifications/psto/${userId}/mark-all-read`;
+               break;
+            case 'dost_mimaropa':
+               endpoint = `http://localhost:4000/api/notifications/dost/${userId}/mark-all-read`;
+               break;
+            default:
+               endpoint = `http://localhost:4000/api/notifications/proponent/${userId}/mark-all-read`;
+         }
+         
+         const response = await fetch(endpoint, {
             method: 'PATCH',
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`

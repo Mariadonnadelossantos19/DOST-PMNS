@@ -123,7 +123,17 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
 
    // Render Notifications page
    const renderNotificationsPage = () => {
-      return <NotificationsPage currentUser={currentUser} />;
+      // Use role-specific notification components
+      switch (currentUser?.role) {
+         case 'psto':
+            return <UnifiedPSTODashboard currentUser={currentUser} currentPage="notifications" />;
+         case 'dost_mimaropa':
+            return <DostMimaropaDashboard currentPath="/notifications" />;
+         case 'proponent':
+            return <NotificationsPage currentUser={currentUser} />;
+         default:
+            return <NotificationsPage currentUser={currentUser} />;
+      }
    };
 
    // Render content based on current page

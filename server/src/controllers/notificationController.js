@@ -92,15 +92,23 @@ const getDOSTNotifications = async (req, res) => {
       const { dostId } = req.params;
       const { limit = 50, skip = 0, unreadOnly = false } = req.query;
 
+      console.log('🔍 DOST Notifications - dostId:', dostId);
+      console.log('🔍 DOST Notifications - req.user:', req.user);
+
       // Verify DOST-MIMAROPA - check if dostId is a valid ObjectId or userId
       let dost;
       if (mongoose.Types.ObjectId.isValid(dostId)) {
+         console.log('🔍 DOST Notifications - Searching by ObjectId:', dostId);
          dost = await User.findById(dostId);
       } else {
+         console.log('🔍 DOST Notifications - Searching by userId:', dostId);
          dost = await User.findOne({ userId: dostId });
       }
       
+      console.log('🔍 DOST Notifications - Found user:', dost);
+      
       if (!dost || dost.role !== 'dost_mimaropa') {
+         console.log('❌ DOST Notifications - User not found or wrong role');
          return res.status(404).json({
             success: false,
             message: 'DOST-MIMAROPA user not found'

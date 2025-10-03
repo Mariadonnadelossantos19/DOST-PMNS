@@ -177,8 +177,7 @@ const RTECScheduleManagement = () => {
       console.log('Proponent ID:', rtecDocument.proponentId?._id || rtecDocument.proponentId);
       console.log('Current showCreateModal state:', showCreateModal);
       
-      // setSelectedRTECDocument(rtecDocument);
-      setFormData({
+      const newFormData = {
          tnaId: rtecDocument.tnaId?._id || rtecDocument.tnaId,
          rtecDocumentsId: rtecDocument._id,
          applicationId: rtecDocument.applicationId?._id || rtecDocument.applicationId,
@@ -194,7 +193,10 @@ const RTECScheduleManagement = () => {
          virtualMeetingId: '',
          virtualMeetingPassword: '',
          notes: ''
-      });
+      };
+      
+      console.log('📝 New form data being set:', newFormData);
+      setFormData(newFormData);
       console.log('Setting showCreateModal to true');
       setShowCreateModal(true);
       console.log('showCreateModal should now be true');
@@ -210,15 +212,38 @@ const RTECScheduleManagement = () => {
          console.log('Scheduled Time:', formData.scheduledTime);
          console.log('Location:', formData.location);
          console.log('Date type:', typeof formData.scheduledDate);
+         console.log('All form fields:', {
+            tnaId: formData.tnaId,
+            rtecDocumentsId: formData.rtecDocumentsId,
+            applicationId: formData.applicationId,
+            proponentId: formData.proponentId,
+            programName: formData.programName,
+            meetingTitle: formData.meetingTitle,
+            meetingDescription: formData.meetingDescription,
+            scheduledDate: formData.scheduledDate,
+            scheduledTime: formData.scheduledTime,
+            location: formData.location,
+            meetingType: formData.meetingType
+         });
          
          // Validate required fields
          if (!formData.meetingTitle || !formData.scheduledDate || !formData.scheduledTime || !formData.location) {
+            console.log('❌ Validation failed - missing required fields');
+            console.log('Missing fields:', {
+               meetingTitle: !formData.meetingTitle,
+               scheduledDate: !formData.scheduledDate,
+               scheduledTime: !formData.scheduledTime,
+               location: !formData.location
+            });
             displayToast('Please fill in all required fields', 'error');
             return;
          }
          
+         console.log('🚀 Sending API request to /rtec-meetings/create');
+         console.log('📤 Request payload:', JSON.stringify(formData, null, 2));
+         
          const response = await api.post('/rtec-meetings/create', formData);
-         console.log('Create meeting response:', response.data);
+         console.log('📥 Create meeting response:', response.data);
          
          if (response.data.success) {
             displayToast('RTEC meeting scheduled successfully', 'success');
@@ -244,11 +269,15 @@ const RTECScheduleManagement = () => {
             fetchApprovedRTECDocuments();
          }
       } catch (error) {
-         console.error('Error creating meeting:', error);
-         console.error('Error response:', error.response?.data);
-         console.error('Error status:', error.response?.status);
+         console.error('💥 Error creating meeting:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         console.error('💥 Error message:', error.message);
+         console.error('💥 Full error object:', error);
          
-         const errorMessage = error.response?.data?.message || 'Failed to create meeting';
+         const errorMessage = error.response?.data?.message || error.message || 'Failed to create meeting';
+         
+         console.log('🔍 Error message to display:', errorMessage);
          
          // Handle specific error cases
          if (errorMessage.includes('already scheduled')) {
@@ -417,7 +446,7 @@ const RTECScheduleManagement = () => {
    const approvedDocumentsColumns = [
       {
          header: 'Enterprise Name',
-         accessor: 'applicationId',
+         key: 'applicationId',
          render: (value, item) => {
             console.log('Enterprise Name render - value:', value, 'item:', item);
             console.log('Full item structure:', JSON.stringify(item, null, 2));
@@ -435,7 +464,7 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Program',
-         accessor: 'programName',
+         key: 'programName',
          render: (value, item) => {
             const programName = item?.programName || value || 'SETUP';
             return <Badge color="blue">{programName}</Badge>;
@@ -443,7 +472,7 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Proponent',
-         accessor: 'proponentId',
+         key: 'proponentId',
          render: (value, item) => {
             const proponent = item?.proponentId || value;
             return (
@@ -458,7 +487,7 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Documents Status',
-         accessor: 'status',
+         key: 'status',
          render: (value, item) => {
             console.log('Documents Status render - value:', value, 'item:', item);
             console.log('item.status:', item?.status);
@@ -477,12 +506,10 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Meeting Status',
-         accessor: '_id',
+         key: '_id',
          render: (value, item) => {
-            // Use item._id since accessor is not working
             const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
-               // Convert both to strings for comparison
                return meeting.rtecDocumentsId?.toString() === documentId?.toString();
             });
             
@@ -495,12 +522,10 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Actions',
-         accessor: '_id',
+         key: '_id',
          render: (value, item) => {
-            // Use item._id since accessor is not working
             const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
-               // Convert both to strings for comparison
                return meeting.rtecDocumentsId?.toString() === documentId?.toString();
             });
             
@@ -548,7 +573,7 @@ const RTECScheduleManagement = () => {
    const meetingsColumns = [
       {
          header: 'Meeting Title',
-         accessor: 'meetingTitle',
+         key: 'meetingTitle',
          render: (value, item) => (
             <div>
                <div className="font-medium text-gray-900">{value}</div>
@@ -560,9 +585,8 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Scheduled Date',
-         accessor: 'scheduledDate',
+         key: 'scheduledDate',
          render: (value, item) => {
-            // Use item.scheduledDate directly since accessor is not working
             const dateValue = item.scheduledDate || value;
             const date = new Date(dateValue);
             const isValidDate = !isNaN(date.getTime());
@@ -579,7 +603,7 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Location',
-         accessor: 'location',
+         key: 'location',
          render: (value, item) => (
             <div>
                <div className="font-medium">{value}</div>
@@ -589,12 +613,12 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Status',
-         accessor: 'status',
+         key: 'status',
          render: (value) => getStatusBadge(value)
       },
       {
          header: 'Participants',
-         accessor: 'participants',
+         key: 'participants',
          render: (value) => (
             <div className="flex items-center space-x-1">
                <span className="text-sm font-medium">{value?.length || 0}</span>
@@ -604,7 +628,7 @@ const RTECScheduleManagement = () => {
       },
       {
          header: 'Actions',
-         accessor: '_id',
+         key: '_id',
          render: (value, item) => (
             <div className="flex space-x-2">
                <Button
@@ -906,6 +930,8 @@ const RTECScheduleManagement = () => {
             title="Schedule RTEC Meeting"
             size="lg"
          >
+            {console.log('🔍 Modal rendering - formData:', formData)}
+            {console.log('🔍 Modal rendering - showCreateModal:', showCreateModal)}
             <div className="space-y-4">
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -913,7 +939,10 @@ const RTECScheduleManagement = () => {
                   </label>
                   <Input
                      value={formData.meetingTitle}
-                     onChange={(e) => setFormData({ ...formData, meetingTitle: e.target.value })}
+                     onChange={(e) => {
+                        console.log('📝 Meeting title changing to:', e.target.value);
+                        setFormData({ ...formData, meetingTitle: e.target.value });
+                     }}
                      placeholder="Enter meeting title"
                      required
                   />
@@ -939,7 +968,10 @@ const RTECScheduleManagement = () => {
                      <Input
                         type="date"
                         value={formData.scheduledDate}
-                        onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                        onChange={(e) => {
+                           console.log('📅 Scheduled date changing to:', e.target.value);
+                           setFormData({ ...formData, scheduledDate: e.target.value });
+                        }}
                         min={new Date().toISOString().split('T')[0]}
                         required
                      />
@@ -951,7 +983,10 @@ const RTECScheduleManagement = () => {
                      <Input
                         type="time"
                         value={formData.scheduledTime}
-                        onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                        onChange={(e) => {
+                           console.log('⏰ Scheduled time changing to:', e.target.value);
+                           setFormData({ ...formData, scheduledTime: e.target.value });
+                        }}
                         required
                      />
                   </div>
@@ -963,7 +998,10 @@ const RTECScheduleManagement = () => {
                   </label>
                   <Input
                      value={formData.location}
-                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                     onChange={(e) => {
+                        console.log('📍 Location changing to:', e.target.value);
+                        setFormData({ ...formData, location: e.target.value });
+                     }}
                      placeholder="Enter meeting location"
                      required
                   />
