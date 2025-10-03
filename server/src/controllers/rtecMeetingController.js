@@ -122,6 +122,7 @@ const createRTECMeeting = async (req, res) => {
          scheduledDate: meetingDate,
          scheduledTime,
          location,
+         scheduledBy: userId,
          meetingType,
          virtualMeetingLink,
          virtualMeetingId,
