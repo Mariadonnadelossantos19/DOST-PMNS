@@ -428,6 +428,70 @@ const listRTECDocuments = async (req, res) => {
    }
 };
 
+// Get approved RTEC documents (for scheduling meetings)
+const getApprovedRTECDocuments = async (req, res) => {
+   try {
+      const { page = 1, limit = 10 } = req.query;
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const skip = (pageNum - 1) * limitNum;
+
+      console.log('=== GET APPROVED RTEC DOCUMENTS ===');
+      console.log('Page:', pageNum, 'Limit:', limitNum);
+
+      // Query only for approved documents
+      const query = { status: 'documents_approved' };
+
+      const rtecDocuments = await RTECDocuments.find(query)
+         .populate('tnaId', 'scheduledDate location programName status')
+         .populate('applicationId', 'enterpriseName projectTitle programName businessActivity')
+         .populate('proponentId', 'firstName lastName email')
+         .populate('requestedBy', 'firstName lastName')
+         .populate('submittedBy', 'firstName lastName')
+         .populate('reviewedBy', 'firstName lastName')
+         .sort({ reviewedAt: -1 }) // Sort by review date (most recently approved first)
+         .skip(skip)
+         .limit(limitNum);
+
+      const total = await RTECDocuments.countDocuments(query);
+
+      console.log('Approved documents found:', rtecDocuments.length);
+      console.log('Total approved documents:', total);
+
+      // Debug each approved document
+      rtecDocuments.forEach((doc, index) => {
+         console.log(`\n--- Approved Document ${index + 1} ---`);
+         console.log('ID:', doc._id);
+         console.log('Status:', doc.status);
+         console.log('Enterprise:', doc.applicationId?.enterpriseName);
+         console.log('Proponent:', doc.proponentId?.firstName, doc.proponentId?.lastName);
+         console.log('Reviewed At:', doc.reviewedAt);
+      });
+
+      res.json({
+         success: true,
+         data: {
+            docs: rtecDocuments,
+            totalDocs: total,
+            limit: limitNum,
+            page: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            hasNextPage: pageNum < Math.ceil(total / limitNum),
+            hasPrevPage: pageNum > 1
+         }
+      });
+
+   } catch (error) {
+      console.error('Error fetching approved RTEC documents:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 // Get RTEC documents for PSTO (by user)
 const getRTECDocumentsForPSTO = async (req, res) => {
    try {
@@ -511,5 +575,6 @@ module.exports = {
    submitRTECDocument,
    reviewRTECDocument,
    listRTECDocuments,
+   getApprovedRTECDocuments,
    getRTECDocumentsForPSTO
 };

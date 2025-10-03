@@ -43,13 +43,10 @@ const RTECScheduleMeeting = () => {
       try {
          console.log('=== FETCHING APPROVED RTEC DOCUMENTS ===');
          setLoading(true);
-         const response = await api.get('/rtec-documents/list');
-         console.log('RTEC Documents Response:', response.data);
+         const response = await api.get('/rtec-documents/approved');
+         console.log('Approved RTEC Documents Response:', response.data);
          if (response.data.success) {
-            // Filter for documents with 'documents_approved' status
-            const allDocs = response.data.data.docs || [];
-            console.log('All RTEC Documents:', allDocs);
-            const approvedDocs = allDocs.filter(doc => doc.status === 'documents_approved');
+            const approvedDocs = response.data.data.docs || [];
             console.log('Approved RTEC Documents:', approvedDocs);
             console.log('Setting approved documents to state...');
             

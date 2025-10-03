@@ -9,6 +9,7 @@ const {
    submitRTECDocument,
    reviewRTECDocument,
    listRTECDocuments,
+   getApprovedRTECDocuments,
    getRTECDocumentsForPSTO
 } = require('../controllers/rtecDocumentsController');
 
@@ -48,6 +49,9 @@ router.post('/request/:tnaId', auth, requestRTECDocuments);
 
 // Get all RTEC documents (for DOST-MIMAROPA dashboard)
 router.get('/list', auth, listRTECDocuments);
+
+// Get approved RTEC documents (for scheduling meetings)
+router.get('/approved', auth, getApprovedRTECDocuments);
 
 // Get RTEC documents by TNA ID
 router.get('/tna/:tnaId', auth, getRTECDocumentsByTNA);
