@@ -30,6 +30,9 @@ const createRTECMeeting = async (req, res) => {
       console.log('TNA ID:', tnaId);
       console.log('User ID:', userId);
       console.log('Meeting Title:', meetingTitle);
+      console.log('Request body:', req.body);
+      console.log('Application ID from body:', req.body.applicationId);
+      console.log('Proponent ID from body:', req.body.proponentId);
 
       // Validate inputs
       if (!mongoose.Types.ObjectId.isValid(tnaId)) {
@@ -97,9 +100,9 @@ const createRTECMeeting = async (req, res) => {
       const rtecMeeting = new RTECMeeting({
          tnaId: tna._id,
          rtecDocumentsId: rtecDocuments._id,
-         applicationId: tna.applicationId._id,
-         proponentId: tna.proponentId._id,
-         programName: tna.programName || 'SETUP',
+         applicationId: req.body.applicationId || tna.applicationId._id,
+         proponentId: req.body.proponentId || tna.proponentId._id,
+         programName: req.body.programName || tna.programName || 'SETUP',
          meetingTitle,
          meetingDescription,
          scheduledDate: meetingDate,
