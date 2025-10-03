@@ -45,31 +45,13 @@ const RTECScheduleManagement = () => {
          const response = await api.get('/rtec-documents/list');
          console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
-            // Filter for documents with approved status (check multiple possible statuses)
+            // Get all documents first
             const allDocs = response.data.data.docs || [];
             console.log('All RTEC Documents:', allDocs);
             
-            const approvedDocs = allDocs.filter(doc => 
-               doc.status === 'documents_approved' || 
-               doc.status === 'approved' ||
-               (doc.partialdocsrtec && doc.partialdocsrtec.some(d => d.status === 'approved'))
-            );
-            console.log('Approved RTEC Documents:', approvedDocs);
-            
-            // Debug the structure of each document
-            approvedDocs.forEach((doc, index) => {
-               console.log(`\n--- Frontend Document ${index} ---`);
-               console.log('Full document:', doc);
-               console.log('ApplicationId structure:', doc.applicationId);
-               console.log('ProponentId structure:', doc.proponentId);
-               console.log('ApplicationId enterpriseName:', doc.applicationId?.enterpriseName);
-               console.log('ApplicationId projectTitle:', doc.applicationId?.projectTitle);
-               console.log('ProponentId firstName:', doc.proponentId?.firstName);
-               console.log('ProponentId lastName:', doc.proponentId?.lastName);
-               console.log('ProponentId email:', doc.proponentId?.email);
-            });
-            
-            setApprovedRTECDocuments(approvedDocs);
+            // Show ALL documents for now to debug - remove filtering temporarily
+            console.log('Setting ALL documents (no filtering):', allDocs);
+            setApprovedRTECDocuments(allDocs);
          }
       } catch (error) {
          console.error('Error fetching approved RTEC documents:', error);
@@ -313,9 +295,17 @@ const RTECScheduleManagement = () => {
       {
          header: 'Documents Status',
          accessor: 'status',
-         render: (value) => (
-            <Badge color="green">Documents Approved</Badge>
-         )
+         render: (value) => {
+            const statusConfig = {
+               'documents_approved': { color: 'green', text: 'Documents Approved' },
+               'documents_requested': { color: 'yellow', text: 'Documents Requested' },
+               'documents_submitted': { color: 'blue', text: 'Documents Submitted' },
+               'documents_under_review': { color: 'orange', text: 'Under Review' },
+               'documents_rejected': { color: 'red', text: 'Documents Rejected' }
+            };
+            const config = statusConfig[value] || { color: 'gray', text: value };
+            return <Badge color={config.color}>{config.text}</Badge>;
+         }
       },
       {
          header: 'Meeting Status',
@@ -334,23 +324,35 @@ const RTECScheduleManagement = () => {
          accessor: '_id',
          render: (value, item) => {
             const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            const isApproved = item.status === 'documents_approved';
+            
             return (
                <div className="flex space-x-2">
-                  {!hasMeeting ? (
-                     <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => handleScheduleMeeting(item)}
-                     >
-                        Schedule Meeting
-                     </Button>
+                  {isApproved ? (
+                     !hasMeeting ? (
+                        <Button
+                           size="sm"
+                           variant="primary"
+                           onClick={() => handleScheduleMeeting(item)}
+                        >
+                           Schedule Meeting
+                        </Button>
+                     ) : (
+                        <Button
+                           size="sm"
+                           variant="outline"
+                           disabled
+                        >
+                           Meeting Scheduled
+                        </Button>
+                     )
                   ) : (
                      <Button
                         size="sm"
                         variant="outline"
                         disabled
                      >
-                        Meeting Scheduled
+                        Not Approved
                      </Button>
                   )}
                </div>
