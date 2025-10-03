@@ -166,6 +166,13 @@ const RTECDocumentManagement = () => {
             setShowReviewModal(false);
             setSelectedDocument(null); // Close the details modal
             fetchRTECDocuments(); // Refresh the data
+            
+            // If document was approved, refresh the scheduled meetings tab
+            if (reviewAction === 'approve') {
+               // Trigger refresh of scheduled meetings component
+               const event = new CustomEvent('rtecDocumentApproved');
+               window.dispatchEvent(event);
+            }
          }
       } catch (error) {
          console.error('Error reviewing document:', error);
@@ -261,6 +268,15 @@ const RTECDocumentManagement = () => {
                >
                   View Details
                </Button>
+               {item?.status === 'documents_approved' && (
+                  <Button
+                     size="sm"
+                     variant="primary"
+                     onClick={() => setActiveTab('scheduled')}
+                  >
+                     Schedule Meeting
+                  </Button>
+               )}
             </div>
          )
       }

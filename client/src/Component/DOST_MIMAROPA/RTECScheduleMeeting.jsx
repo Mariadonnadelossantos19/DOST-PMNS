@@ -47,6 +47,7 @@ const RTECScheduleMeeting = () => {
             // Filter for documents with 'documents_approved' status
             const allDocs = response.data.data.docs || [];
             const approvedDocs = allDocs.filter(doc => doc.status === 'documents_approved');
+            console.log('Approved RTEC Documents:', approvedDocs);
             setApprovedRTECDocuments(approvedDocs);
          }
       } catch (error) {
@@ -87,6 +88,18 @@ const RTECScheduleMeeting = () => {
       fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
+      
+      // Listen for document approval events
+      const handleDocumentApproved = () => {
+         console.log('Document approved, refreshing approved documents...');
+         fetchApprovedRTECDocuments();
+      };
+      
+      window.addEventListener('rtecDocumentApproved', handleDocumentApproved);
+      
+      return () => {
+         window.removeEventListener('rtecDocumentApproved', handleDocumentApproved);
+      };
    }, []);
 
    const displayToast = (message, type = 'success') => {
