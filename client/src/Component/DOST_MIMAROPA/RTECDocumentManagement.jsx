@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal } from '../UI';
-import RTECScheduleMeeting from './RTECScheduleMeeting';
 import api from '../../config/api';
 
 const RTECDocumentManagement = () => {
@@ -17,7 +16,7 @@ const RTECDocumentManagement = () => {
    const [reviewComments, setReviewComments] = useState('');
    const [currentDocumentType, setCurrentDocumentType] = useState('');
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
-   const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'approved-tnas', or 'scheduled'
+   const [activeTab, setActiveTab] = useState('requests'); // 'requests' or 'approved-tnas'
    const [filters, setFilters] = useState({
       status: '',
       search: ''
@@ -28,10 +27,6 @@ const RTECDocumentManagement = () => {
          fetchRTECDocuments();
       } else if (activeTab === 'approved-tnas') {
          fetchApprovedTNAs();
-      } else if (activeTab === 'scheduled') {
-         // Trigger refresh of scheduled meetings when tab is activated
-         const event = new CustomEvent('refreshScheduledMeetings');
-         window.dispatchEvent(event);
       }
    }, [filters, activeTab]);
 
@@ -169,12 +164,6 @@ const RTECDocumentManagement = () => {
             setSelectedDocument(null); // Close the details modal
             fetchRTECDocuments(); // Refresh the data
             
-            // If document was approved, refresh the scheduled meetings tab
-            if (reviewAction === 'approve') {
-               // Trigger refresh of scheduled meetings component
-               const event = new CustomEvent('rtecDocumentApproved');
-               window.dispatchEvent(event);
-            }
          }
       } catch (error) {
          console.error('Error reviewing document:', error);
@@ -270,15 +259,6 @@ const RTECDocumentManagement = () => {
                >
                   View Details
                </Button>
-               {item?.status === 'documents_approved' && (
-                  <Button
-                     size="sm"
-                     variant="primary"
-                     onClick={() => setActiveTab('scheduled')}
-                  >
-                     Schedule Meeting
-                  </Button>
-               )}
             </div>
          )
       }
@@ -413,16 +393,6 @@ const RTECDocumentManagement = () => {
                >
                   Approved TNAs
                </button>
-               <button
-                  onClick={() => setActiveTab('scheduled')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                     activeTab === 'scheduled'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-               >
-                  Scheduled Meetings
-               </button>
             </nav>
          </div>
 
@@ -490,7 +460,7 @@ const RTECDocumentManagement = () => {
                   emptyMessage="No RTEC document requests found"
                />
             </Card>
-         ) : activeTab === 'approved-tnas' ? (
+         ) : (
             <Card>
                <DataTable
                   columns={approvedTNAsColumns}
@@ -499,8 +469,6 @@ const RTECDocumentManagement = () => {
                   emptyMessage="No approved TNAs available for RTEC document request"
                />
             </Card>
-         ) : (
-            <RTECScheduleMeeting />
          )}
 
          {/* Document Details Modal */}
