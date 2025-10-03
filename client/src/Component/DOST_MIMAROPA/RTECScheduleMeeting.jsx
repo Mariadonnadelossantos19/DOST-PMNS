@@ -43,11 +43,23 @@ const RTECScheduleMeeting = () => {
       try {
          setLoading(true);
          const response = await api.get('/rtec-documents/list');
+         console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
             // Filter for documents with 'documents_approved' status
             const allDocs = response.data.data.docs || [];
+            console.log('All RTEC Documents:', allDocs);
             const approvedDocs = allDocs.filter(doc => doc.status === 'documents_approved');
             console.log('Approved RTEC Documents:', approvedDocs);
+            
+            // Debug each approved document
+            approvedDocs.forEach((doc, index) => {
+               console.log(`\n=== Approved Document ${index + 1} ===`);
+               console.log('Full document:', doc);
+               console.log('applicationId:', doc.applicationId);
+               console.log('proponentId:', doc.proponentId);
+               console.log('status:', doc.status);
+            });
+            
             setApprovedRTECDocuments(approvedDocs);
          }
       } catch (error) {
@@ -224,9 +236,17 @@ const RTECScheduleMeeting = () => {
       {
          header: 'Documents Status',
          accessor: 'status',
-         render: (value) => (
-            <Badge color="green">Documents Approved</Badge>
-         )
+         render: (value, item) => {
+            const statusConfig = {
+               'documents_approved': { color: 'green', text: 'Documents Approved' },
+               'documents_requested': { color: 'yellow', text: 'Documents Requested' },
+               'documents_submitted': { color: 'blue', text: 'Documents Submitted' },
+               'documents_under_review': { color: 'orange', text: 'Under Review' },
+               'documents_rejected': { color: 'red', text: 'Documents Rejected' }
+            };
+            const config = statusConfig[value] || { color: 'gray', text: value };
+            return <Badge color={config.color}>{config.text}</Badge>;
+         }
       },
       {
          header: 'Meeting Status',
@@ -245,23 +265,35 @@ const RTECScheduleMeeting = () => {
          accessor: '_id',
          render: (value, item) => {
             const hasMeeting = rtecMeetings.some(meeting => meeting.rtecDocumentsId === value);
+            const isApproved = item.status === 'documents_approved';
+            
             return (
                <div className="flex space-x-2">
-                  {!hasMeeting ? (
-                     <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => handleScheduleMeeting(item)}
-                     >
-                        Schedule Meeting
-                     </Button>
+                  {isApproved ? (
+                     !hasMeeting ? (
+                        <Button
+                           size="sm"
+                           variant="primary"
+                           onClick={() => handleScheduleMeeting(item)}
+                        >
+                           Schedule Meeting
+                        </Button>
+                     ) : (
+                        <Button
+                           size="sm"
+                           variant="outline"
+                           disabled
+                        >
+                           Meeting Scheduled
+                        </Button>
+                     )
                   ) : (
                      <Button
                         size="sm"
                         variant="outline"
                         disabled
                      >
-                        Meeting Scheduled
+                        Not Approved
                      </Button>
                   )}
                </div>
