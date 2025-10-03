@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal } from '../UI';
+import RTECScheduleMeeting from './RTECScheduleMeeting';
 import api from '../../config/api';
 
 const RTECDocumentManagement = () => {
@@ -16,7 +17,7 @@ const RTECDocumentManagement = () => {
    const [reviewComments, setReviewComments] = useState('');
    const [currentDocumentType, setCurrentDocumentType] = useState('');
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
-   const [activeTab, setActiveTab] = useState('requests'); // 'requests' or 'approved-tnas'
+   const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'approved-tnas', or 'scheduled'
    const [filters, setFilters] = useState({
       status: '',
       search: ''
@@ -27,6 +28,8 @@ const RTECDocumentManagement = () => {
          fetchRTECDocuments();
       } else if (activeTab === 'approved-tnas') {
          fetchApprovedTNAs();
+      } else if (activeTab === 'scheduled') {
+         // The RTECScheduleMeeting component will handle its own data fetching
       }
    }, [filters, activeTab]);
 
@@ -392,6 +395,16 @@ const RTECDocumentManagement = () => {
                >
                   Approved TNAs
                </button>
+               <button
+                  onClick={() => setActiveTab('scheduled')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                     activeTab === 'scheduled'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+               >
+                  Scheduled Meetings
+               </button>
             </nav>
          </div>
 
@@ -459,7 +472,7 @@ const RTECDocumentManagement = () => {
                   emptyMessage="No RTEC document requests found"
                />
             </Card>
-         ) : (
+         ) : activeTab === 'approved-tnas' ? (
             <Card>
                <DataTable
                   columns={approvedTNAsColumns}
@@ -468,6 +481,8 @@ const RTECDocumentManagement = () => {
                   emptyMessage="No approved TNAs available for RTEC document request"
                />
             </Card>
+         ) : (
+            <RTECScheduleMeeting />
          )}
 
          {/* Document Details Modal */}
