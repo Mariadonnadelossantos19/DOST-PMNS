@@ -10,9 +10,11 @@ const RTECScheduleManagement = () => {
    const [showParticipantsModal, setShowParticipantsModal] = useState(false);
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [selectedMeeting, setSelectedMeeting] = useState(null);
-   const [selectedRTECDocument, setSelectedRTECDocument] = useState(null);
+   // const [selectedRTECDocument, setSelectedRTECDocument] = useState(null);
    const [availablePSTOUsers, setAvailablePSTOUsers] = useState([]);
    const [selectedPSTOUsers, setSelectedPSTOUsers] = useState([]);
+   const [showParticipantManagement, setShowParticipantManagement] = useState(false);
+   const [activeInviteTab, setActiveInviteTab] = useState('invite'); // 'invite', 'manage', 'psto'
    const [showToast, setShowToast] = useState(false);
    const [toastMessage, setToastMessage] = useState('');
    const [toastType, setToastType] = useState('success');
@@ -132,25 +134,25 @@ const RTECScheduleManagement = () => {
    };
 
    // Fetch meeting participants
-   const fetchMeetingParticipants = async (meetingId) => {
-      try {
-         const response = await api.get(`/rtec-meetings/${meetingId}/participants`);
-         if (response.data.success) {
-            return response.data.data;
-         }
-      } catch (error) {
-         console.error('Error fetching participants:', error);
-         displayToast('Failed to fetch participants', 'error');
-      }
-      return [];
-   };
+   // const fetchMeetingParticipants = async (meetingId) => {
+   //    try {
+   //       const response = await api.get(`/rtec-meetings/${meetingId}/participants`);
+   //       if (response.data.success) {
+   //          return response.data.data;
+   //       }
+   //    } catch (error) {
+   //       console.error('Error fetching participants:', error);
+   //       displayToast('Failed to fetch participants', 'error');
+   //    }
+   //    return [];
+   // };
 
    useEffect(() => {
       console.log('=== COMPONENT MOUNTED - FETCHING DATA ===');
       fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
-   }, []);
+   }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
 
    const displayToast = (message, type = 'success') => {
       setToastMessage(message);
@@ -263,17 +265,17 @@ const RTECScheduleManagement = () => {
       }
    };
 
-   const handleInvitePSTO = async (meetingId, pstoId) => {
-      try {
-         const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto`, { pstoId });
-         if (response.data.success) {
-            displayToast('PSTO invitation sent successfully', 'success');
-         }
-      } catch (error) {
-         console.error('Error inviting PSTO:', error);
-         displayToast('Failed to send PSTO invitation', 'error');
-      }
-   };
+   // const handleInvitePSTO = async (meetingId, pstoId) => {
+   //    try {
+   //       const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto`, { pstoId });
+   //       if (response.data.success) {
+   //          displayToast('PSTO invitation sent successfully', 'success');
+   //       }
+   //    } catch (error) {
+   //       console.error('Error inviting PSTO:', error);
+   //       displayToast('Failed to send PSTO invitation', 'error');
+   //    }
+   // };
 
    const handleBulkInvitePSTO = async (meetingId) => {
       try {
@@ -289,6 +291,51 @@ const RTECScheduleManagement = () => {
          console.error('Error bulk inviting PSTO:', error);
          displayToast('Failed to send bulk PSTO invitations', 'error');
       }
+   };
+
+   // Resend invitation to participant
+   const handleResendInvitation = async (meetingId, participantId) => {
+      try {
+         const response = await api.post(`/rtec-meetings/${meetingId}/resend-invitation`, { 
+            participantId 
+         });
+         if (response.data.success) {
+            displayToast('Invitation resent successfully', 'success');
+            fetchRTECMeetings();
+         }
+      } catch (error) {
+         console.error('Error resending invitation:', error);
+         displayToast('Failed to resend invitation', 'error');
+      }
+   };
+
+   // Remove participant from meeting
+   const handleRemoveParticipant = async (meetingId, participantId) => {
+      try {
+         const response = await api.delete(`/rtec-meetings/${meetingId}/participants/${participantId}`);
+         if (response.data.success) {
+            displayToast('Participant removed successfully', 'success');
+            fetchRTECMeetings();
+         }
+      } catch (error) {
+         console.error('Error removing participant:', error);
+         displayToast('Failed to remove participant', 'error');
+      }
+   };
+
+   // Open participant management modal
+   const handleManageParticipants = (meeting) => {
+      setSelectedMeeting(meeting);
+      setShowParticipantManagement(true);
+      setActiveInviteTab('manage');
+   };
+
+   // Open PSTO invitation modal
+   const handleInvitePSTOUsers = (meeting) => {
+      setSelectedMeeting(meeting);
+      setShowInviteModal(true);
+      setActiveInviteTab('psto');
+      fetchAvailablePSTOUsers();
    };
 
    const handleUpdateMeetingStatus = async (meetingId, status) => {
@@ -547,12 +594,16 @@ const RTECScheduleManagement = () => {
                <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                     setSelectedMeeting(item);
-                     setShowInviteModal(true);
-                  }}
+                  onClick={() => handleManageParticipants(item)}
                >
-                  Invite
+                  Manage
+               </Button>
+               <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleInvitePSTOUsers(item)}
+               >
+                  Invite PSTO
                </Button>
                {item.status === 'scheduled' && (
                   <Button
@@ -1020,72 +1071,196 @@ const RTECScheduleManagement = () => {
             )}
          </Modal>
 
-         {/* Invite Modal */}
+         {/* Enhanced Participant Management Modal */}
          <Modal
-            isOpen={showInviteModal}
-            onClose={() => setShowInviteModal(false)}
-            title="Invite Participants"
-            size="lg"
+            isOpen={showInviteModal || showParticipantManagement}
+            onClose={() => {
+               setShowInviteModal(false);
+               setShowParticipantManagement(false);
+               setActiveInviteTab('invite');
+               setSelectedPSTOUsers([]);
+            }}
+            title="Participant Management"
+            size="xl"
          >
-            <div className="space-y-4">
-               <div className="flex space-x-4">
-                  <Button
-                     onClick={() => selectedMeeting && handleInviteProponent(selectedMeeting._id)}
-                     className="bg-green-600 hover:bg-green-700"
-                  >
-                     Invite Proponent
-                  </Button>
-                  <Button
-                     onClick={() => setShowInviteModal(false)}
-                     className="bg-blue-600 hover:bg-blue-700"
-                  >
-                     Invite PSTO Users
-                  </Button>
+            <div className="space-y-6">
+               {/* Tab Navigation */}
+               <div className="border-b border-gray-200">
+                  <nav className="-mb-px flex space-x-8">
+                     <button
+                        onClick={() => setActiveInviteTab('invite')}
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                           activeInviteTab === 'invite'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                     >
+                        Invite Proponent
+                     </button>
+                     <button
+                        onClick={() => setActiveInviteTab('manage')}
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                           activeInviteTab === 'manage'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                     >
+                        Manage Participants
+                     </button>
+                     <button
+                        onClick={() => setActiveInviteTab('psto')}
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                           activeInviteTab === 'psto'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                     >
+                        Invite PSTO Users
+                     </button>
+                  </nav>
                </div>
 
-               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                     Select PSTO Users to Invite
-                  </label>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                     {availablePSTOUsers.map((user) => (
-                        <label key={user._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                           <input
-                              type="checkbox"
-                              checked={selectedPSTOUsers.includes(user._id)}
-                              onChange={(e) => {
-                                 if (e.target.checked) {
-                                    setSelectedPSTOUsers([...selectedPSTOUsers, user._id]);
-                                 } else {
-                                    setSelectedPSTOUsers(selectedPSTOUsers.filter(id => id !== user._id));
-                                 }
-                              }}
-                              className="rounded border-gray-300"
-                           />
-                           <div>
-                              <p className="font-medium">{user.firstName} {user.lastName}</p>
-                              <p className="text-sm text-gray-500">{user.email}</p>
-                           </div>
-                        </label>
-                     ))}
+               {/* Invite Proponent Tab */}
+               {activeInviteTab === 'invite' && (
+                  <div className="space-y-4">
+                     <div className="bg-blue-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-blue-900">Invite Proponent</h3>
+                        <p className="text-sm text-blue-700 mt-1">
+                           Send meeting invitation to the proponent of this application.
+                        </p>
+                     </div>
+                     <div className="flex justify-end">
+                        <Button
+                           onClick={() => selectedMeeting && handleInviteProponent(selectedMeeting._id)}
+                           className="bg-green-600 hover:bg-green-700"
+                        >
+                           Send Proponent Invitation
+                        </Button>
+                     </div>
                   </div>
-               </div>
+               )}
 
-               <div className="flex justify-end space-x-3">
-                  <Button
-                     variant="outline"
-                     onClick={() => setShowInviteModal(false)}
-                  >
-                     Cancel
-                  </Button>
-                  <Button
-                     onClick={() => selectedMeeting && handleBulkInvitePSTO(selectedMeeting._id)}
-                     disabled={selectedPSTOUsers.length === 0}
-                     className="bg-blue-600 hover:bg-blue-700"
-                  >
-                     Send Invitations ({selectedPSTOUsers.length})
-                  </Button>
-               </div>
+               {/* Manage Participants Tab */}
+               {activeInviteTab === 'manage' && selectedMeeting && (
+                  <div className="space-y-4">
+                     <div className="bg-yellow-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-yellow-900">Manage Existing Participants</h3>
+                        <p className="text-sm text-yellow-700 mt-1">
+                           View, resend invitations, or remove participants from this meeting.
+                        </p>
+                     </div>
+                     
+                     <div className="space-y-3">
+                        {selectedMeeting.participants?.map((participant, index) => (
+                           <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                              <div className="flex-1">
+                                 <div className="flex items-center space-x-3">
+                                    <div>
+                                       <p className="font-medium text-gray-900">
+                                          {participant.userId?.firstName} {participant.userId?.lastName}
+                                       </p>
+                                       <p className="text-sm text-gray-500">{participant.userId?.email}</p>
+                                    </div>
+                                    <Badge color={participant.status === 'confirmed' ? 'green' : participant.status === 'declined' ? 'red' : 'yellow'}>
+                                       {participant.status}
+                                    </Badge>
+                                 </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                 <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleResendInvitation(selectedMeeting._id, participant.userId._id)}
+                                    disabled={participant.status === 'confirmed'}
+                                 >
+                                    Resend
+                                 </Button>
+                                 <Button
+                                    size="sm"
+                                    variant="danger"
+                                    onClick={() => {
+                                       setConfirmAction(() => () => handleRemoveParticipant(selectedMeeting._id, participant.userId._id));
+                                       setShowConfirmModal(true);
+                                    }}
+                                 >
+                                    Remove
+                                 </Button>
+                              </div>
+                           </div>
+                        ))}
+                        {(!selectedMeeting.participants || selectedMeeting.participants.length === 0) && (
+                           <div className="text-center py-8 text-gray-500">
+                              No participants found. Invite participants using the other tabs.
+                           </div>
+                        )}
+                     </div>
+                  </div>
+               )}
+
+               {/* Invite PSTO Users Tab */}
+               {activeInviteTab === 'psto' && (
+                  <div className="space-y-4">
+                     <div className="bg-blue-50 p-4 rounded-lg">
+                        <h3 className="font-medium text-blue-900">Invite PSTO Users</h3>
+                        <p className="text-sm text-blue-700 mt-1">
+                           Select PSTO users to invite to this meeting.
+                        </p>
+                     </div>
+                     
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                           Select PSTO Users to Invite
+                        </label>
+                        <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                           {availablePSTOUsers.map((user) => (
+                              <div key={user._id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                                 <input
+                                    type="checkbox"
+                                    id={`psto-${user._id}`}
+                                    checked={selectedPSTOUsers.includes(user._id)}
+                                    onChange={(e) => {
+                                       if (e.target.checked) {
+                                          setSelectedPSTOUsers([...selectedPSTOUsers, user._id]);
+                                       } else {
+                                          setSelectedPSTOUsers(selectedPSTOUsers.filter(id => id !== user._id));
+                                       }
+                                    }}
+                                    className="rounded border-gray-300"
+                                 />
+                                 <label htmlFor={`psto-${user._id}`} className="flex-1 cursor-pointer">
+                                    <div className="font-medium">{user.firstName} {user.lastName}</div>
+                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                 </label>
+                              </div>
+                           ))}
+                           {availablePSTOUsers.length === 0 && (
+                              <div className="text-center py-4 text-gray-500">
+                                 No PSTO users available
+                              </div>
+                           )}
+                        </div>
+                     </div>
+
+                     <div className="flex justify-end space-x-3">
+                        <Button
+                           variant="outline"
+                           onClick={() => {
+                              setShowInviteModal(false);
+                              setShowParticipantManagement(false);
+                              setSelectedPSTOUsers([]);
+                           }}
+                        >
+                           Cancel
+                        </Button>
+                        <Button
+                           onClick={() => selectedMeeting && handleBulkInvitePSTO(selectedMeeting._id)}
+                           disabled={selectedPSTOUsers.length === 0}
+                        >
+                           Send Invitations ({selectedPSTOUsers.length})
+                        </Button>
+                     </div>
+                  </div>
+               )}
             </div>
          </Modal>
 

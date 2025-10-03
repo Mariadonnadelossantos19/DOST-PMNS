@@ -557,6 +557,82 @@ const updateMyParticipantStatus = async (req, res) => {
    }
 };
 
+// Resend invitation to participant
+const resendInvitation = async (req, res) => {
+   try {
+      const { meetingId } = req.params;
+      const { participantId } = req.body;
+      const userId = req.user.id;
+
+      if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid meeting ID'
+         });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(participantId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid participant ID'
+         });
+      }
+
+      const rtecMeeting = await RTECMeeting.findById(meetingId)
+         .populate('proponentId', 'firstName lastName email')
+         .populate('applicationId', 'companyName enterpriseName');
+
+      if (!rtecMeeting) {
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC meeting not found'
+         });
+      }
+
+      // Find participant
+      const participant = rtecMeeting.participants.find(p => p.userId.toString() === participantId);
+      if (!participant) {
+         return res.status(404).json({
+            success: false,
+            message: 'Participant not found in this meeting'
+         });
+      }
+
+      // Reset participant status to pending
+      participant.status = 'pending';
+      await rtecMeeting.save();
+
+      // Create new notification for the participant
+      await Notification.createNotification({
+         recipientId: participantId,
+         recipientType: participant.userId.role || 'psto',
+         type: 'rtec_scheduled',
+         title: 'RTEC Meeting Invitation (Resent)',
+         message: `You have been invited to an RTEC meeting for application: ${rtecMeeting.applicationId.companyName || rtecMeeting.applicationId.enterpriseName}. Meeting scheduled for ${rtecMeeting.scheduledDate.toLocaleDateString()} at ${rtecMeeting.scheduledTime}`,
+         relatedEntityType: 'tna',
+         relatedEntityId: rtecMeeting.tnaId,
+         actionUrl: `/rtec-meetings`,
+         actionText: 'View Meeting Details',
+         priority: 'high',
+         sentBy: userId
+      });
+
+      res.json({
+         success: true,
+         message: 'Invitation resent successfully',
+         data: rtecMeeting
+      });
+
+   } catch (error) {
+      console.error('Error resending invitation:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 // Get meetings for user (PSTO/Proponent)
 const getUserMeetings = async (req, res) => {
    try {
@@ -968,6 +1044,7 @@ module.exports = {
    addParticipant,
    confirmParticipant,
    updateMyParticipantStatus,
+   resendInvitation,
    getUserMeetings,
    deleteRTECMeeting,
    sendProponentInvitation,

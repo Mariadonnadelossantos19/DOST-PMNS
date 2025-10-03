@@ -10,6 +10,7 @@ const {
    addParticipant,
    confirmParticipant,
    updateMyParticipantStatus,
+   resendInvitation,
    getUserMeetings,
    deleteRTECMeeting,
    sendProponentInvitation,
@@ -43,6 +44,9 @@ router.patch('/:meetingId/participants/:participantId', auth, confirmParticipant
 
 // Update participant's own status (accept/decline invitation)
 router.patch('/:meetingId/participants/me', auth, updateMyParticipantStatus);
+
+// Resend invitation to participant
+router.post('/:meetingId/resend-invitation', auth, resendInvitation);
 
 // Get meetings for user (PSTO/Proponent)
 router.get('/user/my-meetings', auth, getUserMeetings);
