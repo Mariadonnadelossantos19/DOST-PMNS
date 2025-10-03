@@ -180,7 +180,14 @@ const RTECScheduleManagement = () => {
          console.log('Meeting Title:', formData.meetingTitle);
          console.log('Scheduled Date:', formData.scheduledDate);
          console.log('Scheduled Time:', formData.scheduledTime);
+         console.log('Location:', formData.location);
          console.log('Date type:', typeof formData.scheduledDate);
+         
+         // Validate required fields
+         if (!formData.meetingTitle || !formData.scheduledDate || !formData.scheduledTime || !formData.location) {
+            displayToast('Please fill in all required fields', 'error');
+            return;
+         }
          
          const response = await api.post('/rtec-meetings/create', formData);
          console.log('Create meeting response:', response.data);
@@ -352,6 +359,8 @@ const RTECScheduleManagement = () => {
          header: 'Documents Status',
          accessor: 'status',
          render: (value, item) => {
+            console.log('Documents Status render - value:', value, 'item:', item);
+            console.log('item.status:', item?.status);
             const statusConfig = {
                'documents_approved': { color: 'green', text: 'Documents Approved' },
                'documents_requested': { color: 'yellow', text: 'Documents Requested' },
@@ -360,6 +369,7 @@ const RTECScheduleManagement = () => {
                'documents_rejected': { color: 'red', text: 'Documents Rejected' }
             };
             const statusValue = item?.status || value;
+            console.log('Final statusValue:', statusValue);
             const config = statusConfig[statusValue] || { color: 'gray', text: statusValue || 'Unknown' };
             return <Badge color={config.color}>{config.text}</Badge>;
          }

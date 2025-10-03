@@ -128,7 +128,6 @@ const createRTECMeeting = async (req, res) => {
          virtualMeetingId,
          virtualMeetingPassword,
          participants,
-         scheduledBy: userId,
          notes
       });
 
