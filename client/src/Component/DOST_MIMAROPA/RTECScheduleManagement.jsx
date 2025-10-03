@@ -146,6 +146,7 @@ const RTECScheduleManagement = () => {
    };
 
    useEffect(() => {
+      console.log('=== COMPONENT MOUNTED - FETCHING DATA ===');
       fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
@@ -674,6 +675,7 @@ const RTECScheduleManagement = () => {
          </div>
 
          {/* Tab Content */}
+         {console.log('=== RENDERING TABS ===', 'activeTab:', activeTab)}
          {activeTab === 'documents' && (
             <Card>
                <div className="p-6">
