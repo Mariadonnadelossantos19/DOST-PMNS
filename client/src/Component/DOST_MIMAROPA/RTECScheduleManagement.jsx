@@ -656,7 +656,7 @@ const RTECScheduleManagement = () => {
                >
                   Approved RTEC Documents ({approvedRTECDocuments.filter(doc => {
                      const hasMeeting = rtecMeetings.some(meeting => 
-                        meeting.rtecDocumentsId?.toString() === doc._id?.toString()
+                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
                      );
                      return !hasMeeting;
                   }).length})
@@ -686,7 +686,7 @@ const RTECScheduleManagement = () => {
                         <p className="text-sm text-gray-600 mt-1">
                            Documents ready for meeting scheduling ({approvedRTECDocuments.filter(doc => {
                               const hasMeeting = rtecMeetings.some(meeting => 
-                                 meeting.rtecDocumentsId?.toString() === doc._id?.toString()
+                                 meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
                               );
                               return !hasMeeting;
                            }).length} ready)
@@ -759,8 +759,9 @@ const RTECScheduleManagement = () => {
                         const hasMeeting = rtecMeetings.some(meeting => {
                            console.log('Checking meeting:', meeting.meetingTitle);
                            console.log('Meeting rtecDocumentsId:', meeting.rtecDocumentsId);
-                           console.log('Comparing:', meeting.rtecDocumentsId?.toString(), '===', doc._id?.toString());
-                           const match = meeting.rtecDocumentsId?.toString() === doc._id?.toString();
+                           console.log('Meeting rtecDocumentsId._id:', meeting.rtecDocumentsId?._id);
+                           console.log('Comparing:', meeting.rtecDocumentsId?._id?.toString(), '===', doc._id?.toString());
+                           const match = meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString();
                            console.log('Match result:', match);
                            return match;
                         });
