@@ -92,8 +92,23 @@ const RTECScheduleManagement = () => {
    const fetchRTECMeetings = async () => {
       try {
          const response = await api.get('/rtec-meetings/list');
+         console.log('=== FETCH RTEC MEETINGS RESPONSE ===');
+         console.log('Full response:', response.data);
+         console.log('Meetings data:', response.data.data.docs);
+         
          if (response.data.success) {
-            setRtecMeetings(response.data.data.docs || []);
+            const meetings = response.data.data.docs || [];
+            console.log('Number of meetings:', meetings.length);
+            meetings.forEach((meeting, index) => {
+               console.log(`Meeting ${index + 1}:`, {
+                  id: meeting._id,
+                  title: meeting.meetingTitle,
+                  scheduledDate: meeting.scheduledDate,
+                  scheduledTime: meeting.scheduledTime,
+                  location: meeting.location
+               });
+            });
+            setRtecMeetings(meetings);
          }
       } catch (error) {
          console.error('Error fetching RTEC meetings:', error);
