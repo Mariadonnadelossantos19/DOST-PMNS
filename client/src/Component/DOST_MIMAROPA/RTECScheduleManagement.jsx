@@ -219,7 +219,17 @@ const RTECScheduleManagement = () => {
          console.error('Error creating meeting:', error);
          console.error('Error response:', error.response?.data);
          console.error('Error status:', error.response?.status);
-         displayToast(error.response?.data?.message || 'Failed to create meeting', 'error');
+         
+         const errorMessage = error.response?.data?.message || 'Failed to create meeting';
+         
+         // Handle specific error cases
+         if (errorMessage.includes('already scheduled')) {
+            displayToast('A meeting has already been scheduled for this application. Please check the meetings list.', 'error');
+         } else if (errorMessage.includes('future date')) {
+            displayToast('Please select a future date for the meeting.', 'error');
+         } else {
+            displayToast(errorMessage, 'error');
+         }
       }
    };
 
