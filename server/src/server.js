@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const programRoutes = require('./routes/programRoutes');
 const tnaRoutes = require('./routes/tnaRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const rtecMeetingRoutes = require('./routes/rtecMeetingRoutes');
 
 // Import seed functions
 const seedPSTOData = require('./utils/seedPSTO');
@@ -36,6 +37,7 @@ app.use('/api/programs', programRoutes);
 app.use('/api/tna', tnaRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/rtec-documents', require('./routes/rtecDocumentsRoutes'));
+app.use('/api/rtec-meetings', rtecMeetingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
