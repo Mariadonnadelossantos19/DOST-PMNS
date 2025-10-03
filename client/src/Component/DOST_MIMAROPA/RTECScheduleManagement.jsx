@@ -333,6 +333,7 @@ const RTECScheduleManagement = () => {
          accessor: 'status',
          render: (value, item) => {
             console.log('Documents Status render - value:', value, 'item:', item);
+            console.log('item.status:', item?.status);
             const statusConfig = {
                'documents_approved': { color: 'green', text: 'Documents Approved' },
                'documents_requested': { color: 'yellow', text: 'Documents Requested' },
@@ -340,7 +341,8 @@ const RTECScheduleManagement = () => {
                'documents_under_review': { color: 'orange', text: 'Under Review' },
                'documents_rejected': { color: 'red', text: 'Documents Rejected' }
             };
-            const statusValue = value || item?.status;
+            const statusValue = item?.status || value;
+            console.log('Final statusValue:', statusValue);
             const config = statusConfig[statusValue] || { color: 'gray', text: statusValue || 'Unknown' };
             return <Badge color={config.color}>{config.text}</Badge>;
          }
