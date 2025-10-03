@@ -558,7 +558,7 @@ const RTECScheduleManagement = () => {
                   <Button
                      size="sm"
                      variant="success"
-                     onClick={() => handleUpdateMeetingStatus(value, 'confirmed')}
+                     onClick={() => handleUpdateMeetingStatus(item._id, 'confirmed')}
                   >
                      Confirm
                   </Button>
@@ -567,7 +567,7 @@ const RTECScheduleManagement = () => {
                   <Button
                      size="sm"
                      variant="primary"
-                     onClick={() => handleUpdateMeetingStatus(value, 'completed')}
+                     onClick={() => handleUpdateMeetingStatus(item._id, 'completed')}
                   >
                      Complete
                   </Button>
@@ -576,7 +576,7 @@ const RTECScheduleManagement = () => {
                   size="sm"
                   variant="danger"
                   onClick={() => {
-                     setConfirmAction(() => () => handleDeleteMeeting(value));
+                     setConfirmAction(() => () => handleDeleteMeeting(item._id));
                      setShowConfirmModal(true);
                   }}
                >
