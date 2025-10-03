@@ -304,23 +304,24 @@ const reviewRTECDocument = async (req, res) => {
       }
 
       // Create notification for PSTO
-      const notificationType = action === 'approve' ? 'rtec_document_approved' : 'rtec_document_rejected';
+      const notificationType = action === 'approve' ? 'status_update' : 'status_update';
       const notificationTitle = action === 'approve' ? 'RTEC Document Approved' : 'RTEC Document Rejected';
       const notificationMessage = action === 'approve' 
          ? `Your ${documentType} has been approved by DOST-MIMAROPA`
          : `Your ${documentType} has been rejected by DOST-MIMAROPA. Please review and resubmit.`;
 
-      await Notification.create({
-         userId: rtecDocuments.submittedBy || rtecDocuments.proponentId,
+      await Notification.createNotification({
+         recipientId: rtecDocuments.submittedBy || rtecDocuments.proponentId,
+         recipientType: 'psto',
          type: notificationType,
          title: notificationTitle,
          message: notificationMessage,
-         data: {
-            tnaId: tnaId,
-            rtecDocumentsId: rtecDocuments._id,
-            documentType: documentType,
-            comments: comments
-         }
+         relatedEntityType: 'tna',
+         relatedEntityId: tnaId,
+         actionUrl: `/rtec-documents`,
+         actionText: 'View Details',
+         priority: 'high',
+         sentBy: userId
       });
 
       console.log('RTEC document reviewed successfully');
