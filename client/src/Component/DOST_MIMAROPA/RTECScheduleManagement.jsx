@@ -307,9 +307,11 @@ const RTECScheduleManagement = () => {
       {
          header: 'Program',
          accessor: 'programName',
-         render: (value) => (
-            <Badge color="blue">{value || 'SETUP'}</Badge>
-         )
+         render: (value, item) => {
+            console.log('Program render - value:', value, 'item:', item);
+            const programName = value || item?.programName || 'SETUP';
+            return <Badge color="blue">{programName}</Badge>;
+         }
       },
       {
          header: 'Proponent',
@@ -329,7 +331,8 @@ const RTECScheduleManagement = () => {
       {
          header: 'Documents Status',
          accessor: 'status',
-         render: (value) => {
+         render: (value, item) => {
+            console.log('Documents Status render - value:', value, 'item:', item);
             const statusConfig = {
                'documents_approved': { color: 'green', text: 'Documents Approved' },
                'documents_requested': { color: 'yellow', text: 'Documents Requested' },
@@ -337,7 +340,8 @@ const RTECScheduleManagement = () => {
                'documents_under_review': { color: 'orange', text: 'Under Review' },
                'documents_rejected': { color: 'red', text: 'Documents Rejected' }
             };
-            const config = statusConfig[value] || { color: 'gray', text: value };
+            const statusValue = value || item?.status;
+            const config = statusConfig[statusValue] || { color: 'gray', text: statusValue || 'Unknown' };
             return <Badge color={config.color}>{config.text}</Badge>;
          }
       },
