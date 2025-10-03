@@ -41,20 +41,18 @@ const RTECScheduleManagement = () => {
    // Fetch approved RTEC documents
    const fetchApprovedRTECDocuments = async () => {
       try {
+         console.log('=== FETCHING APPROVED RTEC DOCUMENTS ===');
          setLoading(true);
-         const response = await api.get('/rtec-documents/list');
-         console.log('RTEC Documents Response:', response.data);
+         const response = await api.get('/rtec-documents/approved');
+         console.log('Approved RTEC Documents Response:', response.data);
          if (response.data.success) {
-            // Get all documents first
-            const allDocs = response.data.data.docs || [];
-            console.log('All RTEC Documents:', allDocs);
+            const approvedDocs = response.data.data.docs || [];
+            console.log('Approved RTEC Documents:', approvedDocs);
+            console.log('Setting approved documents to state...');
             
-            // Show ALL documents for now to debug - remove filtering temporarily
-            console.log('Setting ALL documents (no filtering):', allDocs);
-            
-            // Debug each document structure
-            allDocs.forEach((doc, index) => {
-               console.log(`\n=== Document ${index + 1} ===`);
+            // Debug each approved document
+            approvedDocs.forEach((doc, index) => {
+               console.log(`\n=== Approved Document ${index + 1} ===`);
                console.log('Full document:', doc);
                console.log('applicationId:', doc.applicationId);
                console.log('proponentId:', doc.proponentId);
@@ -73,7 +71,8 @@ const RTECScheduleManagement = () => {
                }
             });
             
-            setApprovedRTECDocuments(allDocs);
+            setApprovedRTECDocuments(approvedDocs);
+            console.log('State updated with approved documents');
          }
       } catch (error) {
          console.error('Error fetching approved RTEC documents:', error);
