@@ -18,6 +18,7 @@ const RTECScheduleManagement = () => {
    const [toastType, setToastType] = useState('success');
    const [showConfirmModal, setShowConfirmModal] = useState(false);
    const [confirmAction, setConfirmAction] = useState(null);
+   const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
 
    // Form states for creating meeting
    const [formData, setFormData] = useState({
@@ -640,28 +641,55 @@ const RTECScheduleManagement = () => {
             ))}
          </div>
 
-         {/* Approved RTEC Documents Table */}
-         <Card>
-            <div className="p-6">
-               <div className="flex justify-between items-center mb-4">
-                  <div>
-                     <h2 className="text-lg font-semibold">Approved RTEC Documents</h2>
-                     <p className="text-sm text-gray-600 mt-1">
-                        Documents ready for meeting scheduling ({approvedRTECDocuments.length} approved)
-                     </p>
+         {/* Tab Navigation */}
+         <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+               <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                     activeTab === 'documents'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+               >
+                  Approved RTEC Documents ({approvedRTECDocuments.length})
+               </button>
+               <button
+                  onClick={() => setActiveTab('meetings')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                     activeTab === 'meetings'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+               >
+                  RTEC Meetings ({rtecMeetings.length})
+               </button>
+            </nav>
+         </div>
+
+         {/* Tab Content */}
+         {activeTab === 'documents' && (
+            <Card>
+               <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                     <div>
+                        <h2 className="text-lg font-semibold">Approved RTEC Documents</h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                           Documents ready for meeting scheduling ({approvedRTECDocuments.length} approved)
+                        </p>
+                     </div>
+                     <div className="flex space-x-2">
+                        <Button
+                           variant="outline"
+                           onClick={() => {
+                              console.log('Manual refresh triggered');
+                              fetchApprovedRTECDocuments();
+                           }}
+                        >
+                           Refresh
+                        </Button>
+                     </div>
                   </div>
-                  <div className="flex space-x-2">
-                     <Button
-                        variant="outline"
-                        onClick={() => {
-                           console.log('Manual refresh triggered');
-                           fetchApprovedRTECDocuments();
-                        }}
-                     >
-                        Refresh
-                     </Button>
-                  </div>
-               </div>
                
                {/* Info Alert */}
                {!loading && approvedRTECDocuments.length > 0 && (
@@ -711,23 +739,30 @@ const RTECScheduleManagement = () => {
                      pagination={true}
                   />
                )}
-            </div>
-         </Card>
-
-         {/* RTEC Meetings Table */}
-         <Card>
-            <div className="p-6">
-               <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold">RTEC Meetings</h2>
-                  <div className="flex space-x-2">
-                     <Button
-                        variant="outline"
-                        onClick={fetchRTECMeetings}
-                     >
-                        Refresh
-                     </Button>
-                  </div>
                </div>
+            </Card>
+         )}
+
+         {/* RTEC Meetings Tab */}
+         {activeTab === 'meetings' && (
+            <Card>
+               <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                     <div>
+                        <h2 className="text-lg font-semibold">RTEC Meetings</h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                           Manage scheduled RTEC meetings ({rtecMeetings.length} meetings)
+                        </p>
+                     </div>
+                     <div className="flex space-x-2">
+                        <Button
+                           variant="outline"
+                           onClick={fetchRTECMeetings}
+                        >
+                           Refresh
+                        </Button>
+                     </div>
+                  </div>
                
                {loading ? (
                   <div className="flex justify-center py-8">
@@ -741,8 +776,9 @@ const RTECScheduleManagement = () => {
                      pagination={true}
                   />
                )}
-            </div>
-         </Card>
+               </div>
+            </Card>
+         )}
 
          {/* Create Meeting Modal */}
          {console.log('Modal render - showCreateModal:', showCreateModal)}
