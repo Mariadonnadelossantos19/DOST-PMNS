@@ -358,7 +358,7 @@ const listRTECDocuments = async (req, res) => {
 
       const rtecDocuments = await RTECDocuments.find(query)
          .populate('tnaId', 'scheduledDate location programName')
-         .populate('applicationId', 'enterpriseName companyName projectTitle programName businessActivity')
+         .populate('applicationId', 'enterpriseName projectTitle programName businessActivity')
          .populate('proponentId', 'firstName lastName email')
          .populate('requestedBy', 'firstName lastName')
          .populate('submittedBy', 'firstName lastName')
@@ -446,7 +446,7 @@ const getRTECDocumentsForPSTO = async (req, res) => {
          })
          .populate({
             path: 'applicationId',
-            select: 'enterpriseName companyName projectTitle programName businessActivity'
+            select: 'enterpriseName projectTitle programName businessActivity'
          })
          .populate({
             path: 'proponentId', 

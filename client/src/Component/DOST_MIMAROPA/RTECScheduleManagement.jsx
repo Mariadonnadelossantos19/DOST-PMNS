@@ -43,9 +43,11 @@ const RTECScheduleManagement = () => {
       try {
          setLoading(true);
          const response = await api.get('/rtec-documents/list');
+         console.log('RTEC Documents Response:', response.data);
          if (response.data.success) {
             // Filter for documents with 'documents_approved' status
             const approvedDocs = response.data.data.docs?.filter(doc => doc.status === 'documents_approved') || [];
+            console.log('Approved RTEC Documents:', approvedDocs);
             setApprovedRTECDocuments(approvedDocs);
          }
       } catch (error) {
@@ -117,7 +119,7 @@ const RTECScheduleManagement = () => {
          applicationId: rtecDocument.applicationId._id,
          proponentId: rtecDocument.proponentId._id,
          programName: rtecDocument.programName || 'SETUP',
-         meetingTitle: `RTEC Meeting - ${rtecDocument.applicationId?.companyName || rtecDocument.applicationId?.enterpriseName || 'Application'}`,
+         meetingTitle: `RTEC Meeting - ${rtecDocument.applicationId?.enterpriseName || 'Application'}`,
          meetingDescription: '',
          scheduledDate: '',
          scheduledTime: '',
@@ -260,7 +262,7 @@ const RTECScheduleManagement = () => {
          render: (value, item) => (
             <div>
                <div className="font-medium text-gray-900">
-                  {value?.companyName || value?.enterpriseName || 'N/A'}
+                  {value?.enterpriseName || 'N/A'}
                </div>
                <div className="text-sm text-gray-500">
                   {value?.projectTitle || 'N/A'}
