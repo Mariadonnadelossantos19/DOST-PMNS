@@ -175,6 +175,9 @@ const RTECScheduleManagement = () => {
          console.log('Form Data:', formData);
          console.log('TNA ID being sent:', formData.tnaId);
          console.log('Meeting Title:', formData.meetingTitle);
+         console.log('Scheduled Date:', formData.scheduledDate);
+         console.log('Scheduled Time:', formData.scheduledTime);
+         console.log('Date type:', typeof formData.scheduledDate);
          
          const response = await api.post('/rtec-meetings/create', formData);
          console.log('Create meeting response:', response.data);

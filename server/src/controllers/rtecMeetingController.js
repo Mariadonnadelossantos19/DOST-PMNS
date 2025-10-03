@@ -88,11 +88,25 @@ const createRTECMeeting = async (req, res) => {
       }
 
       // Validate scheduled date is in the future
+      console.log('Scheduled date from request:', scheduledDate);
       const meetingDate = new Date(scheduledDate);
-      if (meetingDate <= new Date()) {
+      const currentDate = new Date();
+      console.log('Parsed meeting date:', meetingDate);
+      console.log('Current date:', currentDate);
+      console.log('Meeting date is valid:', !isNaN(meetingDate.getTime()));
+      console.log('Meeting date > current date:', meetingDate > currentDate);
+      
+      if (isNaN(meetingDate.getTime())) {
          return res.status(400).json({
             success: false,
-            message: 'Meeting must be scheduled for a future date'
+            message: 'Invalid date format. Please use YYYY-MM-DD format'
+         });
+      }
+      
+      if (meetingDate <= currentDate) {
+         return res.status(400).json({
+            success: false,
+            message: `Meeting must be scheduled for a future date. Selected: ${meetingDate.toISOString()}, Current: ${currentDate.toISOString()}`
          });
       }
 
