@@ -124,6 +124,28 @@ const rtecMeetingSchema = new mongoose.Schema({
       default: null
    },
    
+   // RTEC evaluation data
+   evaluationOutcome: {
+      type: String,
+      enum: ['with revision', 'approved'],
+      default: null
+   },
+   
+   evaluationComment: {
+      type: String,
+      trim: true
+   },
+   
+   recommendations: {
+      type: String,
+      trim: true
+   },
+   
+   nextSteps: {
+      type: String,
+      trim: true
+   },
+   
    // Meeting completion tracking
    completedAt: {
       type: Date,

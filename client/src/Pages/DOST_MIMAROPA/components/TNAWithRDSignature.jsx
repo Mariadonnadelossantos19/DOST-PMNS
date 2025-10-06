@@ -1216,6 +1216,19 @@ const TNAWithRDSignature = () => {
                         <li>• Approved TNA Report with Signature</li>
                         <li>• Risk Management Plan</li>
                         <li>• Financial Statements (3 years for SME, 1 year for micro-enterprises)</li>
+                        <li>• Letter of Intent</li>
+                        <li>• Duly Accomplished DOST TNA Form 001</li>
+                        <li>• Duly Accomplished DOST TNA Form 02</li>
+                        <li>• Proposal using SETUP FORM 001</li>
+                        <li>• Copy of the business permit andd licenses</li>
+                        <li>• Certificate of registration with the department of trade and industry (DTI),security  an exchange  commission(SEC)  or cooperative development authority (CDA).Whichever is applicable</li>
+                        <li>• Photocopy of the official receipt of the firm</li>
+                        <li>• Articles of incorporation for cooperatives and association as proponent</li>
+                        <li>• Board/Legislative Council Resolution authorizing the availment of the assistance and designating authorized signatory for the funding assistance for corporations, cooperatives, SUCs and LGUs;</li>
+                        <li>• Sworn affidavit</li>
+                        <li>• Projected financial statements</li>
+                        <li>• Complete technical specifications and design/drawing/picture of equipment</li>
+                        <li>• Three (3) quotations from suppliers/fabricators for each equipment to be acquired</li>
                      </ul>
                      <p className="text-sm text-yellow-700 mt-2">
                         The PSTO will have 14 days to submit all required documents.

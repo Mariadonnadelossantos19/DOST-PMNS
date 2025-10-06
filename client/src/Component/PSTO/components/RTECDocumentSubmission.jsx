@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, Toast, Input } from '../../UI';
 import api from '../../../config/api';
 
@@ -12,11 +12,7 @@ const RTECDocumentSubmission = () => {
    const [uploading, setUploading] = useState(false);
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-   useEffect(() => {
-      fetchRTECDocuments();
-   }, []);
-
-   const fetchRTECDocuments = async () => {
+   const fetchRTECDocuments = useCallback(async () => {
       try {
          setLoading(true);
          const response = await api.get('/rtec-documents/psto/list');
@@ -29,7 +25,11 @@ const RTECDocumentSubmission = () => {
       } finally {
          setLoading(false);
       }
-   };
+   }, []);
+
+   useEffect(() => {
+      fetchRTECDocuments();
+   }, [fetchRTECDocuments]);
 
    const handleFileUpload = (documentType, rtecDoc) => {
       setSelectedDocument(rtecDoc);
@@ -48,14 +48,15 @@ const RTECDocumentSubmission = () => {
          setUploading(true);
          const formData = new FormData();
          formData.append('document', uploadFile);
+         formData.append('documentType', currentDocumentType);
 
          const response = await api.post(
-            `/rtec-documents/submit/${selectedDocument.tnaId._id}/${currentDocumentType}`,
+            `/rtec-documents/submit/${selectedDocument.tnaId._id}`,
             formData,
             {
                headers: {
                   'Content-Type': 'multipart/form-data'
-               }
+               }  
             }
          );
 

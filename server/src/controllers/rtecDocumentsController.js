@@ -37,24 +37,37 @@ const requestRTECDocuments = async (req, res) => {
          });
       }
 
+      console.log('TNA found:', !!tna);
+      console.log('TNA status:', tna.status);
+      console.log('TNA signedTnaReport:', tna.signedTnaReport);
+      console.log('Application ID:', tna.applicationId?._id);
+      console.log('Proponent ID:', tna.proponentId?._id);
+
       // Check if TNA is in the correct status (signed_by_rd) or has signed TNA report
       if (tna.status !== 'signed_by_rd' && !tna.signedTnaReport) {
+         console.log('TNA status check failed');
          return res.status(400).json({
             success: false,
             message: 'TNA must be signed by RD before requesting RTEC documents'
          });
       }
 
+      console.log('TNA status check passed');
+
       // Check if RTEC documents already requested
       const existingRequest = await RTECDocuments.findOne({ tnaId });
       if (existingRequest) {
+         console.log('RTEC documents already exist');
          return res.status(400).json({
             success: false,
             message: 'RTEC documents already requested for this TNA'
          });
       }
 
+      console.log('No existing RTEC request found');
+
       // Create RTEC documents request
+      console.log('Creating RTEC documents...');
       const rtecDocuments = new RTECDocuments({
          tnaId: tna._id,
          applicationId: tna.applicationId._id,
@@ -65,24 +78,40 @@ const requestRTECDocuments = async (req, res) => {
          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
       });
 
-      // Initialize default document types
+      console.log('RTEC documents object created');
+
+      // Initialize default document types (this also saves the document)
+      console.log('Initializing document types...');
       await rtecDocuments.initializeDocumentTypes();
+      console.log('Document types initialized and saved');
 
       // Update TNA status
+      console.log('Updating TNA status...');
       await tna.requestRTECDocuments(userId);
+      console.log('TNA status updated');
 
       // Create notification for PSTO
-      await Notification.create({
-         userId: tna.scheduledBy, // PSTO who scheduled the TNA
-         type: 'rtec_documents_requested',
-         title: 'RTEC Documents Requested',
-         message: `DOST-MIMAROPA has requested RTEC documents for ${tna.applicationId.companyName}`,
-         data: {
-            tnaId: tna._id,
-            applicationId: tna.applicationId._id,
-            rtecDocumentsId: rtecDocuments._id
-         }
-      });
+      console.log('Creating notification...');
+      console.log('TNA scheduledBy:', tna.scheduledBy);
+      console.log('Application companyName:', tna.applicationId?.companyName);
+      
+      if (tna.scheduledBy) {
+         await Notification.create({
+            recipientId: tna.scheduledBy, // PSTO who scheduled the TNA
+            recipientType: 'psto',
+            type: 'rtec_document_request',
+            title: 'RTEC Documents Requested',
+            message: `DOST-MIMAROPA has requested RTEC documents for ${tna.applicationId?.companyName || 'the application'}`,
+            data: {
+               tnaId: tna._id,
+               applicationId: tna.applicationId?._id,
+               rtecDocumentsId: rtecDocuments._id
+            }
+         });
+         console.log('Notification created');
+      } else {
+         console.log('No scheduledBy found, skipping notification');
+      }
 
       console.log('RTEC documents requested successfully');
 
@@ -93,11 +122,16 @@ const requestRTECDocuments = async (req, res) => {
       });
 
    } catch (error) {
+      console.error('=== RTEC REQUEST ERROR ===');
       console.error('Error requesting RTEC documents:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
-         error: error.message
+         error: error.message,
+         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
    }
 };
@@ -149,8 +183,8 @@ const getRTECDocumentsByTNA = async (req, res) => {
 // Submit RTEC document
 const submitRTECDocument = async (req, res) => {
    try {
-      const { tnaId, documentType: rawDocumentType } = req.params;
-      const documentType = decodeURIComponent(rawDocumentType);
+      const { tnaId } = req.params;
+      const { documentType } = req.body;
       const userId = req.user.id;
 
       console.log('=== SUBMIT RTEC DOCUMENT DEBUG ===');
@@ -158,6 +192,7 @@ const submitRTECDocument = async (req, res) => {
       console.log('Document Type:', documentType);
       console.log('User ID:', userId);
       console.log('File:', req.file);
+      console.log('Request Body:', req.body);
 
       if (!req.file) {
          return res.status(400).json({
@@ -183,9 +218,28 @@ const submitRTECDocument = async (req, res) => {
          });
       }
 
-      // Check if document type is valid
-      const validDocumentTypes = ['approved tna report', 'risk management plan', 'financial statements'];
+      // Check if document type is valid (use the same enum values as the model)
+      const validDocumentTypes = [
+         'approved tna report', 
+         'risk management plan', 
+         'financial statements', 
+         'letter of intent', 
+         'duly accomplishment DOST TNA Form 001', 
+         'duly accomplishment DOST TNA Form 02', 
+         'proposal using SETUP FORM 001', 
+         'copy of the business permit and licenses', 
+         'certificate of registration with DTI/SEC/CDA', 
+         'photocopy of the official receipt of the firm', 
+         'articles of incorporation for cooperatives and association as proponent', 
+         'board legislative council resolution', 
+         'sworn affidavit', 
+         'projected financial statements', 
+         'complete technical specifications and design/drawing/picture of equipment',
+         'three quotations from suppliers/fabricators for each equipment to be acquired'
+      ];
       if (!validDocumentTypes.includes(documentType)) {
+         console.log('Invalid document type:', documentType);
+         console.log('Valid types:', validDocumentTypes);
          return res.status(400).json({
             success: false,
             message: 'Invalid document type'
@@ -211,8 +265,9 @@ const submitRTECDocument = async (req, res) => {
 
          // Create notification for DOST-MIMAROPA
          await Notification.create({
-            userId: rtecDocuments.requestedBy,
-            type: 'rtec_documents_submitted',
+            recipientId: rtecDocuments.requestedBy,
+            recipientType: 'dost_mimaropa',
+            type: 'rtec_document_request',
             title: 'RTEC Documents Submitted',
             message: `PSTO has submitted all required RTEC documents for review`,
             data: {
@@ -243,9 +298,8 @@ const submitRTECDocument = async (req, res) => {
 // Review RTEC document (approve/reject)
 const reviewRTECDocument = async (req, res) => {
    try {
-      const { tnaId, documentType: rawDocumentType } = req.params;
-      const documentType = decodeURIComponent(rawDocumentType);
-      const { action, comments } = req.body; // action: 'approve' or 'reject'
+      const { tnaId } = req.params;
+      const { documentType, action, comments } = req.body; // action: 'approve' or 'reject'
       const userId = req.user.id;
 
       console.log('=== REVIEW RTEC DOCUMENT DEBUG ===');
@@ -278,11 +332,19 @@ const reviewRTECDocument = async (req, res) => {
          });
       }
 
-      // Check if documents are submitted
-      if (rtecDocuments.status !== 'documents_submitted' && rtecDocuments.status !== 'documents_under_review') {
+      // Check if the specific document is submitted
+      const document = rtecDocuments.partialdocsrtec.find(doc => doc.type === documentType);
+      if (!document) {
+         return res.status(404).json({
+            success: false,
+            message: 'Document type not found'
+         });
+      }
+
+      if (document.documentStatus !== 'submitted') {
          return res.status(400).json({
             success: false,
-            message: 'Documents must be submitted before review'
+            message: 'This document must be submitted before it can be reviewed'
          });
       }
 
@@ -310,7 +372,7 @@ const reviewRTECDocument = async (req, res) => {
          ? `Your ${documentType} has been approved by DOST-MIMAROPA`
          : `Your ${documentType} has been rejected by DOST-MIMAROPA. Please review and resubmit.`;
 
-      await Notification.createNotification({
+      await Notification.create({
          recipientId: rtecDocuments.submittedBy || rtecDocuments.proponentId,
          recipientType: 'psto',
          type: notificationType,

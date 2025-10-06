@@ -65,8 +65,9 @@ const RTECDocumentManagement = () => {
          });
          
          const response = await api.post(
-            `/rtec-documents/review/${tnaId}/${encodeURIComponent(currentDocumentType)}`,
+            `/rtec-documents/review/${tnaId}`,
             {
+               documentType: currentDocumentType,
                action: reviewAction,
                comments: reviewComments
             }

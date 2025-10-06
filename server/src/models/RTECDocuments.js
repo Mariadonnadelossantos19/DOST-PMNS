@@ -48,7 +48,24 @@ const rtecDocumentsSchema = new mongoose.Schema({
    partialdocsrtec: [{
       type: {
          type: String,
-         enum: ['approved tna report', 'risk management plan', 'financial statements'],
+         enum: [
+            'approved tna report', 
+            'risk management plan', 
+            'financial statements', 
+            'letter of intent', 
+            'duly accomplishment DOST TNA Form 001', 
+            'duly accomplishment DOST TNA Form 02', 
+            'proposal using SETUP FORM 001', 
+            'copy of the business permit and licenses', 
+            'certificate of registration with DTI/SEC/CDA', 
+            'photocopy of the official receipt of the firm', 
+            'articles of incorporation for cooperatives and association as proponent', 
+            'board legislative council resolution', 
+            'sworn affidavit', 
+            'projected financial statements', 
+            'complete technical specifications and design/drawing/picture of equipment',
+            'three quotations from suppliers/fabricators for each equipment to be acquired'
+         ],
          required: true
       },
       name: {
@@ -208,7 +225,86 @@ rtecDocumentsSchema.methods.initializeDocumentTypes = function() {
          name: 'Financial Statements',
          description: 'Financial statements for the last 3 years for small and medium enterprises and at least 1 year for micro-enterprises together with notarized sworn statement from the proponent that all the information provided are correct and used',
          documentStatus: 'pending'
+      },
+      {
+         type: 'letter of intent',
+         name: 'Letter of Intent',
+         description: 'Letter of Intent to  avail SETUP assistance, stating commitment to  refund the iFund  support  and cover the insurance cost  for the aqcquired equipment',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'duly accomplishment DOST TNA Form 001',
+         name: 'Duly Accomplishment DOST TNA Form 001',
+         description: 'Application for Technology Needs Assessment (Annex I-1)',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'duly accomplishment DOST TNA Form 02',
+         name: 'Duly Accomplishment DOST TNA Form 02',
+         description: 'Technology Needs Assessment Report (Annex I-2)',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'proposal using SETUP FORM 001',
+         name: 'Proposal using SETUP FORM 001',
+         description: 'Project Proposal  Format (Annex A-1)',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'copy of the business permit and licenses',
+         name: 'Copy of the Business Permit and Licenses',
+         description: 'Copy of the business permit and licenses by LGU and other appropriate government agencies',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'certificate of registration with DTI/SEC/CDA',
+         name: 'Certificate of Registration with DTI/SEC/CDA',
+         description: 'Certificate of registration with the Department of Trade and Industry (DTI), Securities and Exchange Commission (SEC) or Cooperative Development Authority (CDA), whichever is applicable',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'photocopy of the official receipt of the firm',
+         name: 'Photocopy of the Official Receipt of the Firm',
+         description: 'Photocopy of the official receipt of the firm',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'articles of incorporation for cooperatives and association as proponent',
+         name: 'Articles of Incorporation for Cooperatives and Association as Proponent',
+         description: 'Articles of Incorporation for Cooperatives and Association as Proponent',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'board legislative council resolution',
+         name: 'Board/Legislative Council Resolution',
+         description: 'Board/Legislative Council Resolution authorizing the availment of the assistance and designating authorized signatory for the funding assistance for corporations, cooperatives, SUCs and LGUs',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'sworn affidavit',
+         name: 'Sworn Affidavit',
+         description: 'Sworn affidavit that none of the incorporators/officials or applicant is related to the approving authority (Regional Director) up to the third degree of consanguinity and affinity and that the proponent has no bad debt',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'projected financial statements',
+         name: 'Projected Financial Statements',
+         description: 'Projected financial statements with the number of years depending on the proposed project duration',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'complete technical specifications and design/drawing/picture of equipment',
+         name: 'Complete Technical Specifications and Design/Drawing/Picture of Equipment',
+         description: 'Complete technical specifications and design/drawing/picture of equipment to be acquired, as determined in the TNA Report (DOST TNA Form 02)',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'three quotations from suppliers/fabricators for each equipment to be acquired',
+         name: 'Three (3) Quotations from Suppliers/Fabricators for Each Equipment to be Acquired',
+         description: 'Three (3) quotations from suppliers/fabricators for each equipment to be acquired, as indicated in item l. The conditions required in the DOST Purchase Order (i.e., warranty of equipment and after sales support, terms of payment, and retention of payment for applicable equipment) shall be followed. If the proponent cannot find the sufficient number of suppliers especially in times of emergency or calamity situation, the proponent should submit an affidavit stating the unavailability of suppliers for the needed equipment in the area',
+         documentStatus: 'pending'
       }
+   
    ];
    return this.save();
 };
@@ -250,12 +346,19 @@ rtecDocumentsSchema.methods.approveDocument = function(documentType, userId, com
       }
    }
    
-   // Check if all documents are approved
-   const allApproved = this.partialdocsrtec.every(doc => doc.documentStatus === 'approved');
-   if (allApproved) {
-      this.status = 'documents_approved';
+   // Only update overall status if all documents have been reviewed
+   const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
+      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+   );
+   
+   if (allDocumentsReviewed) {
+      const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
+      this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
       this.reviewedBy = userId;
       this.reviewedAt = new Date();
+   } else {
+      // Set to under review if not all documents are reviewed yet
+      this.status = 'documents_under_review';
    }
    
    return this.save();
@@ -271,9 +374,20 @@ rtecDocumentsSchema.methods.rejectDocument = function(documentType, userId, comm
       document.reviewComments = comments;
    }
    
-   this.status = 'documents_rejected';
-   this.reviewedBy = userId;
-   this.reviewedAt = new Date();
+   // Only update overall status if all documents have been reviewed
+   const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
+      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+   );
+   
+   if (allDocumentsReviewed) {
+      const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
+      this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
+      this.reviewedBy = userId;
+      this.reviewedAt = new Date();
+   } else {
+      // Set to under review if not all documents are reviewed yet
+      this.status = 'documents_under_review';
+   }
    
    return this.save();
 };

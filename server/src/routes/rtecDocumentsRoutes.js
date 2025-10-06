@@ -57,13 +57,13 @@ router.get('/approved', auth, getApprovedRTECDocuments);
 router.get('/tna/:tnaId', auth, getRTECDocumentsByTNA);
 
 // Review RTEC document (approve/reject)
-router.post('/review/:tnaId/:documentType', auth, reviewRTECDocument);
+router.post('/review/:tnaId', auth, reviewRTECDocument);
 
 // PSTO Routes
 // Get RTEC documents for PSTO
 router.get('/psto/list', auth, getRTECDocumentsForPSTO);
 
 // Submit RTEC document
-router.post('/submit/:tnaId/:documentType', auth, upload.single('document'), submitRTECDocument);
+router.post('/submit/:tnaId', auth, upload.single('document'), submitRTECDocument);
 
 module.exports = router;

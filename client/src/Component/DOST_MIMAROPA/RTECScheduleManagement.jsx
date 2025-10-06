@@ -25,9 +25,9 @@ const RTECScheduleManagement = () => {
    const [showRTECEvaluationModal, setShowRTECEvaluationModal] = useState(false);
    const [rtecEvaluationData, setRtecEvaluationData] = useState({
       meetingId: '',
-      evaluationNotes: '',
+      evaluationComment: '',
       recommendations: '',
-      overallRating: '',
+      evaluationOutcome: '',
       nextSteps: ''
    });
 
@@ -475,9 +475,9 @@ const RTECScheduleManagement = () => {
    const handleOpenRTECEvaluation = (meetingId) => {
       setRtecEvaluationData({
          meetingId: meetingId,
-         evaluationNotes: '',
+         evaluationComment: '',
          recommendations: '',
-         overallRating: '',
+         evaluationOutcome: '',
          nextSteps: ''
       });
       setShowRTECEvaluationModal(true);
@@ -503,16 +503,6 @@ const RTECScheduleManagement = () => {
    };
 
 
-   const getMeetingTypeBadge = (type) => {
-      const typeConfig = {
-         'physical': { color: 'blue', text: 'Physical' },
-         'virtual': { color: 'green', text: 'Virtual' },
-         'hybrid': { color: 'purple', text: 'Hybrid' }
-      };
-      
-      const config = typeConfig[type] || { color: 'gray', text: type };
-      return <Badge color={config.color}>{config.text}</Badge>;
-   };
 
    const approvedDocumentsColumns = [
       {
@@ -747,7 +737,7 @@ const RTECScheduleManagement = () => {
          header: 'Participants',
          key: 'participants',
          width: '100px',
-         render: (value, item) => {
+         render: (value) => {
             const participantCount = value?.length || 0;
             const confirmedCount = value?.filter(p => p.status === 'confirmed')?.length || 0;
             return (
@@ -922,38 +912,6 @@ const RTECScheduleManagement = () => {
       }
    ];
 
-   const stats = [
-      {
-         title: 'Approved Documents',
-         value: approvedRTECDocuments.length,
-         color: 'green'
-      },
-      {
-         title: 'Total Meetings',
-         value: rtecMeetings.length,
-         color: 'blue'
-      },
-      {
-         title: 'Scheduled',
-         value: rtecMeetings.filter(m => m.status === 'scheduled').length,
-         color: 'blue'
-      },
-      {
-         title: 'Confirmed',
-         value: rtecMeetings.filter(m => m.status === 'confirmed').length,
-         color: 'green'
-      },
-      {
-         title: 'Completed',
-         value: rtecMeetings.filter(m => m.status === 'completed').length,
-         color: 'gray'
-      },
-      {
-         title: 'RTEC Completed',
-         value: rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length,
-         color: 'purple'
-      }
-   ];
 
    return (
       <div className="space-y-6">
@@ -1620,29 +1578,28 @@ const RTECScheduleManagement = () => {
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Overall Rating
+                     Evaluation Outcome
                   </label>
                   <select
-                     value={rtecEvaluationData.overallRating}
-                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, overallRating: e.target.value})}
+                     value={rtecEvaluationData.evaluationOutcome}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationOutcome: e.target.value})}
                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                     <option value="">Select Rating</option>
-                     <option value="excellent">Excellent</option>
-                     <option value="good">Good</option>
-                     <option value="satisfactory">Satisfactory</option>
-                     <option value="needs_improvement">Needs Improvement</option>
+                     <option value="">Select Outcome</option>
+                     <option value="with revision">With Revision</option>
+                     <option value="approved">Approved</option>
+                     
                   </select>
                </div>
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Evaluation Notes
+                     Evaluation Comment by the RTEC Committee
                   </label>
                   <Textarea
-                     value={rtecEvaluationData.evaluationNotes}
-                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationNotes: e.target.value})}
-                     placeholder="Provide detailed evaluation notes..."
+                     value={rtecEvaluationData.evaluationComment}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationComment: e.target.value})}
+                     placeholder="Provide detailed evaluation comments..."
                      rows={4}
                   />
                </div>
