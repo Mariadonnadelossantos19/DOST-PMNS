@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal } from '../UI';
 import api from '../../config/api';
 
@@ -7,7 +7,6 @@ const RTECDocumentManagement = () => {
    const [loading, setLoading] = useState(true);
    const [selectedDocument, setSelectedDocument] = useState(null);
    const [showReviewModal, setShowReviewModal] = useState(false);
-   const [showConfirmModal, setShowConfirmModal] = useState(false);
    const [reviewAction, setReviewAction] = useState('');
    const [reviewComments, setReviewComments] = useState('');
    const [currentDocumentType, setCurrentDocumentType] = useState('');
@@ -17,11 +16,7 @@ const RTECDocumentManagement = () => {
       search: ''
    });
 
-   useEffect(() => {
-      fetchRTECDocuments();
-   }, [filters]);
-
-   const fetchRTECDocuments = async () => {
+   const fetchRTECDocuments = useCallback(async () => {
       try {
          setLoading(true);
          const params = new URLSearchParams();
@@ -45,8 +40,11 @@ const RTECDocumentManagement = () => {
       } finally {
          setLoading(false);
       }
-   };
+   }, [filters]);
 
+   useEffect(() => {
+      fetchRTECDocuments();
+   }, [fetchRTECDocuments]);
 
    const handleReviewDocument = (rtecDoc, documentType, action) => {
       setSelectedDocument(rtecDoc);
@@ -123,28 +121,46 @@ const RTECDocumentManagement = () => {
       {
          key: 'companyName',
          header: 'Enterprise Name',
+         width: '200px',
          render: (value, item) => {
-            return item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A';
+            const companyName = item?.applicationId?.enterpriseName || item?.applicationId?.companyName || 'N/A';
+            return (
+               <div className="truncate" title={companyName}>
+                  {companyName}
+               </div>
+            );
          }
       },
       {
          key: 'projectTitle',
          header: 'Project',
+         width: '180px',
          render: (value, item) => {
-            return item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
+            const projectName = item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
+            return (
+               <div className="truncate" title={projectName}>
+                  {projectName}
+               </div>
+            );
          }
       },
       {
          key: 'proponent',
          header: 'Proponent',
+         width: '150px',
          render: (value, item) => {
             const fullName = `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim();
-            return fullName || 'N/A';
+            return (
+               <div className="truncate" title={fullName || 'N/A'}>
+                  {fullName || 'N/A'}
+               </div>
+            );
          }
       },
       {
          key: 'status',
          header: 'Status',
+         width: '120px',
          render: (value, item) => {
             return getStatusBadge(item?.status);
          }
@@ -152,6 +168,7 @@ const RTECDocumentManagement = () => {
       {
          key: 'requestedAt',
          header: 'Requested',
+         width: '100px',
          render: (value, item) => {
             return item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
          }
@@ -159,6 +176,7 @@ const RTECDocumentManagement = () => {
       {
          key: 'dueDate',
          header: 'Due Date',
+         width: '100px',
          render: (value, item) => {
             return item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
          }
@@ -166,14 +184,16 @@ const RTECDocumentManagement = () => {
       {
          key: 'actions',
          header: 'Actions',
+         width: '80px',
          render: (value, item) => (
-            <div className="flex space-x-2">
+            <div className="flex justify-center">
                <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setSelectedDocument(item)}
+                  className="text-xs px-2 py-1"
                >
-                  View Details
+                  View
                </Button>
             </div>
          )
@@ -460,13 +480,12 @@ const RTECDocumentManagement = () => {
 
 
          {/* Toast */}
-         {toast.show && (
-            <Toast
-               message={toast.message}
-               type={toast.type}
-               onClose={() => setToast({ show: false, message: '', type: '' })}
-            />
-         )}
+         <Toast
+            isVisible={toast.show}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast({ show: false, message: '', type: '' })}
+         />
       </div>
    );
 };

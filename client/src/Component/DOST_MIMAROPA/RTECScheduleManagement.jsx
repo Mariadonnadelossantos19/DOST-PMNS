@@ -20,6 +20,7 @@ const RTECScheduleManagement = () => {
    const [toastType, setToastType] = useState('success');
    const [showConfirmModal, setShowConfirmModal] = useState(false);
    const [confirmAction, setConfirmAction] = useState(null);
+   const [confirmMessage, setConfirmMessage] = useState('Are you sure you want to perform this action?');
    const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
 
    // Form states for creating meeting
@@ -292,13 +293,21 @@ const RTECScheduleManagement = () => {
 
    const handleInviteProponent = async (meetingId) => {
       try {
+         console.log('🔍 Sending proponent invitation for meeting:', meetingId);
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-proponent`);
+         console.log('📡 Proponent invite response:', response.data);
          if (response.data.success) {
             displayToast('Proponent invitation sent successfully', 'success');
+            fetchRTECMeetings(); // Refresh meetings to show updated participants
+         } else {
+            console.log('❌ Proponent invite failed:', response.data.message);
+            displayToast('Failed to send proponent invitation: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('Error inviting proponent:', error);
-         displayToast('Failed to send proponent invitation', 'error');
+         console.error('💥 Error inviting proponent:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         displayToast('Failed to send proponent invitation: ' + (error.response?.data?.message || error.message), 'error');
       }
    };
 
@@ -419,18 +428,6 @@ const RTECScheduleManagement = () => {
       }
    };
 
-   const getStatusBadge = (status) => {
-      const statusConfig = {
-         'scheduled': { color: 'blue', text: 'Scheduled' },
-         'confirmed': { color: 'green', text: 'Confirmed' },
-         'completed': { color: 'gray', text: 'Completed' },
-         'cancelled': { color: 'red', text: 'Cancelled' },
-         'postponed': { color: 'yellow', text: 'Postponed' }
-      };
-      
-      const config = statusConfig[status] || { color: 'gray', text: status };
-      return <Badge color={config.color}>{config.text}</Badge>;
-   };
 
    const getMeetingTypeBadge = (type) => {
       const typeConfig = {
@@ -447,16 +444,17 @@ const RTECScheduleManagement = () => {
       {
          header: 'Enterprise Name',
          key: 'applicationId',
+         width: '200px',
          render: (value, item) => {
-            console.log('Enterprise Name render - value:', value, 'item:', item);
-            console.log('Full item structure:', JSON.stringify(item, null, 2));
+            const enterpriseName = value?.enterpriseName || item?.applicationId?.enterpriseName || 'N/A';
+            const projectTitle = value?.projectTitle || item?.applicationId?.projectTitle || 'N/A';
             return (
-               <div>
-                  <div className="font-medium text-gray-900">
-                     {value?.enterpriseName || item?.applicationId?.enterpriseName || 'N/A'}
+               <div className="truncate" title={`${enterpriseName} - ${projectTitle}`}>
+                  <div className="font-medium text-gray-900 truncate">
+                     {enterpriseName}
                   </div>
-                  <div className="text-sm text-gray-500">
-                     {value?.projectTitle || item?.applicationId?.projectTitle || 'N/A'}
+                  <div className="text-sm text-gray-500 truncate">
+                     {projectTitle}
                   </div>
                </div>
             );
@@ -465,6 +463,7 @@ const RTECScheduleManagement = () => {
       {
          header: 'Program',
          key: 'programName',
+         width: '120px',
          render: (value, item) => {
             const programName = item?.programName || value || 'SETUP';
             return <Badge color="blue">{programName}</Badge>;
@@ -473,14 +472,17 @@ const RTECScheduleManagement = () => {
       {
          header: 'Proponent',
          key: 'proponentId',
+         width: '150px',
          render: (value, item) => {
             const proponent = item?.proponentId || value;
+            const fullName = `${proponent?.firstName || ''} ${proponent?.lastName || ''}`.trim();
+            const email = proponent?.email || 'N/A';
             return (
-               <div>
-                  <div className="font-medium">
-                     {proponent?.firstName || ''} {proponent?.lastName || ''}
+               <div className="truncate" title={`${fullName} - ${email}`}>
+                  <div className="font-medium truncate">
+                     {fullName}
                   </div>
-                  <div className="text-sm text-gray-500">{proponent?.email || 'N/A'}</div>
+                  <div className="text-sm text-gray-500 truncate">{email}</div>
                </div>
             );
          }
@@ -488,9 +490,8 @@ const RTECScheduleManagement = () => {
       {
          header: 'Documents Status',
          key: 'status',
+         width: '140px',
          render: (value, item) => {
-            console.log('Documents Status render - value:', value, 'item:', item);
-            console.log('item.status:', item?.status);
             const statusConfig = {
                'documents_approved': { color: 'green', text: 'Documents Approved' },
                'documents_requested': { color: 'yellow', text: 'Documents Requested' },
@@ -499,7 +500,6 @@ const RTECScheduleManagement = () => {
                'documents_rejected': { color: 'red', text: 'Documents Rejected' }
             };
             const statusValue = item?.status || value;
-            console.log('Final statusValue:', statusValue);
             const config = statusConfig[statusValue] || { color: 'gray', text: statusValue || 'Unknown' };
             return <Badge color={config.color}>{config.text}</Badge>;
          }
@@ -507,6 +507,7 @@ const RTECScheduleManagement = () => {
       {
          header: 'Meeting Status',
          key: '_id',
+         width: '120px',
          render: (value, item) => {
             const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
@@ -523,6 +524,7 @@ const RTECScheduleManagement = () => {
       {
          header: 'Actions',
          key: '_id',
+         width: '80px',
          render: (value, item) => {
             const documentId = item._id || value;
             const hasMeeting = rtecMeetings.some(meeting => {
@@ -532,7 +534,7 @@ const RTECScheduleManagement = () => {
             const isApproved = item.status === 'documents_approved';
             
             return (
-               <div className="flex space-x-2">
+               <div className="flex justify-center">
                   {isApproved ? (
                      !hasMeeting ? (
                         <Button
@@ -543,16 +545,24 @@ const RTECScheduleManagement = () => {
                               console.log('Item clicked:', item);
                               handleScheduleMeeting(item);
                            }}
+                           className="text-xs px-2 py-1"
+                           title="Schedule Meeting"
                         >
-                           Schedule Meeting
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                           </svg>
                         </Button>
                      ) : (
                         <Button
                            size="sm"
                            variant="outline"
                            disabled
+                           className="text-xs px-2 py-1"
+                           title="Meeting Already Scheduled"
                         >
-                           Meeting Scheduled
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                           </svg>
                         </Button>
                      )
                   ) : (
@@ -560,8 +570,12 @@ const RTECScheduleManagement = () => {
                         size="sm"
                         variant="outline"
                         disabled
+                        className="text-xs px-2 py-1"
+                        title="Not Approved"
                      >
-                        Not Approved
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                      </Button>
                   )}
                </div>
@@ -574,29 +588,33 @@ const RTECScheduleManagement = () => {
       {
          header: 'Meeting Title',
          key: 'meetingTitle',
-         render: (value, item) => (
-            <div>
-               <div className="font-medium text-gray-900">{value}</div>
-               <div className="text-sm text-gray-500">
-                  {item.applicationId?.companyName || item.applicationId?.enterpriseName || 'N/A'}
+         width: '200px',
+         render: (value, item) => {
+            const companyName = item.applicationId?.companyName || item.applicationId?.enterpriseName || 'N/A';
+            return (
+               <div className="truncate" title={`${value} - ${companyName}`}>
+                  <div className="font-medium text-gray-900 truncate">{value}</div>
+                  <div className="text-sm text-gray-500 truncate">{companyName}</div>
                </div>
-            </div>
-         )
+            );
+         }
       },
       {
          header: 'Scheduled Date',
          key: 'scheduledDate',
+         width: '140px',
          render: (value, item) => {
             const dateValue = item.scheduledDate || value;
             const date = new Date(dateValue);
             const isValidDate = !isNaN(date.getTime());
+            const time = item.scheduledTime || 'N/A';
             
             return (
-               <div>
-                  <div className="font-medium">
-                     {isValidDate ? date.toLocaleDateString() : `Invalid Date (${dateValue})`}
+               <div className="truncate" title={`${isValidDate ? date.toLocaleDateString() : 'Invalid Date'} - ${time}`}>
+                  <div className="font-medium truncate">
+                     {isValidDate ? date.toLocaleDateString() : 'Invalid Date'}
                   </div>
-                  <div className="text-sm text-gray-500">{item.scheduledTime}</div>
+                  <div className="text-sm text-gray-500 truncate">{time}</div>
                </div>
             );
          }
@@ -604,9 +622,10 @@ const RTECScheduleManagement = () => {
       {
          header: 'Location',
          key: 'location',
+         width: '150px',
          render: (value, item) => (
-            <div>
-               <div className="font-medium">{value}</div>
+            <div className="truncate" title={`${value} - ${item.meetingType}`}>
+               <div className="font-medium truncate">{value}</div>
                <div className="text-sm text-gray-500">{getMeetingTypeBadge(item.meetingType)}</div>
             </div>
          )
@@ -614,11 +633,23 @@ const RTECScheduleManagement = () => {
       {
          header: 'Status',
          key: 'status',
-         render: (value) => getStatusBadge(value)
+         width: '100px',
+         render: (value) => {
+            const statusConfig = {
+               'scheduled': { color: 'blue', text: 'Scheduled' },
+               'confirmed': { color: 'green', text: 'Confirmed' },
+               'completed': { color: 'gray', text: 'Completed' },
+               'cancelled': { color: 'red', text: 'Cancelled' },
+               'postponed': { color: 'yellow', text: 'Postponed' }
+            };
+            const config = statusConfig[value] || { color: 'gray', text: value };
+            return <Badge color={config.color}>{config.text}</Badge>;
+         }
       },
       {
          header: 'Participants',
          key: 'participants',
+         width: '100px',
          render: (value) => (
             <div className="flex items-center space-x-1">
                <span className="text-sm font-medium">{value?.length || 0}</span>
@@ -629,8 +660,9 @@ const RTECScheduleManagement = () => {
       {
          header: 'Actions',
          key: '_id',
+         width: '200px',
          render: (value, item) => (
-            <div className="flex space-x-2">
+            <div className="flex gap-1">
                <Button
                   size="sm"
                   variant="outline"
@@ -638,50 +670,84 @@ const RTECScheduleManagement = () => {
                      setSelectedMeeting(item);
                      setShowParticipantsModal(true);
                   }}
+                  className="text-xs px-2 py-1"
+                  title="View Details"
                >
-                  View
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
                </Button>
                <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleManageParticipants(item)}
+                  className="text-xs px-2 py-1"
+                  title="Manage Participants"
                >
-                  Manage
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
                </Button>
                <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleInvitePSTOUsers(item)}
+                  className="text-xs px-2 py-1"
+                  title="Invite PSTO Users"
                >
-                  Invite PSTO
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
                </Button>
                {item.status === 'scheduled' && (
                   <Button
                      size="sm"
                      variant="success"
-                     onClick={() => handleUpdateMeetingStatus(item._id, 'confirmed')}
+                     onClick={() => {
+                        setConfirmMessage('Are you sure you want to confirm this meeting?');
+                        setConfirmAction(() => () => handleUpdateMeetingStatus(item._id, 'confirmed'));
+                        setShowConfirmModal(true);
+                     }}
+                     className="text-xs px-2 py-1"
+                     title="Confirm Meeting"
                   >
-                     Confirm
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                     </svg>
                   </Button>
                )}
                {item.status === 'confirmed' && (
                   <Button
                      size="sm"
                      variant="primary"
-                     onClick={() => handleUpdateMeetingStatus(item._id, 'completed')}
+                     onClick={() => {
+                        setConfirmMessage('Are you sure you want to mark this meeting as completed?');
+                        setConfirmAction(() => () => handleUpdateMeetingStatus(item._id, 'completed'));
+                        setShowConfirmModal(true);
+                     }}
+                     className="text-xs px-2 py-1"
+                     title="Complete Meeting"
                   >
-                     Complete
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
                   </Button>
                )}
                <Button
                   size="sm"
                   variant="danger"
                   onClick={() => {
+                     setConfirmMessage('Are you sure you want to delete this meeting? This action cannot be undone.');
                      setConfirmAction(() => () => handleDeleteMeeting(item._id));
                      setShowConfirmModal(true);
                   }}
+                  className="text-xs px-2 py-1"
+                  title="Delete Meeting"
                >
-                  Delete
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                </Button>
             </div>
          )
@@ -1080,7 +1146,11 @@ const RTECScheduleManagement = () => {
                   Cancel
                </Button>
                <Button
-                  onClick={handleCreateMeeting}
+                  onClick={() => {
+                     setConfirmMessage('Are you sure you want to schedule this RTEC meeting?');
+                     setConfirmAction(() => () => handleCreateMeeting());
+                     setShowConfirmModal(true);
+                  }}
                   className="bg-blue-600 hover:bg-blue-700"
                >
                   Schedule Meeting
@@ -1192,7 +1262,13 @@ const RTECScheduleManagement = () => {
                      </div>
                      <div className="flex justify-end">
                         <Button
-                           onClick={() => selectedMeeting && handleInviteProponent(selectedMeeting._id)}
+                           onClick={() => {
+                              if (selectedMeeting) {
+                                 setConfirmMessage('Are you sure you want to send an invitation to the proponent?');
+                                 setConfirmAction(() => () => handleInviteProponent(selectedMeeting._id));
+                                 setShowConfirmModal(true);
+                              }
+                           }}
                            className="bg-green-600 hover:bg-green-700"
                         >
                            Send Proponent Invitation
@@ -1231,7 +1307,11 @@ const RTECScheduleManagement = () => {
                                  <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleResendInvitation(selectedMeeting._id, participant.userId._id)}
+                                    onClick={() => {
+                                       setConfirmMessage(`Are you sure you want to resend invitation to ${participant.userId?.firstName} ${participant.userId?.lastName}?`);
+                                       setConfirmAction(() => () => handleResendInvitation(selectedMeeting._id, participant.userId._id));
+                                       setShowConfirmModal(true);
+                                    }}
                                     disabled={participant.status === 'confirmed'}
                                  >
                                     Resend
@@ -1240,6 +1320,7 @@ const RTECScheduleManagement = () => {
                                     size="sm"
                                     variant="danger"
                                     onClick={() => {
+                                       setConfirmMessage(`Are you sure you want to remove ${participant.userId?.firstName} ${participant.userId?.lastName} from this meeting?`);
                                        setConfirmAction(() => () => handleRemoveParticipant(selectedMeeting._id, participant.userId._id));
                                        setShowConfirmModal(true);
                                     }}
@@ -1317,7 +1398,13 @@ const RTECScheduleManagement = () => {
                            Cancel
                         </Button>
                         <Button
-                           onClick={() => selectedMeeting && handleBulkInvitePSTO(selectedMeeting._id)}
+                           onClick={() => {
+                              if (selectedMeeting && selectedPSTOUsers.length > 0) {
+                                 setConfirmMessage(`Are you sure you want to send invitations to ${selectedPSTOUsers.length} PSTO users?`);
+                                 setConfirmAction(() => () => handleBulkInvitePSTO(selectedMeeting._id));
+                                 setShowConfirmModal(true);
+                              }
+                           }}
                            disabled={selectedPSTOUsers.length === 0}
                         >
                            Send Invitations ({selectedPSTOUsers.length})
@@ -1331,25 +1418,28 @@ const RTECScheduleManagement = () => {
          {/* Confirmation Modal */}
          <ConfirmationModal
             isOpen={showConfirmModal}
-            onClose={() => setShowConfirmModal(false)}
+            onClose={() => {
+               setShowConfirmModal(false);
+               setConfirmMessage('Are you sure you want to perform this action?');
+            }}
             onConfirm={() => {
                if (confirmAction) {
                   confirmAction();
                }
                setShowConfirmModal(false);
+               setConfirmMessage('Are you sure you want to perform this action?');
             }}
             title="Confirm Action"
-            message="Are you sure you want to perform this action?"
+            message={confirmMessage}
          />
 
          {/* Toast */}
-         {showToast && (
-            <Toast
-               message={toastMessage}
-               type={toastType}
-               onClose={() => setShowToast(false)}
-            />
-         )}
+         <Toast
+            isVisible={showToast}
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
+         />
       </div>
    );
 };
