@@ -755,7 +755,9 @@ const RTECScheduleManagement = () => {
                id: item._id,
                status: item.status,
                rtecCompleted: item.rtecCompleted,
-               title: item.meetingTitle
+               title: item.meetingTitle,
+               shouldShowCompleteRTEC: (item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed',
+               shouldShowEvaluation: (item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed'
             });
             
             return (
@@ -831,7 +833,8 @@ const RTECScheduleManagement = () => {
                      </svg>
                   </Button>
                )}
-               {(item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
+               {/* Show evaluation buttons for meetings that can be evaluated */}
+               {(item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
                   <div className="flex gap-1">
                      <Button
                         size="sm"
@@ -865,17 +868,17 @@ const RTECScheduleManagement = () => {
                      </Button>
                   </div>
                )}
+               
                {(item.rtecCompleted || item.status === 'rtec_completed') && (
                   <Button
                      size="sm"
                      variant="outline"
-                     disabled
+                     onClick={() => handleOpenRTECEvaluation(item._id)}
                      className="text-xs px-2 py-1"
-                     title="RTEC Already Completed"
+                     title="View RTEC Evaluation"
                   >
                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                      </svg>
                   </Button>
                )}
@@ -940,6 +943,9 @@ const RTECScheduleManagement = () => {
             <div>
                <h1 className="text-2xl font-bold text-gray-900">RTEC Scheduling Management</h1>
                <p className="text-gray-600">Schedule and manage RTEC meetings for approved applications</p>
+               <div className="mt-2 p-4 bg-green-100 border-2 border-green-400 rounded-lg text-lg font-semibold text-green-900 shadow-lg">
+                  🚀 ENHANCED RTEC SYSTEM ACTIVE - Evaluation features available!
+               </div>
             </div>
             <Button
                onClick={() => setShowCreateModal(true)}
@@ -1588,7 +1594,7 @@ const RTECScheduleManagement = () => {
          <Modal
             isOpen={showRTECEvaluationModal}
             onClose={() => setShowRTECEvaluationModal(false)}
-            title="RTEC Evaluation Form"
+            title={rtecEvaluationData.meetingId === 'test-meeting-id' ? "RTEC Evaluation Form" : "RTEC Evaluation Details"}
             size="lg"
          >
             <div className="space-y-4">
