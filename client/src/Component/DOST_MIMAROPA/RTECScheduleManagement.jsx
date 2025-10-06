@@ -660,13 +660,13 @@ const RTECScheduleManagement = () => {
 
    const meetingsColumns = [
       {
-         header: 'Meeting Title',
+         header: 'Meeting',
          key: 'meetingTitle',
-         width: '200px',
+         width: '250px',
          render: (value, item) => {
             const companyName = item.applicationId?.companyName || item.applicationId?.enterpriseName || 'N/A';
             return (
-               <div className="truncate" title={`${value} - ${companyName}`}>
+               <div className="truncate">
                   <div className="font-medium text-gray-900 truncate">{value}</div>
                   <div className="text-sm text-gray-500 truncate">{companyName}</div>
                </div>
@@ -674,21 +674,21 @@ const RTECScheduleManagement = () => {
          }
       },
       {
-         header: 'Scheduled Date',
+         header: 'Date & Time',
          key: 'scheduledDate',
-         width: '140px',
+         width: '150px',
          render: (value, item) => {
             const dateValue = item.scheduledDate || value;
             const date = new Date(dateValue);
             const isValidDate = !isNaN(date.getTime());
-            const time = item.scheduledTime || 'N/A';
+            const time = item.scheduledTime || '';
             
             return (
-               <div className="truncate" title={`${isValidDate ? date.toLocaleDateString() : 'Invalid Date'} - ${time}`}>
-                  <div className="font-medium truncate">
+               <div className="truncate">
+                  <div className="font-medium text-gray-900">
                      {isValidDate ? date.toLocaleDateString() : 'Invalid Date'}
                   </div>
-                  <div className="text-sm text-gray-500 truncate">{time}</div>
+                  <div className="text-sm text-gray-500">{time}</div>
                </div>
             );
          }
@@ -696,11 +696,14 @@ const RTECScheduleManagement = () => {
       {
          header: 'Location',
          key: 'location',
-         width: '150px',
+         width: '120px',
          render: (value, item) => (
-            <div className="truncate" title={`${value} - ${item.meetingType}`}>
-               <div className="font-medium truncate">{value}</div>
-               <div className="text-sm text-gray-500">{getMeetingTypeBadge(item.meetingType)}</div>
+            <div className="truncate">
+               <div className="font-medium text-gray-900 truncate">{value}</div>
+               <div className="text-sm text-gray-500">
+                  {item.meetingType === 'virtual' ? 'Virtual' : 
+                   item.meetingType === 'hybrid' ? 'Hybrid' : 'Physical'}
+               </div>
             </div>
          )
       },
@@ -723,13 +726,18 @@ const RTECScheduleManagement = () => {
             const displayStatus = isRTECCompleted ? 'rtec_completed' : value;
             const config = statusConfig[displayStatus] || { color: 'gray', text: value };
             
+            // Add completion date for RTEC completed
+            const completionInfo = isRTECCompleted && item.rtecCompletedAt ? 
+               ` (Completed: ${new Date(item.rtecCompletedAt).toLocaleDateString()})` : '';
+            
             console.log('🔍 Status render debug:', {
                value,
                itemStatus: item.status,
                rtecCompleted: item.rtecCompleted,
                isRTECCompleted,
                displayStatus,
-               config
+               config,
+               completionInfo
             });
             
             return <Badge color={config.color}>{config.text}</Badge>;
@@ -739,12 +747,23 @@ const RTECScheduleManagement = () => {
          header: 'Participants',
          key: 'participants',
          width: '100px',
-         render: (value) => (
-            <div className="flex items-center space-x-1">
-               <span className="text-sm font-medium">{value?.length || 0}</span>
-               <span className="text-xs text-gray-500">participants</span>
-            </div>
-         )
+         render: (value, item) => {
+            const participantCount = value?.length || 0;
+            const confirmedCount = value?.filter(p => p.status === 'confirmed')?.length || 0;
+            return (
+               <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium">{participantCount}</span>
+                  <span className="text-xs text-gray-500">participants</span>
+                  {confirmedCount > 0 && (
+                     <div className="ml-1">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                           {confirmedCount} confirmed
+                        </span>
+                     </div>
+                  )}
+               </div>
+            );
+         }
       },
       {
          header: 'Actions',
@@ -939,61 +958,61 @@ const RTECScheduleManagement = () => {
    return (
       <div className="space-y-6">
          {/* Header */}
-         <div className="flex justify-between items-center">
+         <div className="flex justify-between items-center mb-8">
             <div>
-               <h1 className="text-2xl font-bold text-gray-900">RTEC Scheduling Management</h1>
-               <p className="text-gray-600">Schedule and manage RTEC meetings for approved applications</p>
-               <div className="mt-2 p-4 bg-green-100 border-2 border-green-400 rounded-lg text-lg font-semibold text-green-900 shadow-lg">
-                  🚀 ENHANCED RTEC SYSTEM ACTIVE - Evaluation features available!
-               </div>
+               <h1 className="text-3xl font-light text-gray-900">RTEC Management</h1>
+               <p className="text-gray-500 mt-1">Schedule and evaluate RTEC meetings</p>
             </div>
             <Button
                onClick={() => setShowCreateModal(true)}
-               className="bg-blue-600 hover:bg-blue-700"
+               className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-medium"
             >
-               Schedule New Meeting
+               + New Meeting
             </Button>
          </div>
 
          {/* Stats Cards */}
-         <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-            {stats.map((stat, index) => (
-               <StatsCard
-                  key={index}
-                  title={stat.title}
-                  value={stat.value}
-                  color={stat.color}
-               />
-            ))}
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+               <div className="text-2xl font-bold text-gray-900">{rtecMeetings.length}</div>
+               <div className="text-sm text-gray-500">Total Meetings</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+               <div className="text-2xl font-bold text-blue-600">{rtecMeetings.filter(m => m.status === 'scheduled').length}</div>
+               <div className="text-sm text-gray-500">Scheduled</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+               <div className="text-2xl font-bold text-green-600">{rtecMeetings.filter(m => m.status === 'confirmed').length}</div>
+               <div className="text-sm text-gray-500">Confirmed</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+               <div className="text-2xl font-bold text-purple-600">{rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length}</div>
+               <div className="text-sm text-gray-500">Completed</div>
+            </div>
          </div>
 
          {/* Tab Navigation */}
-         <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-               <button
-                  onClick={() => setActiveTab('documents')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                     activeTab === 'documents'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-               >
-                  Approved RTEC Documents ({approvedRTECDocuments.filter(doc => {
-                     const hasMeeting = rtecMeetings.some(meeting => 
-                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
-                     );
-                     return !hasMeeting;
-                  }).length})
-               </button>
+         <div className="border-b border-gray-200 mb-6">
+            <nav className="flex space-x-8">
                <button
                   onClick={() => setActiveTab('meetings')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-1 border-b-2 font-medium text-sm ${
                      activeTab === 'meetings'
                         ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                >
-                  RTEC Meetings ({rtecMeetings.length})
+                  Meetings ({rtecMeetings.length})
+               </button>
+               <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                     activeTab === 'documents'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+               >
+                  Documents ({approvedRTECDocuments.length})
                </button>
             </nav>
          </div>
@@ -1111,39 +1130,33 @@ const RTECScheduleManagement = () => {
 
          {/* RTEC Meetings Tab */}
          {activeTab === 'meetings' && (
-            <Card>
+            <div className="bg-white rounded-lg border border-gray-200">
                <div className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                     <div>
-                        <h2 className="text-lg font-semibold">RTEC Meetings</h2>
-                        <p className="text-sm text-gray-600 mt-1">
-                           Manage scheduled RTEC meetings ({rtecMeetings.length} meetings)
-                        </p>
-                     </div>
-                     <div className="flex space-x-2">
-                        <Button
-                           variant="outline"
-                           onClick={fetchRTECMeetings}
-                        >
-                           Refresh
-                        </Button>
-                     </div>
+                  <div className="flex justify-between items-center mb-6">
+                     <h2 className="text-xl font-medium text-gray-900">Meetings</h2>
+                     <Button
+                        variant="outline"
+                        onClick={fetchRTECMeetings}
+                        className="text-sm"
+                     >
+                        Refresh
+                     </Button>
                   </div>
                
-               {loading ? (
-                  <div className="flex justify-center py-8">
-                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-               ) : (
-                  <DataTable
-                     data={rtecMeetings}
-                     columns={meetingsColumns}
-                     searchable={true}
-                     pagination={true}
-                  />
-               )}
+                  {loading ? (
+                     <div className="flex justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                     </div>
+                  ) : (
+                     <DataTable
+                        data={rtecMeetings}
+                        columns={meetingsColumns}
+                        searchable={true}
+                        pagination={true}
+                     />
+                  )}
                </div>
-            </Card>
+            </div>
          )}
 
          {/* Create Meeting Modal */}
