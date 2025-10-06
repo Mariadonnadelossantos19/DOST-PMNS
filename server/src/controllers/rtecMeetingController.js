@@ -1248,6 +1248,140 @@ const deleteRTECMeeting = async (req, res) => {
    }
 };
 
+// Complete RTEC process
+const completeRTEC = async (req, res) => {
+   try {
+      const { meetingId } = req.params;
+      const userId = req.user.id;
+
+      console.log('=== COMPLETE RTEC DEBUG ===');
+      console.log('Meeting ID:', meetingId);
+      console.log('User ID:', userId);
+
+      if (!mongoose.Types.ObjectId.isValid(meetingId)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid meeting ID'
+         });
+      }
+
+      const rtecMeeting = await RTECMeeting.findById(meetingId);
+
+      if (!rtecMeeting) {
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC meeting not found'
+         });
+      }
+
+      // Debug current meeting status
+      console.log('🔍 Current meeting status:', rtecMeeting.status);
+      console.log('🔍 Meeting details:', {
+         id: rtecMeeting._id,
+         status: rtecMeeting.status,
+         title: rtecMeeting.meetingTitle,
+         scheduledDate: rtecMeeting.scheduledDate,
+         participants: rtecMeeting.participants?.length || 0
+      });
+
+      // Check if meeting is completed or can be auto-completed
+      if (rtecMeeting.status === 'confirmed') {
+         console.log('🔄 Auto-completing meeting from confirmed status...');
+         rtecMeeting.status = 'completed';
+         rtecMeeting.completedAt = new Date();
+         rtecMeeting.completedBy = userId;
+         await rtecMeeting.save();
+         console.log('✅ Meeting auto-completed successfully');
+      } else if (rtecMeeting.status !== 'completed') {
+         return res.status(400).json({
+            success: false,
+            message: `Meeting must be completed before finalizing RTEC. Current status: ${rtecMeeting.status}. Please update the meeting status to 'completed' first.`
+         });
+      }
+
+      // Check if RTEC is already completed
+      if (rtecMeeting.rtecCompleted || rtecMeeting.status === 'rtec_completed') {
+         return res.status(400).json({
+            success: false,
+            message: 'RTEC has already been completed for this meeting',
+            data: {
+               meeting: rtecMeeting,
+               rtecCompleted: true,
+               completedAt: rtecMeeting.rtecCompletedAt
+            }
+         });
+      }
+
+      // Update meeting to mark RTEC as completed
+      const updatedMeeting = await RTECMeeting.findByIdAndUpdate(
+         meetingId,
+         {
+            rtecCompleted: true,
+            rtecCompletedAt: new Date(),
+            rtecCompletedBy: userId,
+            status: 'rtec_completed'
+         },
+         { new: true }
+      );
+
+      // Update related RTEC documents status
+      if (rtecMeeting.rtecDocumentsId) {
+         await RTECDocuments.findByIdAndUpdate(
+            rtecMeeting.rtecDocumentsId,
+            {
+               status: 'rtec_completed',
+               rtecCompletedAt: new Date(),
+               rtecCompletedBy: userId
+            }
+         );
+      }
+
+      // Update TNA status if applicable
+      if (rtecMeeting.tnaId) {
+         await TNA.findByIdAndUpdate(
+            rtecMeeting.tnaId,
+            {
+               status: 'rtec_completed',
+               rtecCompletedAt: new Date()
+            }
+         );
+      }
+
+      // Create notification for proponent
+      if (rtecMeeting.proponentId) {
+         const notification = new Notification({
+            userId: rtecMeeting.proponentId,
+            type: 'rtec_completed',
+            title: 'RTEC Evaluation Completed',
+            message: `Your RTEC evaluation for "${rtecMeeting.meetingTitle}" has been completed.`,
+            relatedId: meetingId,
+            relatedType: 'rtec_meeting'
+         });
+         await notification.save();
+      }
+
+      console.log('✅ RTEC completed successfully for meeting:', meetingId);
+
+      res.json({
+         success: true,
+         message: 'RTEC completed successfully',
+         data: {
+            meeting: updatedMeeting,
+            rtecCompleted: true,
+            completedAt: new Date()
+         }
+      });
+
+   } catch (error) {
+      console.error('💥 Error completing RTEC:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    createRTECMeeting,
    getRTECMeetings,
@@ -1265,5 +1399,6 @@ module.exports = {
    getMeetingParticipants,
    removeParticipant,
    getAvailablePSTOUsers,
-   sendBulkPSTOInvitations
+   sendBulkPSTOInvitations,
+   completeRTEC
 };

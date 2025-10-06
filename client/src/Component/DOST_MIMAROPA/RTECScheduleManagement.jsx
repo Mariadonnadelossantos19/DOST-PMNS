@@ -22,6 +22,14 @@ const RTECScheduleManagement = () => {
    const [confirmAction, setConfirmAction] = useState(null);
    const [confirmMessage, setConfirmMessage] = useState('Are you sure you want to perform this action?');
    const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
+   const [showRTECEvaluationModal, setShowRTECEvaluationModal] = useState(false);
+   const [rtecEvaluationData, setRtecEvaluationData] = useState({
+      meetingId: '',
+      evaluationNotes: '',
+      recommendations: '',
+      overallRating: '',
+      nextSteps: ''
+   });
 
    // Form states for creating meeting
    const [formData, setFormData] = useState({
@@ -428,6 +436,72 @@ const RTECScheduleManagement = () => {
       }
    };
 
+   // Handle RTEC completion with evaluation
+   const handleCompleteRTEC = async (meetingId) => {
+      try {
+         console.log('🔍 Completing RTEC for meeting:', meetingId);
+         
+         // Find the meeting in our local state to check its current status
+         const meeting = rtecMeetings.find(m => m._id === meetingId);
+         if (meeting) {
+            console.log('🔍 Meeting details before API call:', {
+               id: meeting._id,
+               status: meeting.status,
+               rtecCompleted: meeting.rtecCompleted,
+               title: meeting.meetingTitle
+            });
+         }
+         
+         const response = await api.post(`/rtec-meetings/${meetingId}/complete-rtec`);
+         console.log('📡 Complete RTEC response:', response.data);
+         
+         if (response.data.success) {
+            displayToast('RTEC completed successfully', 'success');
+            fetchRTECMeetings();
+            fetchApprovedRTECDocuments(); // Refresh documents to show updated status
+         } else {
+            console.log('❌ Complete RTEC failed:', response.data.message);
+            displayToast('Failed to complete RTEC: ' + response.data.message, 'error');
+         }
+      } catch (error) {
+         console.error('💥 Error completing RTEC:', error);
+         console.error('💥 Error response:', error.response?.data);
+         console.error('💥 Error status:', error.response?.status);
+         displayToast('Failed to complete RTEC: ' + (error.response?.data?.message || error.message), 'error');
+      }
+   };
+
+   // Open RTEC evaluation modal
+   const handleOpenRTECEvaluation = (meetingId) => {
+      setRtecEvaluationData({
+         meetingId: meetingId,
+         evaluationNotes: '',
+         recommendations: '',
+         overallRating: '',
+         nextSteps: ''
+      });
+      setShowRTECEvaluationModal(true);
+   };
+
+   // Submit RTEC evaluation
+   const handleSubmitRTECEvaluation = async () => {
+      try {
+         const response = await api.post(`/rtec-meetings/${rtecEvaluationData.meetingId}/complete-rtec`, {
+            evaluationData: rtecEvaluationData
+         });
+         
+         if (response.data.success) {
+            displayToast('RTEC evaluation submitted successfully', 'success');
+            setShowRTECEvaluationModal(false);
+            fetchRTECMeetings();
+            fetchApprovedRTECDocuments();
+         }
+      } catch (error) {
+         console.error('Error submitting RTEC evaluation:', error);
+         displayToast('Failed to submit RTEC evaluation', 'error');
+      }
+   };
+
 
    const getMeetingTypeBadge = (type) => {
       const typeConfig = {
@@ -634,15 +708,30 @@ const RTECScheduleManagement = () => {
          header: 'Status',
          key: 'status',
          width: '100px',
-         render: (value) => {
+         render: (value, item) => {
             const statusConfig = {
                'scheduled': { color: 'blue', text: 'Scheduled' },
                'confirmed': { color: 'green', text: 'Confirmed' },
                'completed': { color: 'gray', text: 'Completed' },
+               'rtec_completed': { color: 'purple', text: 'RTEC Completed' },
                'cancelled': { color: 'red', text: 'Cancelled' },
                'postponed': { color: 'yellow', text: 'Postponed' }
             };
-            const config = statusConfig[value] || { color: 'gray', text: value };
+            
+            // Check if RTEC is completed
+            const isRTECCompleted = item.rtecCompleted || item.status === 'rtec_completed';
+            const displayStatus = isRTECCompleted ? 'rtec_completed' : value;
+            const config = statusConfig[displayStatus] || { color: 'gray', text: value };
+            
+            console.log('🔍 Status render debug:', {
+               value,
+               itemStatus: item.status,
+               rtecCompleted: item.rtecCompleted,
+               isRTECCompleted,
+               displayStatus,
+               config
+            });
+            
             return <Badge color={config.color}>{config.text}</Badge>;
          }
       },
@@ -661,7 +750,15 @@ const RTECScheduleManagement = () => {
          header: 'Actions',
          key: '_id',
          width: '200px',
-         render: (value, item) => (
+         render: (value, item) => {
+            console.log('🔍 Actions render debug for meeting:', {
+               id: item._id,
+               status: item.status,
+               rtecCompleted: item.rtecCompleted,
+               title: item.meetingTitle
+            });
+            
+            return (
             <div className="flex gap-1">
                <Button
                   size="sm"
@@ -734,6 +831,54 @@ const RTECScheduleManagement = () => {
                      </svg>
                   </Button>
                )}
+               {(item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
+                  <div className="flex gap-1">
+                     <Button
+                        size="sm"
+                        variant="success"
+                        onClick={() => {
+                           const message = item.status === 'confirmed' 
+                              ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
+                              : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
+                           setConfirmMessage(message);
+                           setConfirmAction(() => () => handleCompleteRTEC(item._id));
+                           setShowConfirmModal(true);
+                        }}
+                        className="text-xs px-2 py-1"
+                        title="Complete RTEC"
+                     >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                     </Button>
+                     <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenRTECEvaluation(item._id)}
+                        className="text-xs px-2 py-1"
+                        title="RTEC Evaluation"
+                     >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                     </Button>
+                  </div>
+               )}
+               {(item.rtecCompleted || item.status === 'rtec_completed') && (
+                  <Button
+                     size="sm"
+                     variant="outline"
+                     disabled
+                     className="text-xs px-2 py-1"
+                     title="RTEC Already Completed"
+                  >
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                     </svg>
+                  </Button>
+               )}
                <Button
                   size="sm"
                   variant="danger"
@@ -750,7 +895,8 @@ const RTECScheduleManagement = () => {
                   </svg>
                </Button>
             </div>
-         )
+            );
+         }
       }
    ];
 
@@ -779,6 +925,11 @@ const RTECScheduleManagement = () => {
          title: 'Completed',
          value: rtecMeetings.filter(m => m.status === 'completed').length,
          color: 'gray'
+      },
+      {
+         title: 'RTEC Completed',
+         value: rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length,
+         color: 'purple'
       }
    ];
 
@@ -799,7 +950,7 @@ const RTECScheduleManagement = () => {
          </div>
 
          {/* Stats Cards */}
-         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
             {stats.map((stat, index) => (
                <StatsCard
                   key={index}
@@ -1432,6 +1583,91 @@ const RTECScheduleManagement = () => {
             title="Confirm Action"
             message={confirmMessage}
          />
+
+         {/* RTEC Evaluation Modal */}
+         <Modal
+            isOpen={showRTECEvaluationModal}
+            onClose={() => setShowRTECEvaluationModal(false)}
+            title="RTEC Evaluation Form"
+            size="lg"
+         >
+            <div className="space-y-4">
+               <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-blue-900">RTEC Evaluation</h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                     Please provide your evaluation and recommendations for this RTEC meeting.
+                  </p>
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Overall Rating
+                  </label>
+                  <select
+                     value={rtecEvaluationData.overallRating}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, overallRating: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                     <option value="">Select Rating</option>
+                     <option value="excellent">Excellent</option>
+                     <option value="good">Good</option>
+                     <option value="satisfactory">Satisfactory</option>
+                     <option value="needs_improvement">Needs Improvement</option>
+                  </select>
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Evaluation Notes
+                  </label>
+                  <Textarea
+                     value={rtecEvaluationData.evaluationNotes}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationNotes: e.target.value})}
+                     placeholder="Provide detailed evaluation notes..."
+                     rows={4}
+                  />
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Recommendations
+                  </label>
+                  <Textarea
+                     value={rtecEvaluationData.recommendations}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, recommendations: e.target.value})}
+                     placeholder="Provide recommendations for improvement..."
+                     rows={3}
+                  />
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Next Steps
+                  </label>
+                  <Textarea
+                     value={rtecEvaluationData.nextSteps}
+                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, nextSteps: e.target.value})}
+                     placeholder="Outline the next steps for the proponent..."
+                     rows={3}
+                  />
+               </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+               <Button
+                  variant="outline"
+                  onClick={() => setShowRTECEvaluationModal(false)}
+               >
+                  Cancel
+               </Button>
+               <Button
+                  onClick={handleSubmitRTECEvaluation}
+                  className="bg-blue-600 hover:bg-blue-700"
+               >
+                  Submit RTEC Evaluation
+               </Button>
+            </div>
+         </Modal>
 
          {/* Toast */}
          <Toast

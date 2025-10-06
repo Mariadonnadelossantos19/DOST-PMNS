@@ -18,7 +18,8 @@ const {
    getMeetingParticipants,
    removeParticipant,
    getAvailablePSTOUsers,
-   sendBulkPSTOInvitations
+   sendBulkPSTOInvitations,
+   completeRTEC
 } = require('../controllers/rtecMeetingController');
 
 // Create RTEC meeting (DOST-MIMAROPA only)
@@ -71,5 +72,8 @@ router.get('/:meetingId/participants', auth, getMeetingParticipants);
 
 // Remove participant from meeting
 router.delete('/:meetingId/participants/:participantId', auth, removeParticipant);
+
+// Complete RTEC process
+router.post('/:meetingId/complete-rtec', auth, completeRTEC);
 
 module.exports = router;

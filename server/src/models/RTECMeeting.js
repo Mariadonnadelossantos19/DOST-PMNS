@@ -100,10 +100,40 @@ const rtecMeetingSchema = new mongoose.Schema({
          'scheduled',
          'confirmed',
          'completed',
+         'rtec_completed',
          'cancelled',
          'postponed'
       ],
       default: 'scheduled'
+   },
+   
+   // RTEC completion tracking
+   rtecCompleted: {
+      type: Boolean,
+      default: false
+   },
+   
+   rtecCompletedAt: {
+      type: Date,
+      default: null
+   },
+   
+   rtecCompletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+   },
+   
+   // Meeting completion tracking
+   completedAt: {
+      type: Date,
+      default: null
+   },
+   
+   completedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
    },
    
    // Meeting participants

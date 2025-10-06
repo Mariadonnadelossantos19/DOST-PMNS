@@ -38,6 +38,7 @@ const rtecDocumentsSchema = new mongoose.Schema({
          'documents_under_review',
          'documents_approved',
          'documents_rejected',
+         'rtec_completed',
          'additional_documents_required'
       ],
       default: 'documents_requested'
@@ -161,6 +162,18 @@ const rtecDocumentsSchema = new mongoose.Schema({
    // Additional notes
    notes: {
       type: String,
+      default: null
+   },
+   
+   // RTEC completion tracking
+   rtecCompletedAt: {
+      type: Date,
+      default: null
+   },
+   
+   rtecCompletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       default: null
    }
 }, {
