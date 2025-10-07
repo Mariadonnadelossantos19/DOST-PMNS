@@ -23,12 +23,14 @@ const RTECScheduleManagement = () => {
    const [confirmMessage, setConfirmMessage] = useState('Are you sure you want to perform this action?');
    const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
    const [showRTECEvaluationModal, setShowRTECEvaluationModal] = useState(false);
+   const [availableDocuments, setAvailableDocuments] = useState([]);
    const [rtecEvaluationData, setRtecEvaluationData] = useState({
       meetingId: '',
       evaluationComment: '',
       recommendations: '',
       evaluationOutcome: '',
-      nextSteps: ''
+      nextSteps: '',
+      documentsToRevise: []
    });
 
    // Form states for creating meeting
@@ -472,26 +474,59 @@ const RTECScheduleManagement = () => {
    };
 
    // Open RTEC evaluation modal
-   const handleOpenRTECEvaluation = (meetingId) => {
-      setRtecEvaluationData({
-         meetingId: meetingId,
-         evaluationComment: '',
-         recommendations: '',
-         evaluationOutcome: '',
-         nextSteps: ''
-      });
-      setShowRTECEvaluationModal(true);
+   const handleOpenRTECEvaluation = async (meetingId) => {
+      try {
+         // Find the meeting to get the RTEC documents
+         const meeting = rtecMeetings.find(m => m._id === meetingId);
+         if (meeting && meeting.rtecDocumentsId) {
+            // Fetch the RTEC documents to get available document types
+            const response = await api.get(`/rtec-documents/tna/${meeting.tnaId}`);
+            if (response.data.success && response.data.data) {
+               const rtecDoc = response.data.data;
+               const documents = rtecDoc.partialdocsrtec || [];
+               setAvailableDocuments(documents);
+            }
+         }
+         
+         setRtecEvaluationData({
+            meetingId: meetingId,
+            evaluationComment: '',
+            recommendations: '',
+            evaluationOutcome: '',
+            nextSteps: '',
+            documentsToRevise: []
+         });
+         setShowRTECEvaluationModal(true);
+      } catch (error) {
+         console.error('Error fetching RTEC documents:', error);
+         displayToast('Failed to fetch document information', 'error');
+      }
    };
 
    // Submit RTEC evaluation
    const handleSubmitRTECEvaluation = async () => {
       try {
+         console.log('🔍 Submitting RTEC evaluation:', rtecEvaluationData);
+         
          const response = await api.post(`/rtec-meetings/${rtecEvaluationData.meetingId}/complete-rtec`, {
-            evaluationData: rtecEvaluationData
+            evaluationData: {
+               ...rtecEvaluationData,
+               availableDocuments: availableDocuments
+            }
          });
          
          if (response.data.success) {
-            displayToast('RTEC evaluation submitted successfully', 'success');
+            if (rtecEvaluationData.evaluationOutcome === 'with revision') {
+               displayToast('RTEC evaluation submitted. Document revision requirements sent to PSTO.', 'success');
+               
+               // Show additional message about next steps
+               setTimeout(() => {
+                  displayToast('PSTO will coordinate with the proponent for document resubmission and schedule a new meeting.', 'info');
+               }, 2000);
+            } else {
+               displayToast('RTEC evaluation submitted successfully', 'success');
+            }
+            
             setShowRTECEvaluationModal(false);
             fetchRTECMeetings();
             fetchApprovedRTECDocuments();
@@ -1615,6 +1650,59 @@ const RTECScheduleManagement = () => {
                      rows={3}
                   />
                </div>
+
+               {/* Document Selection - Only show if evaluation outcome is "with revision" */}
+               {rtecEvaluationData.evaluationOutcome === 'with revision' && (
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Documents That Need Revision
+                     </label>
+                     <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                        {availableDocuments.map((doc, index) => (
+                           <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                              <input
+                                 type="checkbox"
+                                 id={`doc-${index}`}
+                                 checked={rtecEvaluationData.documentsToRevise.includes(doc.type)}
+                                 onChange={(e) => {
+                                    if (e.target.checked) {
+                                       setRtecEvaluationData({
+                                          ...rtecEvaluationData,
+                                          documentsToRevise: [...rtecEvaluationData.documentsToRevise, doc.type]
+                                       });
+                                    } else {
+                                       setRtecEvaluationData({
+                                          ...rtecEvaluationData,
+                                          documentsToRevise: rtecEvaluationData.documentsToRevise.filter(type => type !== doc.type)
+                                       });
+                                    }
+                                 }}
+                                 className="rounded border-gray-300"
+                              />
+                              <label htmlFor={`doc-${index}`} className="flex-1 cursor-pointer">
+                                 <div className="font-medium">{doc.name}</div>
+                                 <div className="text-sm text-gray-500">{doc.description}</div>
+                                 <div className="text-xs text-gray-400 mt-1">
+                                    Status: <span className={`font-medium ${
+                                       doc.documentStatus === 'approved' ? 'text-green-600' : 
+                                       doc.documentStatus === 'rejected' ? 'text-red-600' : 
+                                       'text-yellow-600'
+                                    }`}>{doc.documentStatus}</span>
+                                 </div>
+                              </label>
+                           </div>
+                        ))}
+                        {availableDocuments.length === 0 && (
+                           <div className="text-center py-4 text-gray-500">
+                              No documents available for selection
+                           </div>
+                        )}
+                     </div>
+                     <p className="text-xs text-gray-600 mt-2">
+                        Select the specific documents that need to be revised and resubmitted.
+                     </p>
+                  </div>
+               )}
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

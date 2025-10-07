@@ -1252,11 +1252,27 @@ const deleteRTECMeeting = async (req, res) => {
 const completeRTEC = async (req, res) => {
    try {
       const { meetingId } = req.params;
+      const { evaluationData } = req.body;
       const userId = req.user.id;
 
       console.log('=== COMPLETE RTEC DEBUG ===');
       console.log('Meeting ID:', meetingId);
       console.log('User ID:', userId);
+      console.log('Evaluation Data:', evaluationData);
+      console.log('Request Body:', req.body);
+      console.log('Request Params:', req.params);
+
+      // Validate evaluation data if provided
+      if (evaluationData) {
+         console.log('🔍 Validating evaluation data...');
+         if (evaluationData.evaluationOutcome && !['with revision', 'approved'].includes(evaluationData.evaluationOutcome)) {
+            return res.status(400).json({
+               success: false,
+               message: 'Invalid evaluation outcome. Must be "with revision" or "approved"'
+            });
+         }
+         console.log('✅ Evaluation data validation passed');
+      }
 
       if (!mongoose.Types.ObjectId.isValid(meetingId)) {
          return res.status(400).json({
@@ -1312,39 +1328,117 @@ const completeRTEC = async (req, res) => {
          });
       }
 
+      // Prepare update data
+      const updateData = {
+         rtecCompleted: true,
+         rtecCompletedAt: new Date(),
+         rtecCompletedBy: userId,
+         status: 'rtec_completed'
+      };
+
+      // Add evaluation data if provided
+      if (evaluationData) {
+         updateData.evaluationOutcome = evaluationData.evaluationOutcome;
+         updateData.evaluationComment = evaluationData.evaluationComment;
+         updateData.recommendations = evaluationData.recommendations;
+         updateData.nextSteps = evaluationData.nextSteps;
+      }
+
       // Update meeting to mark RTEC as completed
       const updatedMeeting = await RTECMeeting.findByIdAndUpdate(
          meetingId,
-         {
-            rtecCompleted: true,
-            rtecCompletedAt: new Date(),
-            rtecCompletedBy: userId,
-            status: 'rtec_completed'
-         },
+         updateData,
          { new: true }
       );
 
-      // Update related RTEC documents status
-      if (rtecMeeting.rtecDocumentsId) {
-         await RTECDocuments.findByIdAndUpdate(
-            rtecMeeting.rtecDocumentsId,
-            {
-               status: 'rtec_completed',
-               rtecCompletedAt: new Date(),
-               rtecCompletedBy: userId
-            }
-         );
-      }
+      // Handle different evaluation outcomes
+      if (evaluationData && evaluationData.evaluationOutcome === 'with revision') {
+         console.log('🔄 Handling "with revision" outcome...');
+         
+         // Update RTEC documents to request revision
+         if (rtecMeeting.rtecDocumentsId) {
+            // Prepare documents to revise array
+            const documentsToRevise = evaluationData.documentsToRevise?.map(docType => {
+               // Find the document details from available documents
+               const docDetails = evaluationData.availableDocuments?.find(doc => doc.type === docType);
+               return {
+                  type: docType,
+                  name: docDetails?.name || docType,
+                  reason: evaluationData.evaluationComment
+               };
+            }) || [];
 
-      // Update TNA status if applicable
-      if (rtecMeeting.tnaId) {
-         await TNA.findByIdAndUpdate(
-            rtecMeeting.tnaId,
-            {
-               status: 'rtec_completed',
-               rtecCompletedAt: new Date()
-            }
-         );
+            await RTECDocuments.findByIdAndUpdate(
+               rtecMeeting.rtecDocumentsId,
+               {
+                  status: 'documents_revision_requested',
+                  revisionRequestedAt: new Date(),
+                  revisionRequestedBy: userId,
+                  revisionComments: evaluationData.evaluationComment,
+                  documentsToRevise: documentsToRevise
+               }
+            );
+         }
+
+         // Update TNA status to revision requested
+         if (rtecMeeting.tnaId) {
+            await TNA.findByIdAndUpdate(
+               rtecMeeting.tnaId,
+               {
+                  status: 'rtec_revision_requested',
+                  revisionRequestedAt: new Date()
+               }
+            );
+         }
+
+         // Create notification for PSTO to handle document revision requirements
+         if (rtecMeeting.scheduledBy) {
+            const documentsList = documentsToRevise.map(doc => `• ${doc.name}`).join('\n');
+            await Notification.create({
+               recipientId: rtecMeeting.scheduledBy,
+               recipientType: 'psto',
+               type: 'rtec_revision_requested',
+               title: 'RTEC Documents Revision Required',
+               message: `DOST-MIMAROPA has requested revision of specific RTEC documents for "${rtecMeeting.meetingTitle}".\n\nDocuments requiring revision:\n${documentsList}\n\nPlease coordinate with the proponent for document resubmission.`,
+               data: {
+                  meetingId: rtecMeeting._id,
+                  tnaId: rtecMeeting.tnaId,
+                  applicationId: rtecMeeting.applicationId,
+                  rtecDocumentsId: rtecMeeting.rtecDocumentsId,
+                  evaluationComment: evaluationData.evaluationComment,
+                  recommendations: evaluationData.recommendations,
+                  nextSteps: evaluationData.nextSteps,
+                  documentsToRevise: documentsToRevise
+               }
+            });
+         }
+
+         console.log('✅ Revision workflow initiated');
+      } else {
+         console.log('✅ Handling "approved" outcome...');
+         
+         // Update related RTEC documents status to completed
+         if (rtecMeeting.rtecDocumentsId) {
+            await RTECDocuments.findByIdAndUpdate(
+               rtecMeeting.rtecDocumentsId,
+               {
+                  status: 'rtec_completed',
+                  rtecCompletedAt: new Date(),
+                  rtecCompletedBy: userId
+               }
+            );
+         }
+
+         // Update TNA status to completed
+         if (rtecMeeting.tnaId) {
+            await TNA.findByIdAndUpdate(
+               rtecMeeting.tnaId,
+               {
+                  status: 'rtec_completed',
+                  rtecCompletedAt: new Date()
+               }
+            );
+         }
       }
 
       // Create notification for proponent
@@ -1374,6 +1468,20 @@ const completeRTEC = async (req, res) => {
 
    } catch (error) {
       console.error('💥 Error completing RTEC:', error);
+      console.error('💥 Error name:', error.name);
+      console.error('💥 Error message:', error.message);
+      console.error('💥 Error stack:', error.stack);
+      
+      // Handle specific error types
+      if (error.name === 'ValidationError') {
+         return res.status(400).json({
+            success: false,
+            message: 'Database validation error',
+            error: error.message,
+            details: error.errors
+         });
+      }
+      
       res.status(500).json({
          success: false,
          message: 'Internal server error',

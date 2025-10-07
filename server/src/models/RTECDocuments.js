@@ -39,7 +39,8 @@ const rtecDocumentsSchema = new mongoose.Schema({
          'documents_approved',
          'documents_rejected',
          'rtec_completed',
-         'additional_documents_required'
+         'additional_documents_required',
+         'documents_revision_requested'
       ],
       default: 'documents_requested'
    },
@@ -192,7 +193,40 @@ const rtecDocumentsSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
-   }
+   },
+   
+   // Revision tracking
+   revisionRequestedAt: {
+      type: Date,
+      default: null
+   },
+   
+   revisionRequestedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+   },
+   
+   revisionComments: {
+      type: String,
+      default: null
+   },
+   
+   // Specific documents that need revision
+   documentsToRevise: [{
+      type: {
+         type: String,
+         required: true
+      },
+      name: {
+         type: String,
+         required: true
+      },
+      reason: {
+         type: String,
+         default: null
+      }
+   }]
 }, {
    timestamps: true,
    collection: 'rtecdocuments'
