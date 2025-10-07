@@ -346,8 +346,11 @@ tnaSchema.methods.markRTECDocumentsUnderReview = function(userId) {
 
 // Method to approve RTEC documents
 tnaSchema.methods.approveRTECDocuments = function(userId) {
+   console.log('🔍 TNA approveRTECDocuments called for TNA:', this._id);
+   console.log('🔍 Current TNA status:', this.status);
    this.status = 'rtec_documents_approved';
    this.updatedBy = userId;
+   console.log('🔍 New TNA status set to:', this.status);
    return this.save();
 };
 

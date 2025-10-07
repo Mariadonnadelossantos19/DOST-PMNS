@@ -69,6 +69,8 @@ const RTECScheduleManagement = () => {
          if (response.data.success) {
             const approvedDocs = response.data.data.docs || [];
             console.log('Approved RTEC Documents:', approvedDocs);
+            console.log('Total docs from response:', response.data.data.totalDocs);
+            console.log('Docs array length:', approvedDocs.length);
             console.log('Setting approved documents to state...');
             
             // Debug each approved document
@@ -100,6 +102,8 @@ const RTECScheduleManagement = () => {
             
             setApprovedRTECDocuments(approvedDocs);
             console.log('State updated with approved documents');
+            console.log('Current state length:', approvedDocs.length);
+            console.log('State will be updated to:', approvedDocs);
          }
       } catch (error) {
          console.error('Error fetching approved RTEC documents:', error);
@@ -450,8 +454,16 @@ const RTECScheduleManagement = () => {
                id: meeting._id,
                status: meeting.status,
                rtecCompleted: meeting.rtecCompleted,
-               title: meeting.meetingTitle
+               title: meeting.meetingTitle,
+               evaluationOutcome: meeting.evaluationOutcome,
+               evaluationComment: meeting.evaluationComment
             });
+            
+            // Check if RTEC evaluation has been completed
+            if (!meeting.evaluationOutcome) {
+               displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
+               return;
+            }
          }
          
          const response = await api.post(`/rtec-meetings/${meetingId}/complete-rtec`);
@@ -478,13 +490,23 @@ const RTECScheduleManagement = () => {
       try {
          // Find the meeting to get the RTEC documents
          const meeting = rtecMeetings.find(m => m._id === meetingId);
+         console.log('🔍 Meeting found for evaluation:', meeting);
          if (meeting && meeting.rtecDocumentsId) {
-            // Fetch the RTEC documents to get available document types
-            const response = await api.get(`/rtec-documents/tna/${meeting.tnaId}`);
-            if (response.data.success && response.data.data) {
-               const rtecDoc = response.data.data;
-               const documents = rtecDoc.partialdocsrtec || [];
-               setAvailableDocuments(documents);
+            // Extract the TNA ID properly - handle both string and object cases
+            const tnaId = typeof meeting.tnaId === 'object' ? meeting.tnaId._id || meeting.tnaId : meeting.tnaId;
+            console.log('🔍 TNA ID for RTEC documents fetch:', tnaId);
+            
+            if (tnaId) {
+               // Fetch the RTEC documents to get available document types
+               const response = await api.get(`/rtec-documents/tna/${tnaId}`);
+               if (response.data.success && response.data.data) {
+                  const rtecDoc = response.data.data;
+                  const documents = rtecDoc.partialdocsrtec || [];
+                  setAvailableDocuments(documents);
+                  console.log('🔍 Available documents for evaluation:', documents);
+               }
+            } else {
+               console.warn('⚠️ No TNA ID found for meeting:', meeting);
             }
          }
          
@@ -507,13 +529,21 @@ const RTECScheduleManagement = () => {
    const handleSubmitRTECEvaluation = async () => {
       try {
          console.log('🔍 Submitting RTEC evaluation:', rtecEvaluationData);
+         console.log('🔍 Available documents:', availableDocuments);
+         console.log('🔍 Meeting ID:', rtecEvaluationData.meetingId);
+         console.log('🔍 Documents to revise:', rtecEvaluationData.documentsToRevise);
+         console.log('🔍 Evaluation outcome:', rtecEvaluationData.evaluationOutcome);
          
-         const response = await api.post(`/rtec-meetings/${rtecEvaluationData.meetingId}/complete-rtec`, {
+         const requestData = {
             evaluationData: {
                ...rtecEvaluationData,
                availableDocuments: availableDocuments
             }
-         });
+         };
+         console.log('🔍 Request data being sent:', requestData);
+         console.log('🔍 Documents to revise in request:', requestData.evaluationData.documentsToRevise);
+         
+         const response = await api.post(`/rtec-meetings/${rtecEvaluationData.meetingId}/complete-rtec`, requestData);
          
          if (response.data.success) {
             if (rtecEvaluationData.evaluationOutcome === 'with revision') {
@@ -533,7 +563,9 @@ const RTECScheduleManagement = () => {
          }
       } catch (error) {
          console.error('Error submitting RTEC evaluation:', error);
-         displayToast('Failed to submit RTEC evaluation', 'error');
+         console.error('Error response:', error.response?.data);
+         const errorMessage = error.response?.data?.message || 'Failed to submit RTEC evaluation';
+         displayToast(errorMessage, 'error');
       }
    };
 
@@ -882,8 +914,14 @@ const RTECScheduleManagement = () => {
                   <div className="flex gap-1">
                      <Button
                         size="sm"
-                        variant="success"
+                        variant={item.evaluationOutcome ? "success" : "outline"}
                         onClick={() => {
+                           // Check if RTEC evaluation has been completed
+                           if (!item.evaluationOutcome) {
+                              displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
+                              return;
+                           }
+                           
                            const message = item.status === 'confirmed' 
                               ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
                               : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
@@ -891,8 +929,9 @@ const RTECScheduleManagement = () => {
                            setConfirmAction(() => () => handleCompleteRTEC(item._id));
                            setShowConfirmModal(true);
                         }}
-                        className="text-xs px-2 py-1"
-                        title="Complete RTEC"
+                        className={`text-xs px-2 py-1 ${!item.evaluationOutcome ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={item.evaluationOutcome ? "Complete RTEC" : "Complete RTEC (Evaluation Required First)"}
+                        disabled={!item.evaluationOutcome}
                      >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -964,39 +1003,39 @@ const RTECScheduleManagement = () => {
             </Button>
          </div>
 
-         {/* Stats Cards */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-               <div className="text-2xl font-bold text-gray-900">{rtecMeetings.length}</div>
-               <div className="text-sm text-gray-500">Total Meetings</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-               <div className="text-2xl font-bold text-blue-600">{rtecMeetings.filter(m => m.status === 'scheduled').length}</div>
-               <div className="text-sm text-gray-500">Scheduled</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-               <div className="text-2xl font-bold text-green-600">{rtecMeetings.filter(m => m.status === 'confirmed').length}</div>
-               <div className="text-sm text-gray-500">Confirmed</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-               <div className="text-2xl font-bold text-purple-600">{rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length}</div>
-               <div className="text-sm text-gray-500">Completed</div>
-            </div>
-         </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+             <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl font-bold text-gray-900">{rtecMeetings.filter(m => m.status !== 'rtec_revision_requested').length}</div>
+                <div className="text-sm text-gray-500">Total Meetings</div>
+             </div>
+             <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl font-bold text-blue-600">{rtecMeetings.filter(m => m.status === 'scheduled').length}</div>
+                <div className="text-sm text-gray-500">Scheduled</div>
+             </div>
+             <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl font-bold text-green-600">{rtecMeetings.filter(m => m.status === 'confirmed').length}</div>
+                <div className="text-sm text-gray-500">Confirmed</div>
+             </div>
+             <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl font-bold text-purple-600">{rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length}</div>
+                <div className="text-sm text-gray-500">Completed</div>
+             </div>
+          </div>
 
          {/* Tab Navigation */}
          <div className="border-b border-gray-200 mb-6">
             <nav className="flex space-x-8">
-               <button
-                  onClick={() => setActiveTab('meetings')}
-                  className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                     activeTab === 'meetings'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-               >
-                  Meetings ({rtecMeetings.length})
-               </button>
+                <button
+                   onClick={() => setActiveTab('meetings')}
+                   className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'meetings'
+                         ? 'border-blue-500 text-blue-600'
+                         : 'border-transparent text-gray-500 hover:text-gray-700'
+                   }`}
+                >
+                   Meetings ({rtecMeetings.filter(m => m.status !== 'rtec_revision_requested').length})
+                </button>
                <button
                   onClick={() => setActiveTab('documents')}
                   className={`py-3 px-1 border-b-2 font-medium text-sm ${
@@ -1028,7 +1067,7 @@ const RTECScheduleManagement = () => {
                      </div>
                      <div className="flex space-x-2">
                         <Button
-                           variant="outline"
+                           variant="outline" 
                            onClick={() => {
                               console.log('Manual refresh triggered');
                               fetchApprovedRTECDocuments();
@@ -1040,23 +1079,41 @@ const RTECScheduleManagement = () => {
                   </div>
                
                {/* Info Alert */}
-               {!loading && approvedRTECDocuments.length > 0 && (
-                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                     <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                           <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                           </svg>
-                        </div>
-                        <div className="ml-3">
-                           <p className="text-sm text-green-800">
-                              <strong>{approvedRTECDocuments.length} approved document(s)</strong> are ready for meeting scheduling. 
-                              Click "Schedule Meeting" to create a meeting for each approved application.
-                           </p>
+               {!loading && approvedRTECDocuments.length > 0 && (() => {
+                  // Calculate documents that need scheduling (include revised documents for rescheduling)
+                  const documentsNeedingScheduling = approvedRTECDocuments.filter(doc => {
+                     const hasMeeting = rtecMeetings.some(meeting => 
+                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
+                     );
+                     
+                     // Check if any meeting for this document is in revision status
+                     const hasRevisionMeeting = rtecMeetings.some(meeting => 
+                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString() && 
+                        meeting.status === 'rtec_revision_requested'
+                     );
+                     
+                     // Show documents that don't have any meeting yet OR have meetings in revision_requested status
+                     return !hasMeeting || hasRevisionMeeting;
+                  });
+                  
+                  return documentsNeedingScheduling.length > 0 && (
+                     <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center">
+                           <div className="flex-shrink-0">
+                              <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                           </div>
+                           <div className="ml-3">
+                              <p className="text-sm text-green-800">
+                                 <strong>{documentsNeedingScheduling.length} approved document(s)</strong> are ready for meeting scheduling. 
+                                 Click "Schedule Meeting" to create a meeting for each approved application.
+                              </p>
+                           </div>
                         </div>
                      </div>
-                  </div>
-               )}
+                  );
+               })()}
                
                {!loading && approvedRTECDocuments.length === 0 && (
                   <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -1085,27 +1142,24 @@ const RTECScheduleManagement = () => {
                      console.log('Approved RTEC Documents:', approvedRTECDocuments.length);
                      console.log('RTEC Meetings:', rtecMeetings.length);
                      
+                     // Show all approved documents that need scheduling
+                     // This includes both new approved documents AND revised documents that have been re-approved
                      const filteredDocs = approvedRTECDocuments.filter(doc => {
-                        console.log('=== FILTERING DOCUMENT ===');
-                        console.log('Document ID:', doc._id);
-                        console.log('Document title:', doc.applicationId?.enterpriseName);
+                        const hasMeeting = rtecMeetings.some(meeting => 
+                           meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
+                        );
                         
-                        const hasMeeting = rtecMeetings.some(meeting => {
-                           console.log('Checking meeting:', meeting.meetingTitle);
-                           console.log('Meeting rtecDocumentsId:', meeting.rtecDocumentsId);
-                           console.log('Meeting rtecDocumentsId._id:', meeting.rtecDocumentsId?._id);
-                           console.log('Comparing:', meeting.rtecDocumentsId?._id?.toString(), '===', doc._id?.toString());
-                           const match = meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString();
-                           console.log('Match result:', match);
-                           return match;
-                        });
+                        // Show documents that don't have any meeting yet OR have meetings in revision_requested status
+                        // Revised documents with rtec_revision_requested meetings should be shown for rescheduling
+                        const hasRevisionMeeting = rtecMeetings.some(meeting => 
+                           meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString() && 
+                           meeting.status === 'rtec_revision_requested'
+                        );
                         
-                        console.log('Document has meeting:', hasMeeting);
-                        console.log('Will show document:', !hasMeeting);
-                        return !hasMeeting;
+                        return !hasMeeting || hasRevisionMeeting;
                      });
                      
-                     console.log('Filtered documents count:', filteredDocs.length);
+                     console.log('Documents that need scheduling:', filteredDocs.length);
                      
                      return (
                         <DataTable
@@ -1140,14 +1194,14 @@ const RTECScheduleManagement = () => {
                      <div className="flex justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                      </div>
-                  ) : (
-                     <DataTable
-                        data={rtecMeetings}
-                        columns={meetingsColumns}
-                        searchable={true}
-                        pagination={true}
-                     />
-                  )}
+                   ) : (
+                      <DataTable
+                         data={rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested')}
+                         columns={meetingsColumns}
+                         searchable={true}
+                         pagination={true}
+                      />
+                   )}
                </div>
             </div>
          )}

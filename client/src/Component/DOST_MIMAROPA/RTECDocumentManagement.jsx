@@ -11,6 +11,7 @@ const RTECDocumentManagement = () => {
    const [reviewComments, setReviewComments] = useState('');
    const [currentDocumentType, setCurrentDocumentType] = useState('');
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+   const [isSubmitting, setIsSubmitting] = useState(false);
    const [filters, setFilters] = useState({
       status: '',
       search: ''
@@ -55,7 +56,10 @@ const RTECDocumentManagement = () => {
    };
 
    const submitReview = async () => {
+      if (isSubmitting) return; // Prevent multiple submissions
+      
       try {
+         setIsSubmitting(true);
          const tnaId = selectedDocument.tnaId?._id || selectedDocument.tnaId;
          console.log('Submitting review:', {
             tnaId,
@@ -76,14 +80,38 @@ const RTECDocumentManagement = () => {
          if (response.data.success) {
             showToast(`Document ${reviewAction}d successfully`, 'success');
             setShowReviewModal(false);
-            setSelectedDocument(null); // Close the details modal
-            fetchRTECDocuments(); // Refresh the data
             
+            // Update the selected document in place instead of refreshing everything
+            if (selectedDocument && selectedDocument.partialdocsrtec) {
+               const updatedDocument = { ...selectedDocument };
+               const docIndex = updatedDocument.partialdocsrtec.findIndex(doc => doc.type === currentDocumentType);
+               
+               if (docIndex !== -1) {
+                  updatedDocument.partialdocsrtec[docIndex] = {
+                     ...updatedDocument.partialdocsrtec[docIndex],
+                     documentStatus: reviewAction === 'approve' ? 'approved' : 'rejected',
+                     reviewedAt: new Date().toISOString(),
+                     reviewComments: reviewComments
+                  };
+                  
+                  // Update the document in the list
+                  setRtecDocuments(prevDocs => 
+                     prevDocs.map(doc => 
+                        doc._id === selectedDocument._id ? updatedDocument : doc
+                     )
+                  );
+                  
+                  // Update the selected document
+                  setSelectedDocument(updatedDocument);
+               }
+            }
          }
       } catch (error) {
          console.error('Error reviewing document:', error);
          console.error('Error details:', error.response?.data);
          showToast(error.response?.data?.message || 'Failed to review document', 'error');
+      } finally {
+         setIsSubmitting(false);
       }
    };
 
@@ -278,6 +306,7 @@ const RTECDocumentManagement = () => {
                onClose={() => setSelectedDocument(null)}
                title="RTEC Document Details"
                size="lg"
+               closeOnOverlayClick={false}
             >
                <div className="space-y-6">
                   {/* Basic Information */}
@@ -465,15 +494,16 @@ const RTECDocumentManagement = () => {
                   <Button
                      variant="outline"
                      onClick={() => setShowReviewModal(false)}
+                     disabled={isSubmitting}
                   >
                      Cancel
                   </Button>
                   <Button
                      variant={reviewAction === 'approve' ? 'success' : 'danger'}
                      onClick={submitReview}
-                     disabled={reviewAction === 'reject' && !reviewComments.trim()}
+                     disabled={isSubmitting || (reviewAction === 'reject' && !reviewComments.trim())}
                   >
-                     {reviewAction === 'approve' ? 'Approve' : 'Reject'}
+                     {isSubmitting ? 'Processing...' : (reviewAction === 'approve' ? 'Approve' : 'Reject')}
                   </Button>
                </div>
             </div>

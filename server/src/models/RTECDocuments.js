@@ -380,19 +380,51 @@ rtecDocumentsSchema.methods.approveDocument = function(documentType, userId, com
       }
    }
    
-   // Only update overall status if all documents have been reviewed
-   const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
-      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
-   );
-   
-   if (allDocumentsReviewed) {
-      const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
-      this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
-      this.reviewedBy = userId;
-      this.reviewedAt = new Date();
+   // Check if we're in revision workflow
+   if (this.status === 'documents_revision_requested') {
+      // In revision workflow, check if all documents requiring revision have been resubmitted and reviewed
+      const documentsToRevise = this.documentsToRevise || [];
+      const revisedDocuments = documentsToRevise.map(revDoc => revDoc.type);
+      
+      // Check if all documents that needed revision have been reviewed
+      const allRevisedDocumentsReviewed = revisedDocuments.every(docType => {
+         const doc = this.partialdocsrtec.find(d => d.type === docType);
+         return doc && (doc.documentStatus === 'approved' || doc.documentStatus === 'rejected');
+      });
+      
+      if (allRevisedDocumentsReviewed) {
+         // All revised documents have been reviewed, check if any were rejected
+         const hasRejectedRevisedDocuments = revisedDocuments.some(docType => {
+            const doc = this.partialdocsrtec.find(d => d.type === docType);
+            return doc && doc.documentStatus === 'rejected';
+         });
+         
+         if (hasRejectedRevisedDocuments) {
+            this.status = 'documents_rejected';
+         } else {
+            this.status = 'documents_approved';
+         }
+         this.reviewedBy = userId;
+         this.reviewedAt = new Date();
+      } else {
+         // Still under review for revision
+         this.status = 'documents_under_review';
+      }
    } else {
-      // Set to under review if not all documents are reviewed yet
-      this.status = 'documents_under_review';
+      // Normal workflow - only update overall status if all documents have been reviewed
+      const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
+         doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+      );
+      
+      if (allDocumentsReviewed) {
+         const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
+         this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
+         this.reviewedBy = userId;
+         this.reviewedAt = new Date();
+      } else {
+         // Set to under review if not all documents are reviewed yet
+         this.status = 'documents_under_review';
+      }
    }
    
    return this.save();
@@ -408,19 +440,51 @@ rtecDocumentsSchema.methods.rejectDocument = function(documentType, userId, comm
       document.reviewComments = comments;
    }
    
-   // Only update overall status if all documents have been reviewed
-   const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
-      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
-   );
-   
-   if (allDocumentsReviewed) {
-      const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
-      this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
-      this.reviewedBy = userId;
-      this.reviewedAt = new Date();
+   // Check if we're in revision workflow
+   if (this.status === 'documents_revision_requested') {
+      // In revision workflow, check if all documents requiring revision have been resubmitted and reviewed
+      const documentsToRevise = this.documentsToRevise || [];
+      const revisedDocuments = documentsToRevise.map(revDoc => revDoc.type);
+      
+      // Check if all documents that needed revision have been reviewed  
+      const allRevisedDocumentsReviewed = revisedDocuments.every(docType => {
+         const doc = this.partialdocsrtec.find(d => d.type === docType);
+         return doc && (doc.documentStatus === 'approved' || doc.documentStatus === 'rejected');
+      });
+      
+      if (allRevisedDocumentsReviewed) {
+         // All revised documents have been reviewed, check if any were rejected
+         const hasRejectedRevisedDocuments = revisedDocuments.some(docType => {
+            const doc = this.partialdocsrtec.find(d => d.type === docType);
+            return doc && doc.documentStatus === 'rejected';
+         });
+         
+         if (hasRejectedRevisedDocuments) {
+            this.status = 'documents_rejected';
+         } else {
+            this.status = 'documents_approved';
+         }
+         this.reviewedBy = userId;
+         this.reviewedAt = new Date();
+      } else {
+         // Still under review for revision
+         this.status = 'documents_under_review';
+      }
    } else {
-      // Set to under review if not all documents are reviewed yet
-      this.status = 'documents_under_review';
+      // Normal workflow - only update overall status if all documents have been reviewed
+      const allDocumentsReviewed = this.partialdocsrtec.every(doc => 
+         doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+      );
+      
+      if (allDocumentsReviewed) {
+         const hasRejectedDocuments = this.partialdocsrtec.some(doc => doc.documentStatus === 'rejected');
+         this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
+         this.reviewedBy = userId;
+         this.reviewedAt = new Date();
+      } else {
+         // Set to under review if not all documents are reviewed yet
+         this.status = 'documents_under_review';
+      }
    }
    
    return this.save();

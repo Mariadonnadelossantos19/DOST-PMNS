@@ -101,6 +101,7 @@ const rtecMeetingSchema = new mongoose.Schema({
          'confirmed',
          'completed',
          'rtec_completed',
+         'rtec_revision_requested',
          'cancelled',
          'postponed'
       ],

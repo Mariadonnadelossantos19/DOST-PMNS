@@ -357,12 +357,30 @@ const reviewRTECDocument = async (req, res) => {
 
       // Update TNA status based on overall document status
       const tna = await TNA.findById(tnaId);
-      if (rtecDocuments.status === 'documents_approved') {
-         await tna.approveRTECDocuments(userId);
-      } else if (rtecDocuments.status === 'documents_rejected') {
+      console.log('🔍 TNA found:', tna ? 'Yes' : 'No');
+      console.log('🔍 RTEC Documents status:', rtecDocuments.status);
+      
+       if (rtecDocuments.status === 'documents_approved') {
+          console.log('🔍 Updating TNA to rtec_documents_approved...');
+          console.log('🔍 TNA before update:', tna.status);
+          await tna.approveRTECDocuments(userId);
+          console.log('🔍 TNA status updated to:', tna.status);
+          console.log('🔍 TNA ID:', tna._id);
+          
+          // Note: RTEC meeting status remains unchanged so it can be manually rescheduled
+          // Documents with rtec_revision_requested meeting status will appear in scheduling table
+       } else if (rtecDocuments.status === 'documents_rejected') {
+         console.log('🔍 Updating TNA to rtec_documents_rejected...');
+         console.log('🔍 TNA before update:', tna.status);
          await tna.rejectRTECDocuments(userId);
+         console.log('🔍 TNA status updated to:', tna.status);
+         console.log('🔍 TNA ID:', tna._id);
       } else {
+         console.log('🔍 Updating TNA to rtec_documents_under_review...');
+         console.log('🔍 TNA before update:', tna.status);
          await tna.markRTECDocumentsUnderReview(userId);
+         console.log('🔍 TNA status updated to:', tna.status);
+         console.log('🔍 TNA ID:', tna._id);
       }
 
       // Create notification for PSTO
@@ -502,8 +520,12 @@ const getApprovedRTECDocuments = async (req, res) => {
       console.log('=== GET APPROVED RTEC DOCUMENTS ===');
       console.log('Page:', pageNum, 'Limit:', limitNum);
 
-      // Query only for approved documents
-      const query = { status: 'documents_approved' };
+      // Query for documents that are approved and ready for scheduling
+      // Only include documents_approved status (not rtec_completed)
+      const query = { 
+         status: 'documents_approved'
+      };
+      console.log('🔍 Query for documents approved and ready for scheduling:', query);
 
       const rtecDocuments = await RTECDocuments.find(query)
          .populate('tnaId', 'scheduledDate location programName status')
@@ -516,30 +538,96 @@ const getApprovedRTECDocuments = async (req, res) => {
          .skip(skip)
          .limit(limitNum);
 
+      // Filter to show approved documents that are ready for scheduling
+      const RTECMeeting = require('../models/RTECMeeting');
+      const filteredDocuments = [];
+      
+      for (const doc of rtecDocuments) {
+         const rtecMeeting = await RTECMeeting.findOne({ tnaId: doc.tnaId });
+         
+         // Show documents that are approved and ready for scheduling
+         // This includes both new approved documents AND revised documents that have been re-approved
+         if (doc.status === 'documents_approved') {
+            filteredDocuments.push(doc);
+            console.log('🔍 Including approved document:', doc._id, 'Status:', doc.status, 'Meeting status:', rtecMeeting?.status);
+         } else {
+            console.log('🔍 Filtering out document:', doc._id, 'Status:', doc.status, 'Meeting status:', rtecMeeting?.status);
+         }
+      }
+      
+      console.log('🔍 Approved documents ready for scheduling:', filteredDocuments.length);
+
       const total = await RTECDocuments.countDocuments(query);
 
       console.log('Approved documents found:', rtecDocuments.length);
+      console.log('Filtered documents:', filteredDocuments.length);
       console.log('Total approved documents:', total);
+      
+      // Debug: Check all RTEC documents to see what statuses exist
+      const allDocuments = await RTECDocuments.find({}).select('_id status tnaId applicationId revisionRequestedAt reviewedAt');
+      console.log('🔍 All RTEC documents statuses:');
+      allDocuments.forEach((doc, index) => {
+         console.log(`Document ${index + 1}: ID=${doc._id}, Status=${doc.status}, TNA=${doc.tnaId}, App=${doc.applicationId}, RevisionRequestedAt=${doc.revisionRequestedAt}, ReviewedAt=${doc.reviewedAt}`);
+      });
+      
+      // Debug: Check specifically for documents_approved status
+      const approvedDocs = await RTECDocuments.find({ 
+         status: 'documents_approved'
+      }).select('_id status tnaId applicationId');
+      console.log('🔍 Documents with documents_approved status:', approvedDocs.length);
+      approvedDocs.forEach(async (doc, index) => {
+         const rtecMeeting = await RTECMeeting.findOne({ tnaId: doc.tnaId });
+         console.log(`Approved Document ${index + 1}: ID=${doc._id}, Status=${doc.status}, TNA=${doc.tnaId}, App=${doc.applicationId}, MeetingStatus=${rtecMeeting?.status}`);
+      });
 
       // Debug each approved document
-      rtecDocuments.forEach((doc, index) => {
+      filteredDocuments.forEach((doc, index) => {
          console.log(`\n--- Approved Document ${index + 1} ---`);
          console.log('ID:', doc._id);
          console.log('Status:', doc.status);
          console.log('Enterprise:', doc.applicationId?.enterpriseName);
          console.log('Proponent:', doc.proponentId?.firstName, doc.proponentId?.lastName);
          console.log('Reviewed At:', doc.reviewedAt);
+         console.log('TNA Status:', doc.tnaId?.status);
+         console.log('Documents to Revise:', doc.documentsToRevise);
+         console.log('Revision Comments:', doc.revisionComments);
       });
 
+      console.log('🔍 Final response data:');
+      console.log('Success:', true);
+      console.log('Total docs:', total);
+      console.log('Returned docs:', rtecDocuments.length);
+      console.log('Page info:', { page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
+      
+      // Additional debugging for TNA status
+      console.log('🔍 Checking TNA statuses for returned documents:');
+      for (const doc of filteredDocuments) {
+         console.log(`🔍 Document ${doc._id}: TNA status = ${doc.tnaId?.status}, RTEC status = ${doc.status}`);
+      }
+      
+      // Debug: Check if TNA status is rtec_documents_approved
+      const tnaStatusCheck = await TNA.find({ status: 'rtec_documents_approved' }).select('_id status');
+      console.log('🔍 TNAs with rtec_documents_approved status:', tnaStatusCheck.length);
+      tnaStatusCheck.forEach((tna, index) => {
+         console.log(`TNA ${index + 1}: ID=${tna._id}, Status=${tna.status}`);
+      });
+      
+      // Debug: Check all TNA statuses
+      const allTNAStatuses = await TNA.find({}).select('_id status');
+      console.log('🔍 All TNA statuses:');
+      allTNAStatuses.forEach((tna, index) => {
+         console.log(`TNA ${index + 1}: ID=${tna._id}, Status=${tna.status}`);
+      });
+      
       res.json({
          success: true,
          data: {
-            docs: rtecDocuments,
-            totalDocs: total,
+            docs: filteredDocuments,
+            totalDocs: filteredDocuments.length,
             limit: limitNum,
             page: pageNum,
-            totalPages: Math.ceil(total / limitNum),
-            hasNextPage: pageNum < Math.ceil(total / limitNum),
+            totalPages: Math.ceil(filteredDocuments.length / limitNum),
+            hasNextPage: pageNum < Math.ceil(filteredDocuments.length / limitNum),
             hasPrevPage: pageNum > 1
          }
       });
@@ -573,6 +661,10 @@ const getRTECDocumentsForPSTO = async (req, res) => {
       const limitNum = parseInt(limit);
       const skip = (pageNum - 1) * limitNum;
 
+      console.log('=== PSTO RTEC DOCUMENTS DEBUG ===');
+      console.log('User ID:', userId);
+      console.log('TNA IDs:', tnaIds);
+      console.log('Query:', query);
       console.log('=== BEFORE POPULATION ===');
       
       const rtecDocuments = await RTECDocuments.find(query)
@@ -605,6 +697,16 @@ const getRTECDocumentsForPSTO = async (req, res) => {
          .limit(limitNum);
 
       console.log('=== AFTER POPULATION ===');
+      console.log('Found RTEC Documents:', rtecDocuments.length);
+      rtecDocuments.forEach((doc, index) => {
+         console.log(`Document ${index + 1}:`, {
+            id: doc._id,
+            status: doc.status,
+            documentsToRevise: doc.documentsToRevise,
+            revisionComments: doc.revisionComments,
+            partialdocsrtec: doc.partialdocsrtec?.length || 0
+         });
+      });
 
       const total = await RTECDocuments.countDocuments(query);
 

@@ -16,8 +16,19 @@ const RTECDocumentSubmission = () => {
       try {
          setLoading(true);
          const response = await api.get('/rtec-documents/psto/list');
+         console.log('🔍 PSTO RTEC Documents Response:', response.data);
          if (response.data.success) {
-            setRtecDocuments(response.data.data.docs || []);
+            const docs = response.data.data.docs || [];
+            console.log('🔍 PSTO RTEC Documents:', docs);
+            docs.forEach((doc, index) => {
+               console.log(`🔍 Document ${index + 1}:`, {
+                  id: doc._id,
+                  status: doc.status,
+                  documentsToRevise: doc.documentsToRevise,
+                  revisionComments: doc.revisionComments
+               });
+            });
+            setRtecDocuments(docs);
          }
       } catch (error) {
          console.error('Error fetching RTEC documents:', error);
@@ -79,7 +90,8 @@ const RTECDocumentSubmission = () => {
          'documents_submitted': { color: 'yellow', text: 'Submitted' },
          'documents_under_review': { color: 'purple', text: 'Under Review' },
          'documents_approved': { color: 'green', text: 'Approved' },
-         'documents_rejected': { color: 'red', text: 'Rejected' }
+         'documents_rejected': { color: 'red', text: 'Rejected' },
+         'documents_revision_requested': { color: 'orange', text: 'Revision Required' }
       };
       
       const config = statusConfig[status] || { color: 'gray', text: status };
@@ -223,13 +235,15 @@ const RTECDocumentSubmission = () => {
                                     </div>
                                     
                                     <div className="ml-2 flex-shrink-0">
-                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' ? (
+                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
                                           <Button
                                              size="sm"
                                              onClick={() => handleFileUpload(doc.type, rtecDoc)}
                                              className="text-xs px-2 py-1"
+                                             variant={rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'warning' : 'primary'}
                                           >
-                                             {doc.documentStatus === 'rejected' ? 'Resubmit' : 'Upload'}
+                                             {doc.documentStatus === 'rejected' ? 'Resubmit' : 
+                                              (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Upload'}
                                           </Button>
                                        ) : doc.documentStatus === 'submitted' ? (
                                           <Button
@@ -273,6 +287,39 @@ const RTECDocumentSubmission = () => {
                               <p className="text-sm text-red-800">
                                  Some documents have been rejected. Please review the comments and resubmit.
                               </p>
+                           </div>
+                        )}
+
+                        {rtecDoc.status === 'documents_revision_requested' && (
+                           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded">
+                              <div className="flex items-start">
+                                 <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                 </div>
+                                 <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-orange-800">
+                                       Document Revision Required
+                                    </h3>
+                                    <div className="mt-2 text-sm text-orange-700">
+                                       <p>DOST-MIMAROPA has requested revision of specific documents. Please coordinate with the proponent to resubmit the following documents:</p>
+                                       {rtecDoc.documentsToRevise && rtecDoc.documentsToRevise.length > 0 && (
+                                          <ul className="mt-2 list-disc list-inside">
+                                             {rtecDoc.documentsToRevise.map((doc, index) => (
+                                                <li key={index} className="font-medium">{doc.name}</li>
+                                             ))}
+                                          </ul>
+                                       )}
+                                       {rtecDoc.revisionComments && (
+                                          <div className="mt-2 p-2 bg-orange-100 rounded">
+                                             <p className="text-xs font-medium text-orange-800">Revision Comments:</p>
+                                             <p className="text-xs text-orange-700">{rtecDoc.revisionComments}</p>
+                                          </div>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
                            </div>
                         )}
                      </div>
