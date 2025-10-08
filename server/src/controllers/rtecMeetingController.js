@@ -1470,18 +1470,14 @@ const completeRTEC = async (req, res) => {
       } else if (evaluationData && evaluationData.evaluationOutcome === 'endorsed for approval (with comment)') {
          console.log('🔄 Handling "endorsed for approval (with comment)" outcome...');
          
-         // Prepare additional documents required array
-         const additionalDocumentsRequired = evaluationData.documentsToRevise?.map(docType => {
-            // Find the document details from available documents
-            const docDetails = evaluationData.availableDocuments?.find(doc => doc.type === docType);
-            return {
-               type: docType,
-               name: docDetails?.name || docType,
-               description: docDetails?.description || `Additional document: ${docType}`,
-               reason: evaluationData.evaluationComment,
-               documentStatus: 'pending'
-            };
-         }) || [];
+         // For "endorsed for approval (with comment)", only add "Response to RTEC Comments" as additional document
+         const additionalDocumentsRequired = [{
+            type: 'response to rtec comments',
+            name: 'Response to RTEC Comments',
+            description: 'Proponent\'s response addressing the RTEC committee\'s comments and recommendations',
+            reason: evaluationData.evaluationComment,
+            documentStatus: 'pending'
+         }];
          
          // Note: Response to RTEC Comments will be handled separately by the proponent
          // No need to automatically add it here to avoid duplication

@@ -1732,10 +1732,13 @@ const RTECScheduleManagement = () => {
                                  checked={rtecEvaluationData.documentsToRevise.includes(doc.type)}
                                  onChange={(e) => {
                                     if (e.target.checked) {
-                                       setRtecEvaluationData({
-                                          ...rtecEvaluationData,
-                                          documentsToRevise: [...rtecEvaluationData.documentsToRevise, doc.type]
-                                       });
+                                       // Prevent duplicates by checking if document type already exists
+                                       if (!rtecEvaluationData.documentsToRevise.includes(doc.type)) {
+                                          setRtecEvaluationData({
+                                             ...rtecEvaluationData,
+                                             documentsToRevise: [...rtecEvaluationData.documentsToRevise, doc.type]
+                                          });
+                                       }
                                     } else {
                                        setRtecEvaluationData({
                                           ...rtecEvaluationData,

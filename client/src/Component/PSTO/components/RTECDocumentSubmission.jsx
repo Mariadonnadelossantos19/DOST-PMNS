@@ -91,7 +91,8 @@ const RTECDocumentSubmission = () => {
          'documents_under_review': { color: 'purple', text: 'Under Review' },
          'documents_approved': { color: 'green', text: 'Approved' },
          'documents_rejected': { color: 'red', text: 'Rejected' },
-         'documents_revision_requested': { color: 'orange', text: 'Revision Required' }
+         'documents_revision_requested': { color: 'orange', text: 'Revision Required' },
+         'additional_documents_required': { color: 'purple', text: 'Additional Documents Required' }
       };
       
       const config = statusConfig[status] || { color: 'gray', text: status };
@@ -209,6 +210,70 @@ const RTECDocumentSubmission = () => {
                            </div>
                         </div>
 
+                        {/* Additional Documents Required */}
+                        {rtecDoc.status === 'additional_documents_required' && rtecDoc.additionalDocumentsRequired && rtecDoc.additionalDocumentsRequired.length > 0 && (
+                           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3 mb-3 shadow-sm">
+                              <h4 className="text-sm font-semibold text-blue-900 mb-2">Additional Documents Required</h4>
+                              <div className="space-y-2">
+                                 {rtecDoc.additionalDocumentsRequired
+                                    .filter((doc, index, self) => 
+                                       // Remove duplicates based on document type
+                                       index === self.findIndex(d => d.type === doc.type)
+                                    )
+                                    .map((doc, index) => (
+                                    <div key={index} className="bg-white border border-blue-100 rounded p-2 flex justify-between items-center">
+                                       <div className="flex-1 min-w-0">
+                                          <div className="flex items-center justify-between mb-1">
+                                             <h5 className="font-medium text-gray-900 text-xs truncate">{doc.name}</h5>
+                                             {getDocumentStatusBadge(doc.documentStatus)}
+                                          </div>
+                                          
+                                          <p className="text-xs text-gray-600 mb-1">{doc.description}</p>
+                                          
+                                          {doc.reason && (
+                                             <div className="bg-yellow-50 rounded p-1 mb-1">
+                                                <p className="text-xs text-yellow-700">💬 {doc.reason}</p>
+                                             </div>
+                                          )}
+                                          
+                                          {doc.filename && (
+                                             <div className="bg-green-50 rounded p-1 mb-1">
+                                                <p className="text-xs text-green-700 truncate">✓ {doc.originalName}</p>
+                                             </div>
+                                          )}
+                                       </div>
+                                       
+                                       <div className="ml-2 flex-shrink-0">
+                                          {doc.documentStatus === 'pending' ? (
+                                             <Button
+                                                size="sm"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                                variant="primary"
+                                             >
+                                                Upload
+                                             </Button>
+                                          ) : doc.documentStatus === 'submitted' ? (
+                                             <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                             >
+                                                Replace
+                                             </Button>
+                                          ) : (
+                                             <span className="text-xs font-medium">
+                                                {doc.documentStatus === 'approved' ? '✅' : '⏳'}
+                                             </span>
+                                          )}
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        )}
+
                         {/* Required Documents */}
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-2 shadow-sm">
                            <h4 className="text-sm font-semibold text-purple-900 mb-2">Documents</h4>
@@ -235,15 +300,19 @@ const RTECDocumentSubmission = () => {
                                     </div>
                                     
                                     <div className="ml-2 flex-shrink-0">
-                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
+                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || 
+                                        (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ||
+                                        (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
                                           <Button
                                              size="sm"
                                              onClick={() => handleFileUpload(doc.type, rtecDoc)}
                                              className="text-xs px-2 py-1"
-                                             variant={rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'warning' : 'primary'}
+                                             variant={rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'warning' : 
+                                                     rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'primary' : 'primary'}
                                           >
                                              {doc.documentStatus === 'rejected' ? 'Resubmit' : 
-                                              (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Upload'}
+                                              (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 
+                                              (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Upload'}
                                           </Button>
                                        ) : doc.documentStatus === 'submitted' ? (
                                           <Button
@@ -316,6 +385,33 @@ const RTECDocumentSubmission = () => {
                                              <p className="text-xs font-medium text-orange-800">Revision Comments:</p>
                                              <p className="text-xs text-orange-700">{rtecDoc.revisionComments}</p>
                                           </div>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        )}
+
+                        {rtecDoc.status === 'additional_documents_required' && (
+                           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                              <div className="flex items-start">
+                                 <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                 </div>
+                                 <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-blue-800">
+                                       Additional Documents Required
+                                    </h3>
+                                    <div className="mt-2 text-sm text-blue-700">
+                                       <p>DOST-MIMAROPA has requested additional documents for this application. Please coordinate with the proponent to submit the required documents:</p>
+                                       {rtecDoc.additionalDocumentsRequired && rtecDoc.additionalDocumentsRequired.length > 0 && (
+                                          <ul className="mt-2 list-disc list-inside">
+                                             {rtecDoc.additionalDocumentsRequired.map((doc, index) => (
+                                                <li key={index} className="font-medium">{doc.name}</li>
+                                             ))}
+                                          </ul>
                                        )}
                                     </div>
                                  </div>
