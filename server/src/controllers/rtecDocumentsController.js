@@ -619,9 +619,9 @@ const getApprovedRTECDocuments = async (req, res) => {
       console.log('Page:', pageNum, 'Limit:', limitNum);
 
       // Query for documents that are approved and ready for scheduling
-      // Only include documents_approved status (not rtec_completed)
+      // Include both documents_approved and additional_documents_required statuses
       const query = { 
-         status: 'documents_approved'
+         status: { $in: ['documents_approved', 'additional_documents_required'] }
       };
       console.log('🔍 Query for documents approved and ready for scheduling:', query);
 
@@ -647,22 +647,26 @@ const getApprovedRTECDocuments = async (req, res) => {
          
          console.log('🔍 Processing document:', doc._id, 'Status:', doc.status, 'Meeting exists:', rtecMeeting ? 'Yes' : 'No');
          
-         if (doc.status === 'documents_approved') {
+         if (doc.status === 'documents_approved' || doc.status === 'additional_documents_required') {
             // Check if meeting exists
             if (!rtecMeeting) {
-               // No meeting yet, this is a new approved document
+               // No meeting yet, this is a new approved document or document with additional requirements
                filteredDocuments.push(doc);
-               console.log('✅ Including NEW approved document (no meeting yet):', doc._id);
+               console.log('✅ Including NEW approved document (no meeting yet):', doc._id, 'Status:', doc.status);
             } else if (rtecMeeting.status === 'rtec_revision_requested') {
                // Meeting exists with revision status, documents have been re-approved after revision
                filteredDocuments.push(doc);
-               console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Meeting status:', rtecMeeting.status);
+               console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
+            } else if (rtecMeeting.status === 'rtec_endorsed_for_approval') {
+               // Meeting exists with endorsed for approval status, documents need additional requirements
+               filteredDocuments.push(doc);
+               console.log('✅ Including ENDORSED document (needs additional requirements):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
             } else if (rtecMeeting.status !== 'rtec_completed' && !rtecMeeting.rtecCompleted) {
                // Meeting exists but not completed yet, include for potential rescheduling
                filteredDocuments.push(doc);
-               console.log('✅ Including approved document (meeting in progress):', doc._id, 'Meeting status:', rtecMeeting.status);
+               console.log('✅ Including approved document (meeting in progress):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
             } else {
-               console.log('❌ Filtering out completed document:', doc._id, 'Meeting status:', rtecMeeting?.status);
+               console.log('❌ Filtering out completed document:', doc._id, 'Meeting status:', rtecMeeting?.status, 'Doc status:', doc.status);
             }
          } else {
             console.log('❌ Filtering out non-approved document:', doc._id, 'Status:', doc.status);

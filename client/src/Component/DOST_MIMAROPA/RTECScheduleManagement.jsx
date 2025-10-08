@@ -421,8 +421,12 @@ const RTECScheduleManagement = () => {
                const response = await api.get(`/rtec-documents/tna/${tnaId}`);
                if (response.data.success && response.data.data) {
                   const rtecDoc = response.data.data;
-                  const documents = rtecDoc.partialdocsrtec || [];
-                  setAvailableDocuments(documents);
+                  const regularDocuments = rtecDoc.partialdocsrtec || [];
+                  const additionalDocuments = rtecDoc.additionalDocumentsRequired || [];
+                  
+                  // Combine regular and additional documents
+                  const allDocuments = [...regularDocuments, ...additionalDocuments];
+                  setAvailableDocuments(allDocuments);
                }
             }
          }
@@ -1729,12 +1733,25 @@ const RTECScheduleManagement = () => {
                                  className="rounded border-gray-300"
                               />
                               <label htmlFor={`doc-${index}`} className="flex-1 cursor-pointer">
-                                 <div className="font-medium">{doc.name}</div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="font-medium">{doc.name}</div>
+                                    {doc.documentStatus === 'pending' && doc.reason && (
+                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                          Additional Required
+                                       </span>
+                                    )}
+                                 </div>
                                  <div className="text-sm text-gray-500">{doc.description}</div>
+                                 {doc.reason && (
+                                    <div className="text-sm text-blue-600 mt-1">
+                                       <strong>Reason:</strong> {doc.reason}
+                                    </div>
+                                 )}
                                  <div className="text-xs text-gray-400 mt-1">
                                     Status: <span className={`font-medium ${
                                        doc.documentStatus === 'approved' ? 'text-green-600' : 
                                        doc.documentStatus === 'rejected' ? 'text-red-600' : 
+                                       doc.documentStatus === 'pending' ? 'text-blue-600' :
                                        'text-yellow-600'
                                     }`}>{doc.documentStatus}</span>
                                  </div>
