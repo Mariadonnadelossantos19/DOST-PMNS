@@ -431,16 +431,8 @@ const RTECScheduleManagement = () => {
                   const regularDocuments = rtecDoc.partialdocsrtec || [];
                   const additionalDocuments = rtecDoc.additionalDocumentsRequired || [];
                   
-                  // Add "Response to RTEC Comments" document if not already present
-                  const responseDocument = {
-                     type: 'response to rtec comments',
-                     name: 'Response to RTEC Comments',
-                     description: 'Proponent\'s response addressing the RTEC committee\'s comments and recommendations',
-                     documentStatus: 'pending'
-                  };
-                  
-                  // Combine regular, additional, and response documents
-                  const allDocuments = [...regularDocuments, ...additionalDocuments, responseDocument];
+                  // Combine regular and additional documents
+                  const allDocuments = [...regularDocuments, ...additionalDocuments];
                   setAvailableDocuments(allDocuments);
                }
             }
