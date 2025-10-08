@@ -431,8 +431,14 @@ const RTECScheduleManagement = () => {
                   const regularDocuments = rtecDoc.partialdocsrtec || [];
                   const additionalDocuments = rtecDoc.additionalDocumentsRequired || [];
                   
+                  console.log('🔍 RTEC Documents fetched for modal:');
+                  console.log('   Regular documents:', regularDocuments.length);
+                  console.log('   Additional documents:', additionalDocuments.length);
+                  console.log('   Additional documents details:', additionalDocuments);
+                  
                   // Combine regular and additional documents
                   const allDocuments = [...regularDocuments, ...additionalDocuments];
+                  console.log('   Total documents for modal:', allDocuments.length);
                   setAvailableDocuments(allDocuments);
                }
             }
