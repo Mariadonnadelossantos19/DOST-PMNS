@@ -367,8 +367,58 @@ const reviewRTECDocument = async (req, res) => {
           console.log('🔍 TNA status updated to:', tna.status);
           console.log('🔍 TNA ID:', tna._id);
           
-          // Note: RTEC meeting status remains unchanged so it can be manually rescheduled
-          // Documents with rtec_revision_requested meeting status will appear in scheduling table
+          // Check if this is a re-approval after revision
+          const RTECMeeting = require('../models/RTECMeeting');
+          const existingMeeting = await RTECMeeting.findOne({ tnaId: tnaId });
+          
+          console.log('🔍 Checking for existing meeting...');
+          console.log('🔍 TNA ID:', tnaId);
+          console.log('🔍 Existing meeting found:', existingMeeting ? 'Yes' : 'No');
+          if (existingMeeting) {
+             console.log('🔍 Meeting ID:', existingMeeting._id);
+             console.log('🔍 Meeting status:', existingMeeting.status);
+             console.log('🔍 Meeting rtecCompleted:', existingMeeting.rtecCompleted);
+          }
+          
+          // Check if this is a re-approval after revision (any meeting that exists and is not completed)
+          if (existingMeeting && (existingMeeting.status === 'rtec_revision_requested' || 
+                                  existingMeeting.status === 'rtec_revision_requested' ||
+                                  !existingMeeting.rtecCompleted)) {
+             console.log('🔍 Found existing meeting that needs rescheduling...');
+             console.log('🔍 Meeting ID:', existingMeeting._id);
+             console.log('🔍 Meeting status:', existingMeeting.status);
+             console.log('🔍 Documents are now approved and ready for next meeting scheduling');
+             
+             // Create notification for DOST-MIMAROPA to schedule next meeting
+             const dostUsers = await User.find({ role: 'dost_mimaropa' });
+             console.log('🔍 Found DOST users:', dostUsers.length);
+             
+             for (const dostUser of dostUsers) {
+                console.log('🔍 Creating notification for DOST user:', dostUser._id);
+                try {
+                   await Notification.createNotification({
+                      recipientId: dostUser._id,
+                      recipientType: 'dost_mimaropa',
+                      type: 'status_update',
+                      title: 'Revised RTEC Documents Approved - Ready for Next Meeting',
+                      message: `Revised RTEC documents for "${rtecDocuments.applicationId?.enterpriseName || 'Application'}" have been approved. Please schedule the next RTEC meeting.`,
+                      relatedEntityType: 'rtec',
+                      relatedEntityId: existingMeeting._id,
+                      actionUrl: `/rtec-schedule-management`,
+                      actionText: 'Schedule Next Meeting',
+                      priority: 'high',
+                      sentBy: userId
+                   });
+                   console.log('✅ Notification created successfully for user:', dostUser._id);
+                } catch (notificationError) {
+                   console.error('❌ Error creating notification:', notificationError);
+                }
+             }
+          } else if (existingMeeting) {
+             console.log('🔍 Meeting exists but may not need rescheduling:', existingMeeting.status);
+          } else {
+             console.log('🔍 No existing meeting found - this is a new approval');
+          }
        } else if (rtecDocuments.status === 'documents_rejected') {
          console.log('🔍 Updating TNA to rtec_documents_rejected...');
          console.log('🔍 TNA before update:', tna.status);
@@ -542,20 +592,53 @@ const getApprovedRTECDocuments = async (req, res) => {
       const RTECMeeting = require('../models/RTECMeeting');
       const filteredDocuments = [];
       
+      console.log('🔍 FILTERING LOGIC: Processing approved documents for scheduling...');
+      
       for (const doc of rtecDocuments) {
          const rtecMeeting = await RTECMeeting.findOne({ tnaId: doc.tnaId });
          
-         // Show documents that are approved and ready for scheduling
-         // This includes both new approved documents AND revised documents that have been re-approved
+         console.log('🔍 Processing document:', doc._id, 'Status:', doc.status, 'Meeting exists:', rtecMeeting ? 'Yes' : 'No');
+         
          if (doc.status === 'documents_approved') {
-            filteredDocuments.push(doc);
-            console.log('🔍 Including approved document:', doc._id, 'Status:', doc.status, 'Meeting status:', rtecMeeting?.status);
+            // Check if meeting exists
+            if (!rtecMeeting) {
+               // No meeting yet, this is a new approved document
+               filteredDocuments.push(doc);
+               console.log('✅ Including NEW approved document (no meeting yet):', doc._id);
+            } else if (rtecMeeting.status === 'rtec_revision_requested') {
+               // Meeting exists with revision status, documents have been re-approved after revision
+               filteredDocuments.push(doc);
+               console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Meeting status:', rtecMeeting.status);
+            } else if (rtecMeeting.status !== 'rtec_completed' && !rtecMeeting.rtecCompleted) {
+               // Meeting exists but not completed yet, include for potential rescheduling
+               filteredDocuments.push(doc);
+               console.log('✅ Including approved document (meeting in progress):', doc._id, 'Meeting status:', rtecMeeting.status);
+            } else {
+               console.log('❌ Filtering out completed document:', doc._id, 'Meeting status:', rtecMeeting?.status);
+            }
          } else {
-            console.log('🔍 Filtering out document:', doc._id, 'Status:', doc.status, 'Meeting status:', rtecMeeting?.status);
+            console.log('❌ Filtering out non-approved document:', doc._id, 'Status:', doc.status);
          }
       }
       
       console.log('🔍 Approved documents ready for scheduling:', filteredDocuments.length);
+      
+      // Debug: Log each document and its meeting status
+      console.log('🔍 DETAILED DEBUG - Each document and its meeting:');
+      for (const doc of rtecDocuments) {
+         const rtecMeeting = await RTECMeeting.findOne({ tnaId: doc.tnaId });
+         console.log(`Document ${doc._id}:`);
+         console.log(`  - Status: ${doc.status}`);
+         console.log(`  - TNA ID: ${doc.tnaId}`);
+         console.log(`  - Enterprise: ${doc.applicationId?.enterpriseName}`);
+         console.log(`  - Meeting exists: ${rtecMeeting ? 'Yes' : 'No'}`);
+         if (rtecMeeting) {
+            console.log(`  - Meeting ID: ${rtecMeeting._id}`);
+            console.log(`  - Meeting status: ${rtecMeeting.status}`);
+            console.log(`  - Meeting rtecCompleted: ${rtecMeeting.rtecCompleted}`);
+         }
+         console.log('  ---');
+      }
 
       const total = await RTECDocuments.countDocuments(query);
 

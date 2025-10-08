@@ -2,6 +2,80 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Badge, Modal, DataTable, Toast, ConfirmationModal, Input, Textarea, StatsCard, Alert } from '../UI';
 import api from '../../config/api';
 
+// Icon Components for better organization
+const Icons = {
+   // Calendar and Scheduling
+   Calendar: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+   ),
+   
+   // Check and Confirm
+   Check: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+   ),
+   
+   // Cross and Cancel
+   Cross: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+   ),
+   
+   // View and Details
+   Eye: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+   ),
+   
+   // Users and Participants
+   Users: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+      </svg>
+   ),
+   
+   // Email and Invitations
+   Mail: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+   ),
+   
+   // Complete and Finish
+   CheckCircle: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+   ),
+   
+   // RTEC Evaluation
+   Clipboard: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+   ),
+   
+   // Star for RTEC Complete
+   Star: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+   ),
+   
+   // Delete and Remove
+   Trash: () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+   )
+};
+
 const RTECScheduleManagement = () => {
    const [approvedRTECDocuments, setApprovedRTECDocuments] = useState([]);
    const [rtecMeetings, setRtecMeetings] = useState([]);
@@ -10,7 +84,6 @@ const RTECScheduleManagement = () => {
    const [showParticipantsModal, setShowParticipantsModal] = useState(false);
    const [showInviteModal, setShowInviteModal] = useState(false);
    const [selectedMeeting, setSelectedMeeting] = useState(null);
-   // const [selectedRTECDocument, setSelectedRTECDocument] = useState(null);
    const [availablePSTOUsers, setAvailablePSTOUsers] = useState([]);
    const [selectedPSTOUsers, setSelectedPSTOUsers] = useState([]);
    const [showParticipantManagement, setShowParticipantManagement] = useState(false);
@@ -62,52 +135,19 @@ const RTECScheduleManagement = () => {
    // Fetch approved RTEC documents
    const fetchApprovedRTECDocuments = useCallback(async () => {
       try {
-         console.log('=== FETCHING APPROVED RTEC DOCUMENTS ===');
          setLoading(true);
          const response = await api.get('/rtec-documents/approved');
-         console.log('Approved RTEC Documents Response:', response.data);
+         
          if (response.data.success) {
             const approvedDocs = response.data.data.docs || [];
-            console.log('Approved RTEC Documents:', approvedDocs);
-            console.log('Total docs from response:', response.data.data.totalDocs);
-            console.log('Docs array length:', approvedDocs.length);
-            console.log('Setting approved documents to state...');
-            
-            // Debug each approved document
-            approvedDocs.forEach((doc, index) => {
-               console.log(`\n=== Approved Document ${index + 1} ===`);
-               console.log('Full document:', doc);
-               console.log('applicationId:', doc.applicationId);
-               console.log('proponentId:', doc.proponentId);
-               console.log('status:', doc.status);
-               console.log('programName:', doc.programName);
-               
-               if (doc.applicationId) {
-                  console.log('applicationId.enterpriseName:', doc.applicationId.enterpriseName);
-                  console.log('applicationId.projectTitle:', doc.applicationId.projectTitle);
-                  console.log('applicationId keys:', Object.keys(doc.applicationId));
-               } else {
-                  console.log('❌ applicationId is null/undefined');
-               }
-               
-               if (doc.proponentId) {
-                  console.log('proponentId.firstName:', doc.proponentId.firstName);
-                  console.log('proponentId.lastName:', doc.proponentId.lastName);
-                  console.log('proponentId.email:', doc.proponentId.email);
-                  console.log('proponentId keys:', Object.keys(doc.proponentId));
-               } else {
-                  console.log('❌ proponentId is null/undefined');
-               }
-            });
-            
             setApprovedRTECDocuments(approvedDocs);
-            console.log('State updated with approved documents');
-            console.log('Current state length:', approvedDocs.length);
-            console.log('State will be updated to:', approvedDocs);
+         } else {
+            setApprovedRTECDocuments([]);
          }
       } catch (error) {
          console.error('Error fetching approved RTEC documents:', error);
          displayToast('Failed to fetch approved RTEC documents', 'error');
+         setApprovedRTECDocuments([]);
       } finally {
          setLoading(false);
       }
@@ -117,23 +157,8 @@ const RTECScheduleManagement = () => {
    const fetchRTECMeetings = useCallback(async () => {
       try {
          const response = await api.get('/rtec-meetings/list');
-         console.log('=== FETCH RTEC MEETINGS RESPONSE ===');
-         console.log('Full response:', response.data);
-         console.log('Meetings data:', response.data.data.docs);
-         
          if (response.data.success) {
             const meetings = response.data.data.docs || [];
-            console.log('Number of meetings:', meetings.length);
-            meetings.forEach((meeting, index) => {
-               console.log(`Meeting ${index + 1}:`, {
-                  id: meeting._id,
-                  title: meeting.meetingTitle,
-                  rtecDocumentsId: meeting.rtecDocumentsId,
-                  scheduledDate: meeting.scheduledDate,
-                  scheduledTime: meeting.scheduledTime,
-                  location: meeting.location
-               });
-            });
             setRtecMeetings(meetings);
          }
       } catch (error) {
@@ -145,53 +170,26 @@ const RTECScheduleManagement = () => {
    // Fetch available PSTO users
    const fetchAvailablePSTOUsers = useCallback(async () => {
       try {
-         console.log('🔍 Fetching available PSTO users...');
          const response = await api.get('/rtec-meetings/available-psto-users');
-         console.log('📡 PSTO users response:', response.data);
          if (response.data.success) {
-            console.log('✅ PSTO users fetched successfully:', response.data.data);
             setAvailablePSTOUsers(response.data.data || []);
          } else {
-            console.log('❌ PSTO users fetch failed:', response.data.message);
             displayToast('Failed to fetch PSTO users: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('💥 Error fetching PSTO users:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
+         console.error('Error fetching PSTO users:', error);
          displayToast('Failed to fetch PSTO users: ' + (error.response?.data?.message || error.message), 'error');
       }
    }, [displayToast]);
 
-   // Fetch meeting participants
-   // const fetchMeetingParticipants = async (meetingId) => {
-   //    try {
-   //       const response = await api.get(`/rtec-meetings/${meetingId}/participants`);
-   //       if (response.data.success) {
-   //          return response.data.data;
-   //       }
-   //    } catch (error) {
-   //       console.error('Error fetching participants:', error);
-   //       displayToast('Failed to fetch participants', 'error');
-   //    }
-   //    return [];
-   // };
 
    useEffect(() => {
-      console.log('=== COMPONENT MOUNTED - FETCHING DATA ===');
       fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
    }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
 
    const handleScheduleMeeting = (rtecDocument) => {
-      console.log('=== HANDLE SCHEDULE MEETING ===');
-      console.log('RTEC Document:', rtecDocument);
-      console.log('TNA ID:', rtecDocument.tnaId?._id || rtecDocument.tnaId);
-      console.log('Application ID:', rtecDocument.applicationId?._id || rtecDocument.applicationId);
-      console.log('Proponent ID:', rtecDocument.proponentId?._id || rtecDocument.proponentId);
-      console.log('Current showCreateModal state:', showCreateModal);
-      
       const newFormData = {
          tnaId: rtecDocument.tnaId?._id || rtecDocument.tnaId,
          rtecDocumentsId: rtecDocument._id,
@@ -210,55 +208,19 @@ const RTECScheduleManagement = () => {
          notes: ''
       };
       
-      console.log('📝 New form data being set:', newFormData);
       setFormData(newFormData);
-      console.log('Setting showCreateModal to true');
       setShowCreateModal(true);
-      console.log('showCreateModal should now be true');
    };
 
    const handleCreateMeeting = async () => {
       try {
-         console.log('=== CREATE MEETING DEBUG ===');
-         console.log('Form Data:', formData);
-         console.log('TNA ID being sent:', formData.tnaId);
-         console.log('Meeting Title:', formData.meetingTitle);
-         console.log('Scheduled Date:', formData.scheduledDate);
-         console.log('Scheduled Time:', formData.scheduledTime);
-         console.log('Location:', formData.location);
-         console.log('Date type:', typeof formData.scheduledDate);
-         console.log('All form fields:', {
-            tnaId: formData.tnaId,
-            rtecDocumentsId: formData.rtecDocumentsId,
-            applicationId: formData.applicationId,
-            proponentId: formData.proponentId,
-            programName: formData.programName,
-            meetingTitle: formData.meetingTitle,
-            meetingDescription: formData.meetingDescription,
-            scheduledDate: formData.scheduledDate,
-            scheduledTime: formData.scheduledTime,
-            location: formData.location,
-            meetingType: formData.meetingType
-         });
-         
          // Validate required fields
          if (!formData.meetingTitle || !formData.scheduledDate || !formData.scheduledTime || !formData.location) {
-            console.log('❌ Validation failed - missing required fields');
-            console.log('Missing fields:', {
-               meetingTitle: !formData.meetingTitle,
-               scheduledDate: !formData.scheduledDate,
-               scheduledTime: !formData.scheduledTime,
-               location: !formData.location
-            });
             displayToast('Please fill in all required fields', 'error');
             return;
          }
          
-         console.log('🚀 Sending API request to /rtec-meetings/create');
-         console.log('📤 Request payload:', JSON.stringify(formData, null, 2));
-         
          const response = await api.post('/rtec-meetings/create', formData);
-         console.log('📥 Create meeting response:', response.data);
          
          if (response.data.success) {
             displayToast('RTEC meeting scheduled successfully', 'success');
@@ -284,15 +246,9 @@ const RTECScheduleManagement = () => {
             fetchApprovedRTECDocuments();
          }
       } catch (error) {
-         console.error('💥 Error creating meeting:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
-         console.error('💥 Error message:', error.message);
-         console.error('💥 Full error object:', error);
+         console.error('Error creating meeting:', error);
          
          const errorMessage = error.response?.data?.message || error.message || 'Failed to create meeting';
-         
-         console.log('🔍 Error message to display:', errorMessage);
          
          // Handle specific error cases
          if (errorMessage.includes('already scheduled')) {
@@ -307,46 +263,25 @@ const RTECScheduleManagement = () => {
 
    const handleInviteProponent = async (meetingId) => {
       try {
-         console.log('🔍 Sending proponent invitation for meeting:', meetingId);
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-proponent`);
-         console.log('📡 Proponent invite response:', response.data);
          if (response.data.success) {
             displayToast('Proponent invitation sent successfully', 'success');
             fetchRTECMeetings(); // Refresh meetings to show updated participants
          } else {
-            console.log('❌ Proponent invite failed:', response.data.message);
             displayToast('Failed to send proponent invitation: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('💥 Error inviting proponent:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
+         console.error('Error inviting proponent:', error);
          displayToast('Failed to send proponent invitation: ' + (error.response?.data?.message || error.message), 'error');
       }
    };
 
-   // const handleInvitePSTO = async (meetingId, pstoId) => {
-   //    try {
-   //       const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto`, { pstoId });
-   //       if (response.data.success) {
-   //          displayToast('PSTO invitation sent successfully', 'success');
-   //       }
-   //    } catch (error) {
-   //       console.error('Error inviting PSTO:', error);
-   //       displayToast('Failed to send PSTO invitation', 'error');
-   //    }
-   // };
 
    const handleBulkInvitePSTO = async (meetingId) => {
       try {
-         console.log('🔍 Sending bulk PSTO invitations...');
-         console.log('🔍 Meeting ID:', meetingId);
-         console.log('🔍 Selected PSTO users:', selectedPSTOUsers);
-         
          const response = await api.post(`/rtec-meetings/${meetingId}/invite-psto-bulk`, { 
             pstoIds: selectedPSTOUsers 
          });
-         console.log('📡 Bulk invite response:', response.data);
          
          if (response.data.success) {
             displayToast(`Invitations sent to ${response.data.data.invitationsSent} PSTO users`, 'success');
@@ -354,13 +289,10 @@ const RTECScheduleManagement = () => {
             setSelectedPSTOUsers([]);
             fetchRTECMeetings(); // Refresh meetings to show updated participants
          } else {
-            console.log('❌ Bulk invite failed:', response.data.message);
             displayToast('Failed to send invitations: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('💥 Error bulk inviting PSTO:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
+         console.error('Error bulk inviting PSTO:', error);
          displayToast('Failed to send bulk PSTO invitations: ' + (error.response?.data?.message || error.message), 'error');
       }
    };
@@ -368,20 +300,15 @@ const RTECScheduleManagement = () => {
    // Resend invitation to participant
    const handleResendInvitation = async (meetingId, participantId) => {
       try {
-         console.log('🔍 Resending invitation for meeting:', meetingId, 'participant:', participantId);
          const response = await api.post(`/rtec-meetings/${meetingId}/resend-invitation`, { 
             participantId 
          });
-         console.log('📡 Resend response:', response.data);
          if (response.data.success) {
             displayToast('Invitation resent successfully', 'success');
             fetchRTECMeetings();
          }
       } catch (error) {
-         console.error('💥 Error resending invitation:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
-         
+         console.error('Error resending invitation:', error);
          const errorMessage = error.response?.data?.message || 'Failed to resend invitation';
          displayToast(errorMessage, 'error');
       }
@@ -445,20 +372,9 @@ const RTECScheduleManagement = () => {
    // Handle RTEC completion with evaluation
    const handleCompleteRTEC = async (meetingId) => {
       try {
-         console.log('🔍 Completing RTEC for meeting:', meetingId);
-         
          // Find the meeting in our local state to check its current status
          const meeting = rtecMeetings.find(m => m._id === meetingId);
          if (meeting) {
-            console.log('🔍 Meeting details before API call:', {
-               id: meeting._id,
-               status: meeting.status,
-               rtecCompleted: meeting.rtecCompleted,
-               title: meeting.meetingTitle,
-               evaluationOutcome: meeting.evaluationOutcome,
-               evaluationComment: meeting.evaluationComment
-            });
-            
             // Check if RTEC evaluation has been completed
             if (!meeting.evaluationOutcome) {
                displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
@@ -467,20 +383,16 @@ const RTECScheduleManagement = () => {
          }
          
          const response = await api.post(`/rtec-meetings/${meetingId}/complete-rtec`);
-         console.log('📡 Complete RTEC response:', response.data);
          
          if (response.data.success) {
             displayToast('RTEC completed successfully', 'success');
             fetchRTECMeetings();
             fetchApprovedRTECDocuments(); // Refresh documents to show updated status
          } else {
-            console.log('❌ Complete RTEC failed:', response.data.message);
             displayToast('Failed to complete RTEC: ' + response.data.message, 'error');
          }
       } catch (error) {
-         console.error('💥 Error completing RTEC:', error);
-         console.error('💥 Error response:', error.response?.data);
-         console.error('💥 Error status:', error.response?.status);
+         console.error('Error completing RTEC:', error);
          displayToast('Failed to complete RTEC: ' + (error.response?.data?.message || error.message), 'error');
       }
    };
@@ -490,11 +402,9 @@ const RTECScheduleManagement = () => {
       try {
          // Find the meeting to get the RTEC documents
          const meeting = rtecMeetings.find(m => m._id === meetingId);
-         console.log('🔍 Meeting found for evaluation:', meeting);
          if (meeting && meeting.rtecDocumentsId) {
             // Extract the TNA ID properly - handle both string and object cases
             const tnaId = typeof meeting.tnaId === 'object' ? meeting.tnaId._id || meeting.tnaId : meeting.tnaId;
-            console.log('🔍 TNA ID for RTEC documents fetch:', tnaId);
             
             if (tnaId) {
                // Fetch the RTEC documents to get available document types
@@ -503,10 +413,7 @@ const RTECScheduleManagement = () => {
                   const rtecDoc = response.data.data;
                   const documents = rtecDoc.partialdocsrtec || [];
                   setAvailableDocuments(documents);
-                  console.log('🔍 Available documents for evaluation:', documents);
                }
-            } else {
-               console.warn('⚠️ No TNA ID found for meeting:', meeting);
             }
          }
          
@@ -527,21 +434,28 @@ const RTECScheduleManagement = () => {
 
    // Submit RTEC evaluation
    const handleSubmitRTECEvaluation = async () => {
+      let requestData;
+      
       try {
-         console.log('🔍 Submitting RTEC evaluation:', rtecEvaluationData);
-         console.log('🔍 Available documents:', availableDocuments);
-         console.log('🔍 Meeting ID:', rtecEvaluationData.meetingId);
-         console.log('🔍 Documents to revise:', rtecEvaluationData.documentsToRevise);
-         console.log('🔍 Evaluation outcome:', rtecEvaluationData.evaluationOutcome);
+         // Validate required fields
+         if (!rtecEvaluationData.evaluationOutcome) {
+            displayToast('Please select an evaluation outcome', 'error');
+            return;
+         }
          
-         const requestData = {
+         if (!rtecEvaluationData.evaluationComment) {
+            displayToast('Please provide evaluation comments', 'error');
+            return;
+         }
+         
+         requestData = {
             evaluationData: {
                ...rtecEvaluationData,
                availableDocuments: availableDocuments
             }
          };
-         console.log('🔍 Request data being sent:', requestData);
-         console.log('🔍 Documents to revise in request:', requestData.evaluationData.documentsToRevise);
+         
+         console.log('Submitting RTEC evaluation with data:', requestData);
          
          const response = await api.post(`/rtec-meetings/${rtecEvaluationData.meetingId}/complete-rtec`, requestData);
          
@@ -564,8 +478,11 @@ const RTECScheduleManagement = () => {
       } catch (error) {
          console.error('Error submitting RTEC evaluation:', error);
          console.error('Error response:', error.response?.data);
-         const errorMessage = error.response?.data?.message || 'Failed to submit RTEC evaluation';
-         displayToast(errorMessage, 'error');
+         console.error('Error status:', error.response?.status);
+         console.error('Request data that failed:', requestData);
+         
+         const errorMessage = error.response?.data?.message || error.message || 'Failed to submit RTEC evaluation';
+         displayToast(`RTEC evaluation failed: ${errorMessage}`, 'error');
       }
    };
 
@@ -671,17 +588,11 @@ const RTECScheduleManagement = () => {
                         <Button
                            size="sm"
                            variant="primary"
-                           onClick={() => {
-                              console.log('=== SCHEDULE MEETING BUTTON CLICKED ===');
-                              console.log('Item clicked:', item);
-                              handleScheduleMeeting(item);
-                           }}
+                           onClick={() => handleScheduleMeeting(item)}
                            className="text-xs px-2 py-1"
                            title="Schedule Meeting"
                         >
-                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                           </svg>
+                           <Icons.Calendar />
                         </Button>
                      ) : (
                         <Button
@@ -691,9 +602,7 @@ const RTECScheduleManagement = () => {
                            className="text-xs px-2 py-1"
                            title="Meeting Already Scheduled"
                         >
-                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                           </svg>
+                           <Icons.Check />
                         </Button>
                      )
                   ) : (
@@ -704,9 +613,7 @@ const RTECScheduleManagement = () => {
                         className="text-xs px-2 py-1"
                         title="Not Approved"
                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <Icons.Cross />
                      </Button>
                   )}
                </div>
@@ -783,19 +690,7 @@ const RTECScheduleManagement = () => {
             const displayStatus = isRTECCompleted ? 'rtec_completed' : value;
             const config = statusConfig[displayStatus] || { color: 'gray', text: value };
             
-            // Add completion date for RTEC completed
-            const completionInfo = isRTECCompleted && item.rtecCompletedAt ? 
-               ` (Completed: ${new Date(item.rtecCompletedAt).toLocaleDateString()})` : '';
             
-            console.log('🔍 Status render debug:', {
-               value,
-               itemStatus: item.status,
-               rtecCompleted: item.rtecCompleted,
-               isRTECCompleted,
-               displayStatus,
-               config,
-               completionInfo
-            });
             
             return <Badge color={config.color}>{config.text}</Badge>;
          }
@@ -827,17 +722,10 @@ const RTECScheduleManagement = () => {
          key: '_id',
          width: '200px',
          render: (value, item) => {
-            console.log('🔍 Actions render debug for meeting:', {
-               id: item._id,
-               status: item.status,
-               rtecCompleted: item.rtecCompleted,
-               title: item.meetingTitle,
-               shouldShowCompleteRTEC: (item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed',
-               shouldShowEvaluation: (item.status === 'completed' || item.status === 'confirmed') && !item.rtecCompleted && item.status !== 'rtec_completed'
-            });
             
             return (
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
+               {/* 1. View Details - Eye Icon */}
                <Button
                   size="sm"
                   variant="outline"
@@ -845,53 +733,52 @@ const RTECScheduleManagement = () => {
                      setSelectedMeeting(item);
                      setShowParticipantsModal(true);
                   }}
-                  className="text-xs px-2 py-1"
+                  className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
                   title="View Details"
                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                  <Icons.Eye />
                </Button>
+               
+               {/* 2. Manage Participants - Users Icon */}
                <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleManageParticipants(item)}
-                  className="text-xs px-2 py-1"
+                  className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
                   title="Manage Participants"
                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
+                  <Icons.Users />
                </Button>
+               
+               {/* 3. Invite PSTO Users - Mail Icon */}
                <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleInvitePSTOUsers(item)}
-                  className="text-xs px-2 py-1"
+                  className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
                   title="Invite PSTO Users"
                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
+                  <Icons.Mail />
                </Button>
+               
+               {/* 4. Confirm Meeting - Blue Button with Check Icon */}
                {item.status === 'scheduled' && (
                   <Button
                      size="sm"
-                     variant="success"
+                     variant="primary"
                      onClick={() => {
                         setConfirmMessage('Are you sure you want to confirm this meeting?');
                         setConfirmAction(() => () => handleUpdateMeetingStatus(item._id, 'confirmed'));
                         setShowConfirmModal(true);
                      }}
-                     className="text-xs px-2 py-1"
+                     className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
                      title="Confirm Meeting"
                   >
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                     </svg>
+                     <Icons.Check />
                   </Button>
                )}
+               
+               {/* 5. Complete Meeting - CheckCircle Icon */}
                {item.status === 'confirmed' && (
                   <Button
                      size="sm"
@@ -901,70 +788,71 @@ const RTECScheduleManagement = () => {
                         setConfirmAction(() => () => handleUpdateMeetingStatus(item._id, 'completed'));
                         setShowConfirmModal(true);
                      }}
-                     className="text-xs px-2 py-1"
+                     className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
                      title="Complete Meeting"
                   >
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                     </svg>
+                     <Icons.CheckCircle />
                   </Button>
                )}
-               {/* Show evaluation buttons for meetings that can be evaluated */}
+               
+               {/* 6. RTEC Evaluation - Clipboard Icon */}
                {(item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
-                  <div className="flex gap-1">
-                     <Button
-                        size="sm"
-                        variant={item.evaluationOutcome ? "success" : "outline"}
-                        onClick={() => {
-                           // Check if RTEC evaluation has been completed
-                           if (!item.evaluationOutcome) {
-                              displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
-                              return;
-                           }
-                           
-                           const message = item.status === 'confirmed' 
-                              ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
-                              : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
-                           setConfirmMessage(message);
-                           setConfirmAction(() => () => handleCompleteRTEC(item._id));
-                           setShowConfirmModal(true);
-                        }}
-                        className={`text-xs px-2 py-1 ${!item.evaluationOutcome ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={item.evaluationOutcome ? "Complete RTEC" : "Complete RTEC (Evaluation Required First)"}
-                        disabled={!item.evaluationOutcome}
-                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                     </Button>
-                     <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenRTECEvaluation(item._id)}
-                        className="text-xs px-2 py-1"
-                        title="RTEC Evaluation"
-                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        </svg>
-                     </Button>
-                  </div>
+                  <Button
+                     size="sm"
+                     variant="outline"
+                     onClick={() => handleOpenRTECEvaluation(item._id)}
+                     className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
+                     title="RTEC Evaluation"
+                  >
+                     <Icons.Clipboard />
+                  </Button>
                )}
                
+               {/* 7. Complete RTEC - Star Icon (Blue when ready) */}
+               {(item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
+                  <Button
+                     size="sm"
+                     variant={item.evaluationOutcome ? "primary" : "outline"}
+                     onClick={() => {
+                        // Check if RTEC evaluation has been completed
+                        if (!item.evaluationOutcome) {
+                           displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
+                           return;
+                        }
+                        
+                        const message = item.status === 'confirmed' 
+                           ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
+                           : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
+                        setConfirmMessage(message);
+                        setConfirmAction(() => () => handleCompleteRTEC(item._id));
+                        setShowConfirmModal(true);
+                     }}
+                     className={`text-xs px-2 py-1 ${
+                        item.evaluationOutcome 
+                           ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                           : 'border-gray-300 hover:bg-gray-50 opacity-50 cursor-not-allowed'
+                     }`}
+                     title={item.evaluationOutcome ? "Complete RTEC" : "Complete RTEC (Evaluation Required First)"}
+                     disabled={!item.evaluationOutcome}
+                  >
+                     <Icons.Star />
+                  </Button>
+               )}
+               
+               {/* View RTEC Evaluation for completed RTEC */}
                {(item.rtecCompleted || item.status === 'rtec_completed') && (
                   <Button
                      size="sm"
                      variant="outline"
                      onClick={() => handleOpenRTECEvaluation(item._id)}
-                     className="text-xs px-2 py-1"
+                     className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
                      title="View RTEC Evaluation"
                   >
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                     </svg>
+                     <Icons.Clipboard />
                   </Button>
                )}
+               
+               {/* 8. Delete Meeting - Red Button with Trash Icon */}
                <Button
                   size="sm"
                   variant="danger"
@@ -973,12 +861,10 @@ const RTECScheduleManagement = () => {
                      setConfirmAction(() => () => handleDeleteMeeting(item._id));
                      setShowConfirmModal(true);
                   }}
-                  className="text-xs px-2 py-1"
+                  className="text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white border-red-600"
                   title="Delete Meeting"
                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Icons.Trash />
                </Button>
             </div>
             );
@@ -1068,10 +954,7 @@ const RTECScheduleManagement = () => {
                      <div className="flex space-x-2">
                         <Button
                            variant="outline" 
-                           onClick={() => {
-                              console.log('Manual refresh triggered');
-                              fetchApprovedRTECDocuments();
-                           }}
+                           onClick={fetchApprovedRTECDocuments}
                         >
                            Refresh
                         </Button>
@@ -1080,20 +963,17 @@ const RTECScheduleManagement = () => {
                
                {/* Info Alert */}
                {!loading && approvedRTECDocuments.length > 0 && (() => {
-                  // Calculate documents that need scheduling (include revised documents for rescheduling)
+                  // Show only documents that don't have meetings yet
                   const documentsNeedingScheduling = approvedRTECDocuments.filter(doc => {
-                     const hasMeeting = rtecMeetings.some(meeting => 
-                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
-                     );
+                     // Check if this document has any meeting
+                     const hasMeeting = rtecMeetings.some(meeting => {
+                        const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
+                        const docId = doc._id?.toString();
+                        return meetingDocId === docId;
+                     });
                      
-                     // Check if any meeting for this document is in revision status
-                     const hasRevisionMeeting = rtecMeetings.some(meeting => 
-                        meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString() && 
-                        meeting.status === 'rtec_revision_requested'
-                     );
-                     
-                     // Show documents that don't have any meeting yet OR have meetings in revision_requested status
-                     return !hasMeeting || hasRevisionMeeting;
+                     // Only show documents that don't have any meeting
+                     return !hasMeeting;
                   });
                   
                   return documentsNeedingScheduling.length > 0 && (
@@ -1138,28 +1018,18 @@ const RTECScheduleManagement = () => {
                   </div>
                ) : (
                   (() => {
-                     console.log('=== RENDERING DOCUMENTS TAB ===');
-                     console.log('Approved RTEC Documents:', approvedRTECDocuments.length);
-                     console.log('RTEC Meetings:', rtecMeetings.length);
-                     
-                     // Show all approved documents that need scheduling
-                     // This includes both new approved documents AND revised documents that have been re-approved
+                     // Show only documents that don't have meetings yet
                      const filteredDocs = approvedRTECDocuments.filter(doc => {
-                        const hasMeeting = rtecMeetings.some(meeting => 
-                           meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
-                        );
+                        // Check if this document has any meeting
+                        const hasMeeting = rtecMeetings.some(meeting => {
+                           const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
+                           const docId = doc._id?.toString();
+                           return meetingDocId === docId;
+                        });
                         
-                        // Show documents that don't have any meeting yet OR have meetings in revision_requested status
-                        // Revised documents with rtec_revision_requested meetings should be shown for rescheduling
-                        const hasRevisionMeeting = rtecMeetings.some(meeting => 
-                           meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString() && 
-                           meeting.status === 'rtec_revision_requested'
-                        );
-                        
-                        return !hasMeeting || hasRevisionMeeting;
+                        // Only show documents that don't have any meeting
+                        return !hasMeeting;
                      });
-                     
-                     console.log('Documents that need scheduling:', filteredDocs.length);
                      
                      return (
                         <DataTable
@@ -1213,8 +1083,6 @@ const RTECScheduleManagement = () => {
             title="Schedule RTEC Meeting"
             size="lg"
          >
-            {console.log('🔍 Modal rendering - formData:', formData)}
-            {console.log('🔍 Modal rendering - showCreateModal:', showCreateModal)}
             <div className="space-y-4">
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1222,10 +1090,7 @@ const RTECScheduleManagement = () => {
                   </label>
                   <Input
                      value={formData.meetingTitle}
-                     onChange={(e) => {
-                        console.log('📝 Meeting title changing to:', e.target.value);
-                        setFormData({ ...formData, meetingTitle: e.target.value });
-                     }}
+                     onChange={(e) => setFormData({ ...formData, meetingTitle: e.target.value })}
                      placeholder="Enter meeting title"
                      required
                   />
@@ -1251,10 +1116,7 @@ const RTECScheduleManagement = () => {
                      <Input
                         type="date"
                         value={formData.scheduledDate}
-                        onChange={(e) => {
-                           console.log('📅 Scheduled date changing to:', e.target.value);
-                           setFormData({ ...formData, scheduledDate: e.target.value });
-                        }}
+                        onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
                         min={new Date().toISOString().split('T')[0]}
                         required
                      />
@@ -1266,10 +1128,7 @@ const RTECScheduleManagement = () => {
                      <Input
                         type="time"
                         value={formData.scheduledTime}
-                        onChange={(e) => {
-                           console.log('⏰ Scheduled time changing to:', e.target.value);
-                           setFormData({ ...formData, scheduledTime: e.target.value });
-                        }}
+                        onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
                         required
                      />
                   </div>
@@ -1281,10 +1140,7 @@ const RTECScheduleManagement = () => {
                   </label>
                   <Input
                      value={formData.location}
-                     onChange={(e) => {
-                        console.log('📍 Location changing to:', e.target.value);
-                        setFormData({ ...formData, location: e.target.value });
-                     }}
+                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                      placeholder="Enter meeting location"
                      required
                   />
@@ -1564,9 +1420,6 @@ const RTECScheduleManagement = () => {
                         <p className="text-sm text-blue-700 mt-1">
                            Select PSTO users to invite to this meeting.
                         </p>
-                        <div className="mt-2 text-xs text-gray-600">
-                           Debug: Available PSTO users: {availablePSTOUsers.length}, Selected: {selectedPSTOUsers.length}
-                        </div>
                      </div>
                      
                      <div>
@@ -1667,29 +1520,30 @@ const RTECScheduleManagement = () => {
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Evaluation Outcome
+                     Evaluation Outcome <span className="text-red-500">*</span>
                   </label>
                   <select
                      value={rtecEvaluationData.evaluationOutcome}
                      onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationOutcome: e.target.value})}
                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     required
                   >
                      <option value="">Select Outcome</option>
                      <option value="with revision">With Revision</option>
                      <option value="approved">Approved</option>
-                     
                   </select>
                </div>
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Evaluation Comment by the RTEC Committee
+                     Evaluation Comment by the RTEC Committee <span className="text-red-500">*</span>
                   </label>
                   <Textarea
                      value={rtecEvaluationData.evaluationComment}
                      onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationComment: e.target.value})}
                      placeholder="Provide detailed evaluation comments..."
                      rows={4}
+                     required
                   />
                </div>
 

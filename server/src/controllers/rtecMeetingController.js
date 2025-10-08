@@ -79,15 +79,41 @@ const createRTECMeeting = async (req, res) => {
       }
 
       // Check if meeting already exists for this TNA
+      console.log('🔍 Checking for existing meeting for TNA:', tnaId);
+      console.log('🔍 TNA ID type:', typeof tnaId);
+      
       const existingMeeting = await RTECMeeting.findOne({ tnaId });
+      console.log('🔍 Existing meeting found:', existingMeeting ? 'Yes' : 'No');
+      
+      // Also check all meetings to see what's in the database
+      const allMeetings = await RTECMeeting.find({}).select('_id tnaId meetingTitle status');
+      console.log('🔍 All meetings in database:');
+      allMeetings.forEach((meeting, index) => {
+         console.log(`Meeting ${index + 1}:`, {
+            id: meeting._id,
+            tnaId: meeting.tnaId,
+            tnaIdType: typeof meeting.tnaId,
+            title: meeting.meetingTitle,
+            status: meeting.status
+         });
+      });
+      
       if (existingMeeting) {
-         // Allow creating new meeting if existing meeting is in revision_requested status
+         console.log('🔍 Existing meeting details:', {
+            id: existingMeeting._id,
+            status: existingMeeting.status,
+            meetingTitle: existingMeeting.meetingTitle,
+            scheduledDate: existingMeeting.scheduledDate
+         });
+         
+         // Allow creating new meeting only if existing meeting is in revision_requested status
          if (existingMeeting.status === 'rtec_revision_requested') {
             console.log('🔄 Existing meeting is in revision_requested status, allowing new meeting creation');
          } else {
+            console.log('❌ Meeting already exists for this TNA with status:', existingMeeting.status);
             return res.status(400).json({
                success: false,
-               message: 'RTEC meeting already scheduled for this TNA'
+               message: `RTEC meeting already scheduled for this TNA. Current meeting status: ${existingMeeting.status}`
             });
          }
       }
@@ -1453,28 +1479,32 @@ const completeRTEC = async (req, res) => {
          // Create notification for PSTO to handle document revision requirements
          if (rtecMeeting.scheduledBy) {
             const documentsList = documentsToRevise.map(doc => `• ${doc.name}`).join('\n');
+            console.log('🔍 Creating notification with data:', {
+               recipientId: rtecMeeting.scheduledBy,
+               recipientType: 'psto',
+               type: 'rtec_revision_requested',
+               title: 'RTEC Documents Revision Required',
+               message: `DOST-MIMAROPA has requested revision of specific RTEC documents for "${rtecMeeting.meetingTitle}".\n\nDocuments requiring revision:\n${documentsList}\n\nPlease coordinate with the proponent for document resubmission.`,
+               relatedEntityType: 'rtec',
+               relatedEntityId: rtecMeeting._id,
+               actionUrl: `/rtec-meetings`,
+               actionText: 'View Meeting Details',
+               priority: 'high',
+               sentBy: userId
+            });
+            
             await Notification.createNotification({
                recipientId: rtecMeeting.scheduledBy,
                recipientType: 'psto',
                type: 'rtec_revision_requested',
                title: 'RTEC Documents Revision Required',
                message: `DOST-MIMAROPA has requested revision of specific RTEC documents for "${rtecMeeting.meetingTitle}".\n\nDocuments requiring revision:\n${documentsList}\n\nPlease coordinate with the proponent for document resubmission.`,
-               relatedEntityType: 'rtec_meeting',
+               relatedEntityType: 'rtec',
                relatedEntityId: rtecMeeting._id,
                actionUrl: `/rtec-meetings`,
                actionText: 'View Meeting Details',
                priority: 'high',
-               sentBy: userId,
-               data: {
-                  meetingId: rtecMeeting._id,
-                  tnaId: rtecMeeting.tnaId,
-                  applicationId: rtecMeeting.applicationId,
-                  rtecDocumentsId: rtecMeeting.rtecDocumentsId,
-                  evaluationComment: evaluationData.evaluationComment,
-                  recommendations: evaluationData.recommendations,
-                  nextSteps: evaluationData.nextSteps,
-                  documentsToRevise: documentsToRevise
-               }
+               sentBy: userId
             });
          }
 
@@ -1508,15 +1538,19 @@ const completeRTEC = async (req, res) => {
 
       // Create notification for proponent
       if (rtecMeeting.proponentId) {
-         const notification = new Notification({
-            userId: rtecMeeting.proponentId,
+         await Notification.createNotification({
+            recipientId: rtecMeeting.proponentId,
+            recipientType: 'proponent',
             type: 'rtec_completed',
             title: 'RTEC Evaluation Completed',
             message: `Your RTEC evaluation for "${rtecMeeting.meetingTitle}" has been completed.`,
-            relatedId: meetingId,
-            relatedType: 'rtec_meeting'
+            relatedEntityType: 'rtec',
+            relatedEntityId: meetingId,
+            actionUrl: `/applications`,
+            actionText: 'View Application',
+            priority: 'medium',
+            sentBy: userId
          });
-         await notification.save();
       }
 
       console.log('✅ RTEC completed successfully for meeting:', meetingId);

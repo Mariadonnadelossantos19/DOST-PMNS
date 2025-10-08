@@ -12,6 +12,7 @@ import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
 import NotificationsPage from './Pages/NotificationsPage';
 import ResetPassword from './Component/Registration/ResetPassword';
+import LearnMorePage from './Component/LandingPage/LearnMorePage.jsx';
 import './App.css';
 
 // Application configuration
@@ -161,6 +162,9 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
          case 'rtec-scheduling':
             console.log('Rendering RTEC Scheduling');
             return renderDashboard(); // Will be handled by the dashboard routing
+         case 'learn-more':
+            console.log('Rendering Learn More Page');
+            return <LearnMorePage />;
          case 'dashboard':
          default:
             console.log('Rendering Dashboard');
@@ -257,6 +261,17 @@ function App() {
       );
    }
 
+   // Handle learn-more page even when not logged in
+   if (currentPage === 'learn-more') {
+      return (
+         <DarkModeProvider>
+            <ToastProvider>
+               <LearnMorePage />
+            </ToastProvider>
+         </DarkModeProvider>
+      );
+   }
+
    if (showDashboard) {
       return (
          <DarkModeProvider>
@@ -273,7 +288,7 @@ function App() {
    return (
       <DarkModeProvider>
          <ToastProvider>
-            <LandingPage onLoginSuccess={handleLoginSuccess} />
+            <LandingPage onLoginSuccess={handleLoginSuccess} onNavigate={handleNavigate} />
             <FloatingMiniGamesButton />
          </ToastProvider>
       </DarkModeProvider>
