@@ -1654,12 +1654,22 @@ const RTECScheduleManagement = () => {
                   </p>
                </div>
 
+               {/* Debug Section */}
+               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <h4 className="text-sm font-semibold text-yellow-800 mb-2">Debug Information</h4>
+                  <div className="text-xs text-yellow-700">
+                     <p>Available Documents Count: {availableDocuments.length}</p>
+                     <p>Available Documents: {JSON.stringify(availableDocuments, null, 2)}</p>
+                  </div>
+               </div>
+
                {/* Document Review Section */}
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                      Documents for Review
                   </label>
                   <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                     {console.log('🔍 Rendering availableDocuments:', availableDocuments.length, availableDocuments)}
                      {availableDocuments.map((doc, index) => (
                         <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg bg-white hover:bg-gray-50">
                            <div className="flex-1">
