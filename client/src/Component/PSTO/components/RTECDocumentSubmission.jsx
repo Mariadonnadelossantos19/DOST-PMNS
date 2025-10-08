@@ -334,6 +334,52 @@ const RTECDocumentSubmission = () => {
                            </div>
                         </div>
 
+                        {/* Additional Documents Submitted */}
+                        {rtecDoc.status === 'documents_submitted' && rtecDoc.additionalDocumentsRequired && rtecDoc.additionalDocumentsRequired.length > 0 && (
+                           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 mb-3 shadow-sm">
+                              <h4 className="text-sm font-semibold text-green-900 mb-2">Additional Documents Submitted</h4>
+                              <div className="space-y-2">
+                                 {rtecDoc.additionalDocumentsRequired
+                                    .filter((doc, index, self) => 
+                                       // Remove duplicates based on document type
+                                       index === self.findIndex(d => d.type === doc.type)
+                                    )
+                                    .map((doc, index) => (
+                                    <div key={index} className="bg-white border border-green-100 rounded p-2 flex justify-between items-center">
+                                       <div className="flex-1 min-w-0">
+                                          <div className="flex items-center justify-between mb-1">
+                                             <h5 className="font-medium text-gray-900 text-xs truncate">{doc.name}</h5>
+                                             {getDocumentStatusBadge(doc.documentStatus)}
+                                          </div>
+                                          
+                                          {doc.filename && (
+                                             <div className="bg-green-50 rounded p-1 mb-1">
+                                                <p className="text-xs text-green-700 truncate">✓ {doc.originalName}</p>
+                                             </div>
+                                          )}
+                                          
+                                          {doc.reason && (
+                                             <div className="bg-yellow-50 rounded p-1">
+                                                <p className="text-xs text-yellow-700">💬 {doc.reason}</p>
+                                             </div>
+                                          )}
+                                       </div>
+                                       
+                                       <div className="ml-2 flex-shrink-0">
+                                          {doc.documentStatus === 'submitted' ? (
+                                             <span className="text-xs font-medium text-green-600">✅ Submitted</span>
+                                          ) : (
+                                             <span className="text-xs font-medium">
+                                                {doc.documentStatus === 'approved' ? '✅' : '⏳'}
+                                             </span>
+                                          )}
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        )}
+
                         {/* Overall Status Message */}
                         {rtecDoc.status === 'documents_submitted' && (
                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
