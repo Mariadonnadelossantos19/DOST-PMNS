@@ -367,11 +367,18 @@ const RTECDocumentSubmission = () => {
                                        
                                        <div className="ml-2 flex-shrink-0">
                                           {doc.documentStatus === 'submitted' ? (
-                                             <span className="text-xs font-medium text-green-600">✅ Submitted</span>
+                                             <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                             >
+                                                Replace
+                                             </Button>
+                                          ) : doc.documentStatus === 'approved' ? (
+                                             <span className="text-xs font-medium text-green-600">✅ Approved</span>
                                           ) : (
-                                             <span className="text-xs font-medium">
-                                                {doc.documentStatus === 'approved' ? '✅' : '⏳'}
-                                             </span>
+                                             <span className="text-xs font-medium text-gray-500">⏳ Pending</span>
                                           )}
                                        </div>
                                     </div>
