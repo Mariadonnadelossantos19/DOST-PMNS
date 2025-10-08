@@ -140,6 +140,8 @@ const RTECScheduleManagement = () => {
          
          if (response.data.success) {
             const approvedDocs = response.data.data.docs || [];
+            console.log('📋 CLIENT: Received approved documents:', approvedDocs.length);
+            console.log('📋 CLIENT: Document IDs:', approvedDocs.map(doc => doc._id));
             setApprovedRTECDocuments(approvedDocs);
          } else {
             setApprovedRTECDocuments([]);
@@ -159,6 +161,14 @@ const RTECScheduleManagement = () => {
          const response = await api.get('/rtec-meetings/list');
          if (response.data.success) {
             const meetings = response.data.data.docs || [];
+            console.log('📋 CLIENT: Received meetings:', meetings.length);
+            console.log('📋 CLIENT: Meeting details:', meetings.map(meeting => ({
+               id: meeting._id,
+               rtecDocumentsId: meeting.rtecDocumentsId?._id || meeting.rtecDocumentsId,
+               status: meeting.status,
+               title: meeting.meetingTitle,
+               applicationName: meeting.applicationId?.enterpriseName || meeting.applicationId?.companyName
+            })));
             setRtecMeetings(meetings);
          }
       } catch (error) {
@@ -686,7 +696,7 @@ const RTECScheduleManagement = () => {
             };
             
             // Check if RTEC is completed
-            const isRTECCompleted = item.rtecCompleted || item.status === 'rtec_completed';
+            const isRTECCompleted = item.rtecCompleted || item.status === 'rtec_completed' || (item.evaluationOutcome && item.evaluationOutcome !== '');
             const displayStatus = isRTECCompleted ? 'rtec_completed' : value;
             const config = statusConfig[displayStatus] || { color: 'gray', text: value };
             
@@ -795,62 +805,80 @@ const RTECScheduleManagement = () => {
                   </Button>
                )}
                
-               {/* 6. RTEC Evaluation - Clipboard Icon */}
-               {(item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
-                  <Button
-                     size="sm"
-                     variant="outline"
-                     onClick={() => handleOpenRTECEvaluation(item._id)}
-                     className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
-                     title="RTEC Evaluation"
-                  >
-                     <Icons.Clipboard />
-                  </Button>
-               )}
-               
-               {/* 7. Complete RTEC - Star Icon (Blue when ready) */}
-               {(item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !item.rtecCompleted && item.status !== 'rtec_completed' && (
-                  <Button
-                     size="sm"
-                     variant={item.evaluationOutcome ? "primary" : "outline"}
-                     onClick={() => {
-                        // Check if RTEC evaluation has been completed
-                        if (!item.evaluationOutcome) {
-                           displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
-                           return;
-                        }
-                        
-                        const message = item.status === 'confirmed' 
-                           ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
-                           : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
-                        setConfirmMessage(message);
-                        setConfirmAction(() => () => handleCompleteRTEC(item._id));
-                        setShowConfirmModal(true);
-                     }}
-                     className={`text-xs px-2 py-1 ${
-                        item.evaluationOutcome 
-                           ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
-                           : 'border-gray-300 hover:bg-gray-50 opacity-50 cursor-not-allowed'
-                     }`}
-                     title={item.evaluationOutcome ? "Complete RTEC" : "Complete RTEC (Evaluation Required First)"}
-                     disabled={!item.evaluationOutcome}
-                  >
-                     <Icons.Star />
-                  </Button>
-               )}
-               
-               {/* View RTEC Evaluation for completed RTEC */}
-               {(item.rtecCompleted || item.status === 'rtec_completed') && (
-                  <Button
-                     size="sm"
-                     variant="outline"
-                     onClick={() => handleOpenRTECEvaluation(item._id)}
-                     className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
-                     title="View RTEC Evaluation"
-                  >
-                     <Icons.Clipboard />
-                  </Button>
-               )}
+               {/* RTEC Evaluation Section - Show different buttons based on RTEC status */}
+               {(() => {
+                  const isRTECCompleted = item.rtecCompleted || item.status === 'rtec_completed' || (item.evaluationOutcome && item.evaluationOutcome !== '');
+                  const canDoRTECEvaluation = (item.status === 'completed' || item.status === 'confirmed' || item.status === 'scheduled') && !isRTECCompleted;
+                  
+                  // Debug logging for RTEC completion status
+                  console.log('🔍 RTEC Button Debug for meeting:', item.meetingTitle);
+                  console.log('🔍 Meeting status:', item.status);
+                  console.log('🔍 rtecCompleted:', item.rtecCompleted);
+                  console.log('🔍 evaluationOutcome:', item.evaluationOutcome);
+                  console.log('🔍 isRTECCompleted:', isRTECCompleted);
+                  console.log('🔍 canDoRTECEvaluation:', canDoRTECEvaluation);
+                  
+                  if (isRTECCompleted) {
+                     // Show "View RTEC Evaluation" for completed RTEC
+                     return (
+                        <Button
+                           size="sm"
+                           variant="outline"
+                           onClick={() => handleOpenRTECEvaluation(item._id)}
+                           className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
+                           title="View RTEC Evaluation"
+                        >
+                           <Icons.Clipboard />
+                        </Button>
+                     );
+                  } else if (canDoRTECEvaluation) {
+                     // Show RTEC Evaluation and Complete RTEC buttons for incomplete RTEC
+                     return (
+                        <>
+                           {/* RTEC Evaluation - Clipboard Icon */}
+                           <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenRTECEvaluation(item._id)}
+                              className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
+                              title="RTEC Evaluation"
+                           >
+                              <Icons.Clipboard />
+                           </Button>
+                           
+                           {/* Complete RTEC - Star Icon (Blue when ready) */}
+                           <Button
+                              size="sm"
+                              variant={item.evaluationOutcome ? "primary" : "outline"}
+                              onClick={() => {
+                                 // Check if RTEC evaluation has been completed
+                                 if (!item.evaluationOutcome) {
+                                    displayToast('Please complete RTEC evaluation first before finalizing the RTEC process.', 'error');
+                                    return;
+                                 }
+                                 
+                                 const message = item.status === 'confirmed' 
+                                    ? 'Are you sure you want to complete the RTEC process for this meeting? This will automatically mark the meeting as completed and finalize the RTEC evaluation.'
+                                    : 'Are you sure you want to complete the RTEC process for this meeting? This will finalize the RTEC evaluation.';
+                                 setConfirmMessage(message);
+                                 setConfirmAction(() => () => handleCompleteRTEC(item._id));
+                                 setShowConfirmModal(true);
+                              }}
+                              className={`text-xs px-2 py-1 ${
+                                 item.evaluationOutcome 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                                    : 'border-gray-300 hover:bg-gray-50 opacity-50 cursor-not-allowed'
+                              }`}
+                              title={item.evaluationOutcome ? "Complete RTEC" : "Complete RTEC (Evaluation Required First)"}
+                              disabled={!item.evaluationOutcome}
+                           >
+                              <Icons.Star />
+                           </Button>
+                        </>
+                     );
+                  }
+                  return null;
+               })()}
                
                {/* 8. Delete Meeting - Red Button with Trash Icon */}
                <Button
@@ -943,12 +971,36 @@ const RTECScheduleManagement = () => {
                      <div>
                         <h2 className="text-lg font-semibold">Approved RTEC Documents</h2>
                         <p className="text-sm text-gray-600 mt-1">
-                           Documents ready for meeting scheduling ({approvedRTECDocuments.filter(doc => {
-                              const hasMeeting = rtecMeetings.some(meeting => 
-                                 meeting.rtecDocumentsId?._id?.toString() === doc._id?.toString()
-                              );
-                              return !hasMeeting;
-                           }).length} ready)
+                           Documents ready for meeting scheduling ({(() => {
+                              const readyDocs = approvedRTECDocuments.filter(doc => {
+                                 const documentMeetings = rtecMeetings.filter(meeting => {
+                                    const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
+                                    const docId = doc._id?.toString();
+                                    return meetingDocId === docId;
+                                 });
+                                 
+                                 if (documentMeetings.length === 0) return true;
+                                 
+                                 const hasActiveMeeting = documentMeetings.some(meeting => 
+                                    ['scheduled', 'confirmed', 'completed'].includes(meeting.status) && !meeting.rtecCompleted
+                                 );
+                                 
+                                 if (hasActiveMeeting) return false;
+                                 
+                                 const hasEndorsedMeeting = documentMeetings.some(meeting => 
+                                    meeting.status === 'rtec_endorsed_for_approval'
+                                 );
+                                 
+                                 if (hasEndorsedMeeting) return false;
+                                 
+                                 const hasRevisionRequestedMeeting = documentMeetings.some(meeting => 
+                                    meeting.status === 'rtec_revision_requested'
+                                 );
+                                 
+                                 return hasRevisionRequestedMeeting;
+                              });
+                              return readyDocs.length;
+                           })()} ready)
                         </p>
                      </div>
                      <div className="flex space-x-2">
@@ -963,17 +1015,33 @@ const RTECScheduleManagement = () => {
                
                {/* Info Alert */}
                {!loading && approvedRTECDocuments.length > 0 && (() => {
-                  // Show only documents that don't have meetings yet
+                  // Show documents that are ready for scheduling
                   const documentsNeedingScheduling = approvedRTECDocuments.filter(doc => {
-                     // Check if this document has any meeting
-                     const hasMeeting = rtecMeetings.some(meeting => {
+                     const documentMeetings = rtecMeetings.filter(meeting => {
                         const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
                         const docId = doc._id?.toString();
                         return meetingDocId === docId;
                      });
                      
-                     // Only show documents that don't have any meeting
-                     return !hasMeeting;
+                     if (documentMeetings.length === 0) return true;
+                     
+                     const hasActiveMeeting = documentMeetings.some(meeting => 
+                        ['scheduled', 'confirmed', 'completed'].includes(meeting.status) && !meeting.rtecCompleted
+                     );
+                     
+                     if (hasActiveMeeting) return false;
+                     
+                     const hasEndorsedMeeting = documentMeetings.some(meeting => 
+                        meeting.status === 'rtec_endorsed_for_approval'
+                     );
+                     
+                     if (hasEndorsedMeeting) return false;
+                     
+                     const hasRevisionRequestedMeeting = documentMeetings.some(meeting => 
+                        meeting.status === 'rtec_revision_requested'
+                     );
+                     
+                     return hasRevisionRequestedMeeting;
                   });
                   
                   return documentsNeedingScheduling.length > 0 && (
@@ -1019,17 +1087,68 @@ const RTECScheduleManagement = () => {
                ) : (
                   (() => {
                      // Show only documents that don't have meetings yet
+                     console.log('🔍 CLIENT FILTERING: Starting client-side filtering...');
+                     console.log('🔍 CLIENT FILTERING: Total approved documents:', approvedRTECDocuments.length);
+                     console.log('🔍 CLIENT FILTERING: Total meetings:', rtecMeetings.length);
+                     
                      const filteredDocs = approvedRTECDocuments.filter(doc => {
                         // Check if this document has any meeting
-                        const hasMeeting = rtecMeetings.some(meeting => {
+                        const documentMeetings = rtecMeetings.filter(meeting => {
                            const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
                            const docId = doc._id?.toString();
                            return meetingDocId === docId;
                         });
                         
-                        // Only show documents that don't have any meeting
-                        return !hasMeeting;
+                        console.log('🔍 CLIENT FILTERING: Document', doc._id, 'meetings:', documentMeetings.length);
+                        console.log('🔍 CLIENT FILTERING: Document meetings details:', documentMeetings.map(m => ({
+                           id: m._id,
+                           status: m.status,
+                           rtecDocumentsId: m.rtecDocumentsId?._id || m.rtecDocumentsId
+                        })));
+                        
+                        if (documentMeetings.length === 0) {
+                           // No meeting yet - show for scheduling
+                           console.log('🔍 CLIENT FILTERING: Document', doc._id, 'INCLUDED (no meeting)');
+                           return true;
+                        }
+                        
+                        // Check if any meeting is in revision_requested status (ready for rescheduling)
+                        const hasRevisionRequestedMeeting = documentMeetings.some(meeting => 
+                           meeting.status === 'rtec_revision_requested'
+                        );
+                        
+                        // Check if any meeting is active (scheduled, confirmed, completed but not rtec_completed)
+                        const hasActiveMeeting = documentMeetings.some(meeting => 
+                           ['scheduled', 'confirmed', 'completed'].includes(meeting.status) && !meeting.rtecCompleted
+                        );
+                        
+                        // Check if any meeting is endorsed for approval (proceeds directly to funding)
+                        const hasEndorsedMeeting = documentMeetings.some(meeting => 
+                           meeting.status === 'rtec_endorsed_for_approval'
+                        );
+                        
+                        if (hasActiveMeeting) {
+                           console.log('🔍 CLIENT FILTERING: Document', doc._id, 'FILTERED OUT (has active meeting)');
+                           return false;
+                        }
+                        
+                        if (hasEndorsedMeeting) {
+                           console.log('🔍 CLIENT FILTERING: Document', doc._id, 'FILTERED OUT (endorsed for approval - proceeds to funding)');
+                           return false;
+                        }
+                        
+                        if (hasRevisionRequestedMeeting) {
+                           console.log('🔍 CLIENT FILTERING: Document', doc._id, 'INCLUDED (revision requested - ready for rescheduling)');
+                           return true;
+                        }
+                        
+                        // All meetings are completed - don't show
+                        console.log('🔍 CLIENT FILTERING: Document', doc._id, 'FILTERED OUT (all meetings completed)');
+                        return false;
                      });
+                     
+                     console.log('🔍 CLIENT FILTERING: Filtered documents count:', filteredDocs.length);
+                     console.log('🔍 CLIENT FILTERING: Filtered document IDs:', filteredDocs.map(doc => doc._id));
                      
                      return (
                         <DataTable
@@ -1531,8 +1650,27 @@ const RTECScheduleManagement = () => {
                      <option value="">Select Outcome</option>
                      <option value="with revision">With Revision</option>
                      <option value="approved">Approved</option>
+                     <option value="endorsed for approval (with comment)">Endorsed for Approval with Comment</option>
                   </select>
                </div>
+
+               {/* Additional Document Requirements for "Endorsed for Approval (with Comment)" */}
+               {rtecEvaluationData.evaluationOutcome === 'endorsed for approval (with comment)' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                     <div className="flex items-center mb-3">
+                        <Icons.Info className="w-5 h-5 text-blue-600 mr-2" />
+                        <h4 className="text-sm font-medium text-blue-800">Additional Document Requirements</h4>
+                     </div>
+                     <p className="text-sm text-blue-700 mb-3">
+                        For "Endorsed for Approval (with Comment)" outcome, the proponent will need to submit additional documents 
+                        to address the specific comments before proceeding to funding.
+                     </p>
+                     <div className="text-xs text-blue-600">
+                        <strong>Note:</strong> The selected documents above will be marked as requiring additional 
+                        documentation or clarification from the proponent.
+                     </div>
+                  </div>
+               )}
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1559,11 +1697,14 @@ const RTECScheduleManagement = () => {
                   />
                </div>
 
-               {/* Document Selection - Only show if evaluation outcome is "with revision" */}
-               {rtecEvaluationData.evaluationOutcome === 'with revision' && (
+               {/* Document Selection - Show for both "with revision" and "endorsed for approval (with comment)" */}
+               {(rtecEvaluationData.evaluationOutcome === 'with revision' || rtecEvaluationData.evaluationOutcome === 'endorsed for approval (with comment)') && (
                   <div>
                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Select Documents That Need Revision
+                        {rtecEvaluationData.evaluationOutcome === 'with revision' 
+                           ? 'Select Documents That Need Revision'
+                           : 'Select Documents That Need Comments/Revisions'
+                        }
                      </label>
                      <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
                         {availableDocuments.map((doc, index) => (
@@ -1607,7 +1748,10 @@ const RTECScheduleManagement = () => {
                         )}
                      </div>
                      <p className="text-xs text-gray-600 mt-2">
-                        Select the specific documents that need to be revised and resubmitted.
+                        {rtecEvaluationData.evaluationOutcome === 'with revision' 
+                           ? 'Select the specific documents that need to be revised and resubmitted.'
+                           : 'Select the specific documents that need minor comments or revisions addressed.'
+                        }
                      </p>
                   </div>
                )}

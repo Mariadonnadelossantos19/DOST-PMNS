@@ -226,6 +226,76 @@ const rtecDocumentsSchema = new mongoose.Schema({
          type: String,
          default: null
       }
+   }],
+   
+   // Additional documents required for "endorsed for approval (with comment)" outcome
+   additionalDocumentsRequired: [{
+      type: {
+         type: String,
+         required: true
+      },
+      name: {
+         type: String,
+         required: true
+      },
+      description: {
+         type: String,
+         required: true
+      },
+      reason: {
+         type: String,
+         default: null
+      },
+      // File upload details for additional documents
+      filename: {
+         type: String,
+         default: null
+      },
+      originalName: {
+         type: String,
+         default: null
+      },
+      path: {
+         type: String,
+         default: null
+      },
+      size: {
+         type: Number,
+         default: null
+      },
+      mimetype: {
+         type: String,
+         default: null
+      },
+      uploadedAt: {
+         type: Date,
+         default: null
+      },
+      uploadedBy: {
+         type: mongoose.Schema.Types.ObjectId,
+         ref: 'User',
+         default: null
+      },
+      // Document status for additional documents
+      documentStatus: {
+         type: String,
+         enum: ['pending', 'submitted', 'approved', 'rejected', 'needs_revision'],
+         default: 'pending'
+      },
+      // Review comments for additional documents
+      reviewComments: {
+         type: String,
+         default: null
+      },
+      reviewedBy: {
+         type: mongoose.Schema.Types.ObjectId,
+         ref: 'User',
+         default: null
+      },
+      reviewedAt: {
+         type: Date,
+         default: null
+      }
    }]
 }, {
    timestamps: true,

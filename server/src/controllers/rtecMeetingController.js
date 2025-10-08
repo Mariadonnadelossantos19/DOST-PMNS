@@ -1301,11 +1301,11 @@ const completeRTEC = async (req, res) => {
          console.log('🔍 Documents to revise:', evaluationData.documentsToRevise);
          console.log('🔍 Available documents:', evaluationData.availableDocuments);
          
-         if (evaluationData.evaluationOutcome && !['with revision', 'approved'].includes(evaluationData.evaluationOutcome)) {
+         if (evaluationData.evaluationOutcome && !['with revision', 'approved', 'endorsed for approval (with comment)'].includes(evaluationData.evaluationOutcome)) {
             console.log('❌ Invalid evaluation outcome:', evaluationData.evaluationOutcome);
             return res.status(400).json({
                success: false,
-               message: 'Invalid evaluation outcome. Must be "with revision" or "approved"'
+               message: 'Invalid evaluation outcome. Must be "with revision", "approved", or "endorsed for approval (with comment)"'
             });
          }
          
@@ -1400,6 +1400,9 @@ const completeRTEC = async (req, res) => {
          } else if (evaluationData.evaluationOutcome === 'approved') {
             updateData.rtecCompleted = true;
             updateData.status = 'rtec_completed';
+         } else if (evaluationData.evaluationOutcome === 'endorsed for approval (with comment)') {
+            updateData.rtecCompleted = false;
+            updateData.status = 'rtec_endorsed_for_approval';
          }
       } else {
          // Default to completed if no evaluation data
@@ -1462,6 +1465,50 @@ const completeRTEC = async (req, res) => {
                status: updatedDoc.status,
                documentsToRevise: updatedDoc.documentsToRevise,
                revisionComments: updatedDoc.revisionComments
+            });
+         }
+      } else if (evaluationData && evaluationData.evaluationOutcome === 'endorsed for approval (with comment)') {
+         console.log('🔄 Handling "endorsed for approval (with comment)" outcome...');
+         
+         // Prepare additional documents required array
+         const additionalDocumentsRequired = evaluationData.documentsToRevise?.map(docType => {
+            // Find the document details from available documents
+            const docDetails = evaluationData.availableDocuments?.find(doc => doc.type === docType);
+            return {
+               type: docType,
+               name: docDetails?.name || docType,
+               description: docDetails?.description || `Additional document: ${docType}`,
+               reason: evaluationData.evaluationComment,
+               documentStatus: 'pending'
+            };
+         }) || [];
+         
+         console.log('🔍 Additional documents required prepared:', additionalDocumentsRequired);
+         console.log('🔍 Evaluation data documentsToRevise:', evaluationData.documentsToRevise);
+         console.log('🔍 Available documents:', evaluationData.availableDocuments);
+         
+         // Update RTEC documents to add additional document requirements
+         if (rtecMeeting.rtecDocumentsId) {
+            console.log('🔍 Updating RTEC documents with additional document requirements...');
+            console.log('🔍 RTEC Documents ID:', rtecMeeting.rtecDocumentsId);
+            console.log('🔍 Update data:', {
+               status: 'additional_documents_required',
+               additionalDocumentsRequired: additionalDocumentsRequired
+            });
+            
+            const updatedDoc = await RTECDocuments.findByIdAndUpdate(
+               rtecMeeting.rtecDocumentsId,
+               {
+                  status: 'additional_documents_required',
+                  additionalDocumentsRequired: additionalDocumentsRequired
+               },
+               { new: true }
+            );
+            
+            console.log('🔍 RTEC documents updated with additional requirements successfully:', {
+               id: updatedDoc._id,
+               status: updatedDoc.status,
+               additionalDocumentsRequired: updatedDoc.additionalDocumentsRequired
             });
          }
 

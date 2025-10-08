@@ -381,10 +381,8 @@ const reviewRTECDocument = async (req, res) => {
           }
           
           // Check if this is a re-approval after revision (any meeting that exists and is not completed)
-          if (existingMeeting && (existingMeeting.status === 'rtec_revision_requested' || 
-                                  existingMeeting.status === 'rtec_revision_requested' ||
-                                  !existingMeeting.rtecCompleted)) {
-             console.log('🔍 Found existing meeting that needs rescheduling...');
+          if (existingMeeting && existingMeeting.status === 'rtec_revision_requested') {
+             console.log('🔍 Found existing meeting with revision status, making documents available for rescheduling...');
              console.log('🔍 Meeting ID:', existingMeeting._id);
              console.log('🔍 Meeting status:', existingMeeting.status);
              console.log('🔍 Documents are now approved and ready for next meeting scheduling');
@@ -413,6 +411,56 @@ const reviewRTECDocument = async (req, res) => {
                 } catch (notificationError) {
                    console.error('❌ Error creating notification:', notificationError);
                 }
+             }
+          } else if (existingMeeting && existingMeeting.status === 'rtec_endorsed_for_approval') {
+             console.log('🔍 Found existing meeting with endorsed for approval status, proceeding directly to funding...');
+             console.log('🔍 Meeting ID:', existingMeeting._id);
+             console.log('🔍 Meeting status:', existingMeeting.status);
+             console.log('🔍 Documents approved after endorsement - proceeding to funding without new meeting');
+             
+             // Update meeting status to completed and mark as ready for funding
+             await existingMeeting.updateOne({
+                status: 'rtec_completed',
+                rtecCompleted: true,
+                rtecCompletedAt: new Date(),
+                rtecCompletedBy: userId,
+                fundingStatus: 'ready_for_funding'
+             });
+             
+             // Update TNA status to ready for funding
+             await tna.updateOne({ status: 'ready_for_funding' });
+             
+             // Create notification for proponent about funding readiness
+             await Notification.createNotification({
+                recipientId: tna.proponentId,
+                recipientType: 'proponent',
+                type: 'status_update',
+                title: 'Application Ready for Funding',
+                message: `Your application "${rtecDocuments.applicationId?.enterpriseName || 'Application'}" has been approved and is now ready for funding.`,
+                relatedEntityType: 'tna',
+                relatedEntityId: tnaId,
+                actionUrl: `/applications`,
+                actionText: 'View Application',
+                priority: 'high',
+                sentBy: userId
+             });
+             
+             // Create notification for DOST-MIMAROPA about funding readiness
+             const dostUsers = await User.find({ role: 'dost_mimaropa' });
+             for (const dostUser of dostUsers) {
+                await Notification.createNotification({
+                   recipientId: dostUser._id,
+                   recipientType: 'dost_mimaropa',
+                   type: 'status_update',
+                   title: 'Application Ready for Funding',
+                   message: `Application "${rtecDocuments.applicationId?.enterpriseName || 'Application'}" has completed RTEC evaluation and is ready for funding.`,
+                   relatedEntityType: 'tna',
+                   relatedEntityId: tnaId,
+                   actionUrl: `/applications`,
+                   actionText: 'View Application',
+                   priority: 'high',
+                   sentBy: userId
+                });
              }
           } else if (existingMeeting) {
              console.log('🔍 Meeting exists but may not need rescheduling:', existingMeeting.status);
