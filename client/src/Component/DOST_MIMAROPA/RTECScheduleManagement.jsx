@@ -1655,18 +1655,10 @@ const RTECScheduleManagement = () => {
                   <select
                      value={rtecEvaluationData.evaluationOutcome}
                      onChange={(e) => {
-                        const selectedOutcome = e.target.value;
-                        let documentsToRevise = [];
-                        
-                        // Auto-select "Response to RTEC Comments" for endorsed outcomes
-                        if (selectedOutcome === 'endorsed for approval (with comment)') {
-                           documentsToRevise = ['response to rtec comments'];
-                        }
-                        
                         setRtecEvaluationData({
                            ...rtecEvaluationData,
-                           evaluationOutcome: selectedOutcome,
-                           documentsToRevise: documentsToRevise
+                           evaluationOutcome: e.target.value,
+                           documentsToRevise: [] // Reset document selection when outcome changes
                         });
                      }}
                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
