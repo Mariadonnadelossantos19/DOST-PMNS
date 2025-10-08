@@ -1648,6 +1648,59 @@ const RTECScheduleManagement = () => {
                   </p>
                </div>
 
+               {/* Document Review Section */}
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Documents for Review
+                  </label>
+                  <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                     {availableDocuments.map((doc, index) => (
+                        <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg bg-white hover:bg-gray-50">
+                           <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                 <div className="font-medium">{doc.name}</div>
+                                 {doc.documentStatus === 'pending' && doc.reason && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                       Additional Required
+                                    </span>
+                                 )}
+                                 {doc.documentStatus === 'submitted' && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                       Submitted
+                                    </span>
+                                 )}
+                              </div>
+                              <div className="text-sm text-gray-500">{doc.description}</div>
+                              {doc.filename && (
+                                 <div className="text-sm text-green-600 mt-1">
+                                    <strong>File:</strong> {doc.originalName}
+                                 </div>
+                              )}
+                              {doc.reason && (
+                                 <div className="text-sm text-blue-600 mt-1">
+                                    <strong>Reason:</strong> {doc.reason}
+                                 </div>
+                              )}
+                              <div className="text-xs text-gray-400 mt-1">
+                                 Status: <span className={`font-medium ${
+                                    doc.documentStatus === 'approved' ? 'text-green-600' : 
+                                    doc.documentStatus === 'rejected' ? 'text-red-600' : 
+                                    doc.documentStatus === 'pending' ? 'text-blue-600' :
+                                    doc.documentStatus === 'submitted' ? 'text-green-600' :
+                                    'text-yellow-600'
+                                 }`}>{doc.documentStatus}</span>
+                              </div>
+                           </div>
+                        </div>
+                     ))}
+                     {availableDocuments.length === 0 && (
+                        <div className="text-center py-4 text-gray-500">
+                           No documents available for review
+                        </div>
+                     )}
+                  </div>
+               </div>
+
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                      Evaluation Outcome <span className="text-red-500">*</span>
