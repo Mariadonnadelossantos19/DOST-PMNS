@@ -431,8 +431,16 @@ const RTECScheduleManagement = () => {
                   const regularDocuments = rtecDoc.partialdocsrtec || [];
                   const additionalDocuments = rtecDoc.additionalDocumentsRequired || [];
                   
-                  // Combine regular and additional documents
-                  const allDocuments = [...regularDocuments, ...additionalDocuments];
+                  // Add "Response to RTEC Comments" document if not already present
+                  const responseDocument = {
+                     type: 'response to rtec comments',
+                     name: 'Response to RTEC Comments',
+                     description: 'Proponent\'s response addressing the RTEC committee\'s comments and recommendations',
+                     documentStatus: 'pending'
+                  };
+                  
+                  // Combine regular, additional, and response documents
+                  const allDocuments = [...regularDocuments, ...additionalDocuments, responseDocument];
                   setAvailableDocuments(allDocuments);
                }
             }
@@ -1654,7 +1662,21 @@ const RTECScheduleManagement = () => {
                   </label>
                   <select
                      value={rtecEvaluationData.evaluationOutcome}
-                     onChange={(e) => setRtecEvaluationData({...rtecEvaluationData, evaluationOutcome: e.target.value})}
+                     onChange={(e) => {
+                        const selectedOutcome = e.target.value;
+                        let documentsToRevise = [];
+                        
+                        // Auto-select "Response to RTEC Comments" for endorsed outcomes
+                        if (selectedOutcome === 'endorsed for approval (with comment)') {
+                           documentsToRevise = ['response to rtec comments'];
+                        }
+                        
+                        setRtecEvaluationData({
+                           ...rtecEvaluationData,
+                           evaluationOutcome: selectedOutcome,
+                           documentsToRevise: documentsToRevise
+                        });
+                     }}
                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                      required
                   >

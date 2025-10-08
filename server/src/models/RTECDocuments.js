@@ -65,7 +65,8 @@ const rtecDocumentsSchema = new mongoose.Schema({
             'sworn affidavit', 
             'projected financial statements', 
             'complete technical specifications and design/drawing/picture of equipment',
-            'three quotations from suppliers/fabricators for each equipment to be acquired'
+            'three quotations from suppliers/fabricators for each equipment to be acquired',
+            'response to rtec comments'
          ],
          required: true
       },

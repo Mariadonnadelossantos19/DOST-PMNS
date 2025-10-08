@@ -1483,6 +1483,18 @@ const completeRTEC = async (req, res) => {
             };
          }) || [];
          
+         // Always add "Response to RTEC Comments" document for endorsed outcomes
+         const responseDocument = {
+            type: 'response to rtec comments',
+            name: 'Response to RTEC Comments',
+            description: 'Proponent\'s response addressing the RTEC committee\'s comments and recommendations',
+            reason: evaluationData.evaluationComment,
+            documentStatus: 'pending'
+         };
+         
+         // Add the response document to the additional documents
+         additionalDocumentsRequired.push(responseDocument);
+         
          console.log('🔍 Additional documents required prepared:', additionalDocumentsRequired);
          console.log('🔍 Evaluation data documentsToRevise:', evaluationData.documentsToRevise);
          console.log('🔍 Available documents:', evaluationData.availableDocuments);
