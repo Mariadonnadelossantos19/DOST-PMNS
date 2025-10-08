@@ -1355,7 +1355,7 @@ const completeRTEC = async (req, res) => {
          rtecMeeting.completedBy = userId;
          await rtecMeeting.save();
          console.log('✅ Meeting auto-completed successfully');
-      } else if (rtecMeeting.status !== 'completed' && rtecMeeting.status !== 'rtec_completed' && rtecMeeting.status !== 'rtec_revision_requested') {
+      } else if (rtecMeeting.status !== 'completed' && rtecMeeting.status !== 'rtec_completed' && rtecMeeting.status !== 'rtec_revision_requested' && rtecMeeting.status !== 'rtec_endorsed_for_approval') {
          return res.status(400).json({
             success: false,
             message: `Meeting must be completed before finalizing RTEC. Current status: ${rtecMeeting.status}. Please update the meeting status to 'completed' first.`
