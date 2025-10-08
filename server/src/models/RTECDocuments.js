@@ -416,7 +416,13 @@ rtecDocumentsSchema.methods.initializeDocumentTypes = function() {
 
 // Method to submit a document
 rtecDocumentsSchema.methods.submitDocument = function(documentType, fileData, userId) {
-   const document = this.partialdocsrtec.find(doc => doc.type === documentType);
+   let document = this.partialdocsrtec.find(doc => doc.type === documentType);
+   
+   if (!document) {
+      // Check if it's an additional document
+      document = this.additionalDocumentsRequired.find(doc => doc.type === documentType);
+   }
+   
    if (document) {
       document.filename = fileData.filename;
       document.originalName = fileData.originalName;
@@ -426,12 +432,21 @@ rtecDocumentsSchema.methods.submitDocument = function(documentType, fileData, us
       document.uploadedAt = new Date();
       document.uploadedBy = userId;
       document.documentStatus = 'submitted';
+   } else {
+      throw new Error(`Document type ${documentType} not found for submission.`);
    }
    
-   // Check if all documents are submitted
-   const allSubmitted = this.partialdocsrtec.every(doc => doc.documentStatus === 'submitted');
-   if (allSubmitted) {
+   // Check if all documents are submitted (both partialdocsrtec and additionalDocumentsRequired)
+   const allPartialDocsSubmitted = this.partialdocsrtec.every(doc => doc.documentStatus === 'submitted');
+   const allAdditionalDocsSubmitted = this.additionalDocumentsRequired.every(doc => doc.documentStatus === 'submitted');
+   
+   if (allPartialDocsSubmitted && allAdditionalDocsSubmitted) {
       this.status = 'documents_submitted';
+      this.submittedBy = userId;
+      this.submittedAt = new Date();
+   } else if (this.status === 'additional_documents_required' && allAdditionalDocsSubmitted) {
+      // If only additional documents were required and now all are submitted
+      this.status = 'documents_submitted'; // Or a new status like 'additional_documents_submitted'
       this.submittedBy = userId;
       this.submittedAt = new Date();
    }
