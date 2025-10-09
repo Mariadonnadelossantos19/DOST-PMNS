@@ -1663,10 +1663,44 @@ const RTECScheduleManagement = () => {
                   </div>
                </div>
 
+               {/* Submitted Additional Documents Section */}
+               {availableDocuments.some(doc => doc.documentStatus === 'submitted' && doc.reason) && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                     <h4 className="text-sm font-semibold text-green-800 mb-2">📄 Submitted Additional Documents</h4>
+                     <div className="space-y-2">
+                        {availableDocuments
+                           .filter(doc => doc.documentStatus === 'submitted' && doc.reason)
+                           .map((doc, index) => (
+                              <div key={index} className="flex items-center space-x-3 p-3 border border-green-200 rounded-lg bg-white">
+                                 <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                       <div className="font-medium text-green-800">{doc.name}</div>
+                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          Submitted
+                                       </span>
+                                    </div>
+                                    <div className="text-sm text-gray-600">{doc.description}</div>
+                                    {doc.filename && (
+                                       <div className="text-sm text-green-600 mt-1">
+                                          <strong>File:</strong> {doc.originalName}
+                                       </div>
+                                    )}
+                                    {doc.reason && (
+                                       <div className="text-sm text-blue-600 mt-1">
+                                          <strong>Reason:</strong> {doc.reason}
+                                       </div>
+                                    )}
+                                 </div>
+                              </div>
+                           ))}
+                     </div>
+                  </div>
+               )}
+
                {/* Document Review Section */}
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                     Documents for Review
+                     All Documents for Review
                   </label>
                   <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50">
                      {console.log('🔍 Rendering availableDocuments:', availableDocuments.length, availableDocuments)}
@@ -1683,6 +1717,16 @@ const RTECScheduleManagement = () => {
                                  {doc.documentStatus === 'submitted' && (
                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        Submitted
+                                    </span>
+                                 )}
+                                 {doc.documentStatus === 'approved' && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                       Approved
+                                    </span>
+                                 )}
+                                 {doc.documentStatus === 'rejected' && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                       Rejected
                                     </span>
                                  )}
                               </div>
