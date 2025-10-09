@@ -686,9 +686,9 @@ const getApprovedRTECDocuments = async (req, res) => {
                filteredDocuments.push(doc);
                console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
             } else if (rtecMeeting.status === 'rtec_endorsed_for_approval') {
-               // Meeting exists with endorsed for approval status, documents need additional requirements
-               filteredDocuments.push(doc);
-               console.log('✅ Including ENDORSED document (needs additional requirements):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
+               // Meeting exists with endorsed for approval status - these should NOT be scheduled
+               // They go directly to RTEC Completed without needing another meeting
+               console.log('❌ EXCLUDING endorsed document (goes directly to RTEC Completed):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
             } else if (rtecMeeting.status !== 'rtec_completed' && !rtecMeeting.rtecCompleted) {
                // Meeting exists but not completed yet, include for potential rescheduling
                filteredDocuments.push(doc);
