@@ -671,30 +671,40 @@ const getApprovedRTECDocuments = async (req, res) => {
       console.log('🔍 FILTERING LOGIC: Processing approved documents for scheduling...');
       
       for (const doc of rtecDocuments) {
-         const rtecMeeting = await RTECMeeting.findOne({ tnaId: doc.tnaId });
+         // Find ALL meetings for this TNA to check for completed meetings
+         const allMeetings = await RTECMeeting.find({ tnaId: doc.tnaId });
+         const completedMeeting = allMeetings.find(m => m.status === 'rtec_completed' || m.rtecCompleted);
+         const endorsedMeeting = allMeetings.find(m => m.status === 'rtec_endorsed_for_approval');
+         const revisionMeeting = allMeetings.find(m => m.status === 'rtec_revision_requested');
          
-         console.log('🔍 Processing document:', doc._id, 'Status:', doc.status, 'Meeting exists:', rtecMeeting ? 'Yes' : 'No');
+         console.log('🔍 Processing document:', doc._id, 'Status:', doc.status, 'Total meetings:', allMeetings.length);
+         console.log('   - Completed meeting:', completedMeeting ? 'Yes' : 'No');
+         console.log('   - Endorsed meeting:', endorsedMeeting ? 'Yes' : 'No');
+         console.log('   - Revision meeting:', revisionMeeting ? 'Yes' : 'No');
          
          if (doc.status === 'documents_approved' || doc.status === 'additional_documents_required') {
-            // Check if meeting exists
-            if (!rtecMeeting) {
-               // No meeting yet, this is a new approved document or document with additional requirements
+            // If there's a completed meeting, exclude regardless of other meetings
+            if (completedMeeting) {
+               console.log('❌ EXCLUDING document with completed meeting:', doc._id, 'Completed meeting status:', completedMeeting.status);
+            }
+            // If there's an endorsed meeting, exclude (goes directly to RTEC Completed)
+            else if (endorsedMeeting) {
+               console.log('❌ EXCLUDING endorsed document (goes directly to RTEC Completed):', doc._id, 'Endorsed meeting status:', endorsedMeeting.status);
+            }
+            // If there's a revision meeting, include (ready for next meeting)
+            else if (revisionMeeting) {
+               filteredDocuments.push(doc);
+               console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Revision meeting status:', revisionMeeting.status);
+            }
+            // If no meetings at all, include (new approved document)
+            else if (allMeetings.length === 0) {
                filteredDocuments.push(doc);
                console.log('✅ Including NEW approved document (no meeting yet):', doc._id, 'Status:', doc.status);
-            } else if (rtecMeeting.status === 'rtec_revision_requested') {
-               // Meeting exists with revision status, documents have been re-approved after revision
+            }
+            // If other active meetings, include
+            else {
                filteredDocuments.push(doc);
-               console.log('✅ Including RE-APPROVED document (ready for next meeting):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
-            } else if (rtecMeeting.status === 'rtec_endorsed_for_approval') {
-               // Meeting exists with endorsed for approval status - these should NOT be scheduled
-               // They go directly to RTEC Completed without needing another meeting
-               console.log('❌ EXCLUDING endorsed document (goes directly to RTEC Completed):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
-            } else if (rtecMeeting.status !== 'rtec_completed' && !rtecMeeting.rtecCompleted) {
-               // Meeting exists but not completed yet, include for potential rescheduling
-               filteredDocuments.push(doc);
-               console.log('✅ Including approved document (meeting in progress):', doc._id, 'Meeting status:', rtecMeeting.status, 'Doc status:', doc.status);
-            } else {
-               console.log('❌ Filtering out completed document:', doc._id, 'Meeting status:', rtecMeeting?.status, 'Doc status:', doc.status);
+               console.log('✅ Including approved document (meeting in progress):', doc._id, 'Active meetings:', allMeetings.length);
             }
          } else {
             console.log('❌ Filtering out non-approved document:', doc._id, 'Status:', doc.status);
