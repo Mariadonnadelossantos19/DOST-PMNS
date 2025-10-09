@@ -167,10 +167,6 @@ const getRTECDocumentsByTNA = async (req, res) => {
          });
       }
 
-      console.log('🔍 RTEC Documents API Response Debug:');
-      console.log('   Regular documents count:', rtecDocuments.partialdocsrtec?.length || 0);
-      console.log('   Additional documents count:', rtecDocuments.additionalDocumentsRequired?.length || 0);
-      console.log('   Additional documents details:', rtecDocuments.additionalDocumentsRequired);
 
       res.json({
          success: true,
