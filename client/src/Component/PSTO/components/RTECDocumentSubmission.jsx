@@ -335,7 +335,7 @@ const RTECDocumentSubmission = () => {
                         </div>
 
                         {/* Additional Documents Submitted */}
-                        {rtecDoc.status === 'documents_submitted' && rtecDoc.additionalDocumentsRequired && rtecDoc.additionalDocumentsRequired.length > 0 && (
+                        {rtecDoc.additionalDocumentsRequired && rtecDoc.additionalDocumentsRequired.length > 0 && (
                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 mb-3 shadow-sm">
                               <h4 className="text-sm font-semibold text-green-900 mb-2">Additional Documents Submitted</h4>
                               <div className="space-y-2">

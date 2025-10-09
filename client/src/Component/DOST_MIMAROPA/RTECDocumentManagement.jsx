@@ -435,6 +435,13 @@ const RTECDocumentManagement = () => {
                                     </>
                                  )}
                                  
+                                 {/* Debug info for document status */}
+                                 {console.log('🔍 Document status debug:', {
+                                    type: doc.type,
+                                    status: doc.documentStatus,
+                                    shouldShowButtons: doc.documentStatus === 'submitted'
+                                 })}
+                                 
                                  {/* Show review status for already reviewed documents */}
                                  {doc.documentStatus === 'approved' && (
                                     <div className="flex items-center space-x-2">
