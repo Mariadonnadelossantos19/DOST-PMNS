@@ -337,7 +337,7 @@ const RTECDocumentManagement = () => {
                      </div>
                   </div>
 
-                  {/* Documents */}
+                  {/* Regular Documents */}
                   <div>
                      <h4 className="text-lg font-medium text-gray-900 mb-4">Required Documents</h4>
                      <div className="space-y-4">
@@ -462,6 +462,138 @@ const RTECDocumentManagement = () => {
                         ))}
                      </div>
                   </div>
+
+                  {/* Additional Documents (Response to RTEC Comments) */}
+                  {selectedDocument.additionalDocumentsRequired && selectedDocument.additionalDocumentsRequired.length > 0 && (
+                     <div>
+                        <h4 className="text-lg font-medium text-gray-900 mb-4">Additional Documents Required</h4>
+                        <div className="space-y-4">
+                           {selectedDocument.additionalDocumentsRequired.map((doc, index) => (
+                              <div key={index} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                                 <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                       <h5 className="font-medium text-gray-900">{doc.name}</h5>
+                                       <p className="text-sm text-gray-600">{doc.description}</p>
+                                       {doc.reason && (
+                                          <p className="text-sm text-blue-600 mt-1">
+                                             <strong>Reason:</strong> {doc.reason}
+                                          </p>
+                                       )}
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                       {getDocumentStatusBadge(doc.documentStatus)}
+                                    </div>
+                                 </div>
+                                 
+                                 {doc.filename && (
+                                    <div className="mt-2">
+                                       <p className="text-sm text-gray-600">
+                                          <strong>File:</strong> {doc.originalName}
+                                       </p>
+                                       <p className="text-sm text-gray-600">
+                                          <strong>Uploaded:</strong> {new Date(doc.uploadedAt).toLocaleString()}
+                                       </p>
+                                    </div>
+                                 )}
+
+                                 {doc.reviewComments && (
+                                    <div className="mt-2">
+                                       <p className="text-sm text-gray-600">
+                                          <strong>Review Comments:</strong> {doc.reviewComments}
+                                       </p>
+                                    </div>
+                                 )}
+
+                                 <div className="mt-3 flex space-x-2">
+                                    {/* View and Download buttons - always available */}
+                                    <Button
+                                       size="sm"
+                                       variant="outline"
+                                       onClick={() => {
+                                          const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                          console.log('Opening file:', fileUrl);
+                                          const newWindow = window.open(fileUrl, '_blank');
+                                          if (!newWindow) {
+                                             showToast('Please allow popups to view documents', 'error');
+                                          }
+                                       }}
+                                       className="flex items-center space-x-1"
+                                       title={`View ${doc.originalName || doc.filename}`}
+                                    >
+                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                       </svg>
+                                       <span>View</span>
+                                    </Button>
+                                    <Button
+                                       size="sm"
+                                       variant="outline"
+                                       onClick={() => {
+                                          const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                          const link = document.createElement('a');
+                                          link.href = fileUrl;
+                                          link.download = doc.originalName || doc.filename;
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                       }}
+                                       className="flex items-center space-x-1"
+                                       title={`Download ${doc.originalName || doc.filename}`}
+                                    >
+                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                       </svg>
+                                       <span>Download</span>
+                                    </Button>
+
+                                    {/* Review buttons - only show for submitted documents */}
+                                    {doc.documentStatus === 'submitted' && (
+                                       <>
+                                          <Button
+                                             size="sm"
+                                             onClick={() => handleReviewDocument(selectedDocument, doc.type, 'approve')}
+                                             className="bg-green-600 hover:bg-green-700 text-white"
+                                          >
+                                             Approve
+                                          </Button>
+                                          <Button
+                                             size="sm"
+                                             onClick={() => handleReviewDocument(selectedDocument, doc.type, 'reject')}
+                                             className="bg-red-600 hover:bg-red-700 text-white"
+                                          >
+                                             Reject
+                                          </Button>
+                                       </>
+                                    )}
+
+                                    {/* Status indicators */}
+                                    {doc.documentStatus === 'approved' && (
+                                       <div className="flex items-center space-x-2">
+                                          <Badge color="green">Approved</Badge>
+                                          {doc.reviewedAt && (
+                                             <span className="text-sm text-gray-500">
+                                                Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                             </span>
+                                          )}
+                                       </div>
+                                    )}
+                                    {doc.documentStatus === 'rejected' && (
+                                       <div className="flex items-center space-x-2">
+                                          <Badge color="red">Rejected</Badge>
+                                          {doc.reviewedAt && (
+                                             <span className="text-sm text-gray-500">
+                                                Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                             </span>
+                                          )}
+                                       </div>
+                                    )}
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+                  )}
                </div>
             </Modal>
          )}
