@@ -419,26 +419,31 @@ const RTECScheduleManagement = () => {
       try {
          // Find the meeting to get the RTEC documents
          const meeting = rtecMeetings.find(m => m._id === meetingId);
+         
+         // Check if RTEC is already completed
+         const isRTECCompleted = meeting?.rtecCompleted || meeting?.status === 'rtec_completed' || (meeting?.evaluationOutcome && meeting?.evaluationOutcome !== '');
+         
+         if (isRTECCompleted) {
+            displayToast('RTEC evaluation is already completed for this meeting. You can only view the results.', 'info');
+            return;
+         }
+         
          if (meeting && meeting.rtecDocumentsId) {
-            // Extract the TNA ID properly - handle both string and object cases
-            const tnaId = typeof meeting.tnaId === 'object' ? meeting.tnaId._id || meeting.tnaId : meeting.tnaId;
+            // Get the RTEC documents ID from the meeting
+            const rtecDocumentsId = typeof meeting.rtecDocumentsId === 'object' 
+               ? meeting.rtecDocumentsId._id || meeting.rtecDocumentsId 
+               : meeting.rtecDocumentsId;
             
-            if (tnaId) {
-               // Fetch the RTEC documents to get available document types
-               const response = await api.get(`/rtec-documents/tna/${tnaId}`);
+            if (rtecDocumentsId) {
+               // Fetch the specific RTEC documents for this meeting
+               const response = await api.get(`/rtec-documents/${rtecDocumentsId}`);
                if (response.data.success && response.data.data) {
                   const rtecDoc = response.data.data;
                   const regularDocuments = rtecDoc.partialdocsrtec || [];
                   const additionalDocuments = rtecDoc.additionalDocumentsRequired || [];
                   
-                  console.log('🔍 RTEC Documents fetched for modal:');
-                  console.log('   Regular documents:', regularDocuments.length);
-                  console.log('   Additional documents:', additionalDocuments.length);
-                  console.log('   Additional documents details:', additionalDocuments);
-                  
                   // Combine regular and additional documents
                   const allDocuments = [...regularDocuments, ...additionalDocuments];
-                  console.log('   Total documents for modal:', allDocuments.length);
                   setAvailableDocuments(allDocuments);
                }
             }
@@ -836,14 +841,14 @@ const RTECScheduleManagement = () => {
                   console.log('🔍 canDoRTECEvaluation:', canDoRTECEvaluation);
                   
                   if (isRTECCompleted) {
-                     // Show "View RTEC Evaluation" for completed RTEC
+                     // Show "View RTEC Evaluation" for completed RTEC (read-only)
                      return (
                         <Button
                            size="sm"
                            variant="outline"
                            onClick={() => handleOpenRTECEvaluation(item._id)}
                            className="text-xs px-2 py-1 border-gray-300 hover:bg-gray-50"
-                           title="View RTEC Evaluation"
+                           title="View RTEC Evaluation (Completed - Read Only)"
                         >
                            <Icons.Clipboard />
                         </Button>
@@ -1654,14 +1659,6 @@ const RTECScheduleManagement = () => {
                   </p>
                </div>
 
-               {/* Debug Section */}
-               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                  <h4 className="text-sm font-semibold text-yellow-800 mb-2">Debug Information</h4>
-                  <div className="text-xs text-yellow-700">
-                     <p>Available Documents Count: {availableDocuments.length}</p>
-                     <p>Available Documents: {JSON.stringify(availableDocuments, null, 2)}</p>
-                  </div>
-               </div>
 
                {/* Submitted Additional Documents Section */}
                {availableDocuments.some(doc => doc.documentStatus === 'submitted' && doc.reason) && (
@@ -1701,69 +1698,6 @@ const RTECScheduleManagement = () => {
                   </div>
                )}
 
-               {/* Document Review Section */}
-               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                     All Documents for Review
-                  </label>
-                  <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50">
-                     {console.log('🔍 Rendering availableDocuments:', availableDocuments.length, availableDocuments)}
-                     {availableDocuments.map((doc, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg bg-white hover:bg-gray-50">
-                           <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                 <div className="font-medium">{doc.name}</div>
-                                 {doc.documentStatus === 'pending' && doc.reason && (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                       Additional Required
-                                    </span>
-                                 )}
-                                 {doc.documentStatus === 'submitted' && (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                       Submitted
-                                    </span>
-                                 )}
-                                 {doc.documentStatus === 'approved' && (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                       Approved
-                                    </span>
-                                 )}
-                                 {doc.documentStatus === 'rejected' && (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                       Rejected
-                                    </span>
-                                 )}
-                              </div>
-                              <div className="text-sm text-gray-500">{doc.description}</div>
-                              {doc.filename && (
-                                 <div className="text-sm text-green-600 mt-1">
-                                    <strong>File:</strong> {doc.originalName}
-                                 </div>
-                              )}
-                              {doc.reason && (
-                                 <div className="text-sm text-blue-600 mt-1">
-                                    <strong>Reason:</strong> {doc.reason}
-                                 </div>
-                              )}
-                              <div className="text-xs text-gray-400 mt-1">
-                                 Status: <span className={`font-medium ${
-                                    doc.documentStatus === 'approved' ? 'text-green-600' : 
-                                    doc.documentStatus === 'rejected' ? 'text-red-600' : 
-                                    doc.documentStatus === 'pending' ? 'text-blue-600' :
-                                    doc.documentStatus === 'submitted' ? 'text-green-600' :
-                                    'text-yellow-600'
-                                 }`}>{doc.documentStatus}</span>
-                              </div>
-                           </div>
-                        </div>
-                     ))}
-                     {availableDocuments.length === 0 && (
-                        <div className="text-center py-4 text-gray-500">
-                           No documents available for review
-                        </div>
-                     )}
-                  </div>
-               </div>
 
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
