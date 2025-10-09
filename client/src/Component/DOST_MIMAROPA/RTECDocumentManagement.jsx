@@ -128,6 +128,24 @@ const RTECDocumentManagement = () => {
       return <Badge color={config.color}>{config.text}</Badge>;
    };
 
+   const getTNAStatusBadge = (status) => {
+      const statusConfig = {
+         'rtec_completed': { color: 'green', text: 'RTEC Completed' },
+         'ready_for_funding': { color: 'emerald', text: 'Ready for Funding' },
+         'rtec_documents_approved': { color: 'blue', text: 'Documents Approved' },
+         'rtec_revision_requested': { color: 'orange', text: 'Revision Requested' },
+         'rtec_endorsed_for_approval': { color: 'purple', text: 'Endorsed for Approval' },
+         'documents_requested': { color: 'blue', text: 'Requested' },
+         'documents_submitted': { color: 'yellow', text: 'Submitted' },
+         'documents_under_review': { color: 'purple', text: 'Under Review' },
+         'documents_approved': { color: 'green', text: 'Approved' },
+         'documents_rejected': { color: 'red', text: 'Rejected' }
+      };
+      
+      const config = statusConfig[status] || { color: 'gray', text: status };
+      return <Badge color={config.color}>{config.text}</Badge>;
+   };
+
    const getDocumentStatusBadge = (documentStatus) => {
       const statusConfig = {
          'pending': { color: 'gray', text: 'Pending' },
@@ -191,7 +209,9 @@ const RTECDocumentManagement = () => {
          header: 'Status',
          width: '120px',
          render: (value, item) => {
-            return getStatusBadge(item?.status);
+            // Show TNA status instead of RTEC documents status
+            const tnaStatus = item?.tnaId?.status || item?.status;
+            return getTNAStatusBadge(tnaStatus);
          }
       },
       {

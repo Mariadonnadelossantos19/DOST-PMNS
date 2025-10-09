@@ -556,7 +556,7 @@ const listRTECDocuments = async (req, res) => {
       const skip = (pageNum - 1) * limitNum;
 
       const rtecDocuments = await RTECDocuments.find(query)
-         .populate('tnaId', 'scheduledDate location programName')
+         .populate('tnaId', 'scheduledDate location programName status')
          .populate('applicationId', 'enterpriseName projectTitle programName businessActivity')
          .populate('proponentId', 'firstName lastName email')
          .populate('requestedBy', 'firstName lastName')
