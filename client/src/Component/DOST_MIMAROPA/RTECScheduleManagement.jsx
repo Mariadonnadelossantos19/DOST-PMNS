@@ -424,7 +424,7 @@ const RTECScheduleManagement = () => {
          const isRTECCompleted = meeting?.rtecCompleted || meeting?.status === 'rtec_completed' || (meeting?.evaluationOutcome && meeting?.evaluationOutcome !== '');
          
          if (isRTECCompleted) {
-            displayToast('RTEC evaluation is already completed for this meeting. You can only view the results.', 'info');
+            displayToast('RTEC evaluation is already completed for this meeting. You can only view the results in the RTEC Documents.', 'info');
             return;
          }
          
