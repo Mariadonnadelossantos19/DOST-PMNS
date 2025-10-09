@@ -576,6 +576,68 @@ rtecDocumentsSchema.methods.rejectDocument = function(documentType, userId, comm
    return this.save();
 };
 
+// Method to approve an additional document
+rtecDocumentsSchema.methods.approveAdditionalDocument = function(documentType, userId, comments) {
+   const document = this.additionalDocumentsRequired.find(doc => doc.type === documentType);
+   if (document) {
+      document.documentStatus = 'approved';
+      document.reviewedBy = userId;
+      document.reviewedAt = new Date();
+      document.reviewComments = comments;
+   }
+   
+   // Check if all additional documents are approved
+   const allAdditionalDocumentsApproved = this.additionalDocumentsRequired.every(doc => 
+      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+   );
+   
+   if (allAdditionalDocumentsApproved) {
+      const hasRejectedAdditionalDocuments = this.additionalDocumentsRequired.some(doc => doc.documentStatus === 'rejected');
+      if (!hasRejectedAdditionalDocuments) {
+         // All additional documents approved - ready for funding
+         this.status = 'documents_approved';
+         this.reviewedBy = userId;
+         this.reviewedAt = new Date();
+      } else {
+         // Some additional documents rejected
+         this.status = 'documents_rejected';
+      }
+   } else {
+      // Set to under review if not all additional documents are reviewed yet
+      this.status = 'documents_under_review';
+   }
+   
+   return this.save();
+};
+
+// Method to reject an additional document
+rtecDocumentsSchema.methods.rejectAdditionalDocument = function(documentType, userId, comments) {
+   const document = this.additionalDocumentsRequired.find(doc => doc.type === documentType);
+   if (document) {
+      document.documentStatus = 'rejected';
+      document.reviewedBy = userId;
+      document.reviewedAt = new Date();
+      document.reviewComments = comments;
+   }
+   
+   // Check if all additional documents are reviewed
+   const allAdditionalDocumentsReviewed = this.additionalDocumentsRequired.every(doc => 
+      doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
+   );
+   
+   if (allAdditionalDocumentsReviewed) {
+      const hasRejectedAdditionalDocuments = this.additionalDocumentsRequired.some(doc => doc.documentStatus === 'rejected');
+      this.status = hasRejectedAdditionalDocuments ? 'documents_rejected' : 'documents_approved';
+      this.reviewedBy = userId;
+      this.reviewedAt = new Date();
+   } else {
+      // Set to under review if not all additional documents are reviewed yet
+      this.status = 'documents_under_review';
+   }
+   
+   return this.save();
+};
+
 // Ensure virtual fields are serialized
 rtecDocumentsSchema.set('toJSON', {
    virtuals: true

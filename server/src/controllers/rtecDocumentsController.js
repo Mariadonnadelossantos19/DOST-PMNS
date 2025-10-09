@@ -333,8 +333,16 @@ const reviewRTECDocument = async (req, res) => {
          });
       }
 
-      // Check if the specific document is submitted
-      const document = rtecDocuments.partialdocsrtec.find(doc => doc.type === documentType);
+      // Check if the specific document is submitted (check both regular and additional documents)
+      let document = rtecDocuments.partialdocsrtec.find(doc => doc.type === documentType);
+      let isAdditionalDocument = false;
+      
+      if (!document) {
+         // Check if it's an additional document
+         document = rtecDocuments.additionalDocumentsRequired.find(doc => doc.type === documentType);
+         isAdditionalDocument = true;
+      }
+      
       if (!document) {
          return res.status(404).json({
             success: false,
@@ -351,15 +359,27 @@ const reviewRTECDocument = async (req, res) => {
 
       // Update document review status
       if (action === 'approve') {
-         await rtecDocuments.approveDocument(documentType, userId, comments);
+         if (isAdditionalDocument) {
+            // Handle additional document approval
+            await rtecDocuments.approveAdditionalDocument(documentType, userId, comments);
+         } else {
+            await rtecDocuments.approveDocument(documentType, userId, comments);
+         }
       } else {
-         await rtecDocuments.rejectDocument(documentType, userId, comments);
+         if (isAdditionalDocument) {
+            // Handle additional document rejection
+            await rtecDocuments.rejectAdditionalDocument(documentType, userId, comments);
+         } else {
+            await rtecDocuments.rejectDocument(documentType, userId, comments);
+         }
       }
 
       // Update TNA status based on overall document status
       const tna = await TNA.findById(tnaId);
       console.log('🔍 TNA found:', tna ? 'Yes' : 'No');
       console.log('🔍 RTEC Documents status:', rtecDocuments.status);
+      console.log('🔍 Is additional document:', isAdditionalDocument);
+      console.log('🔍 Document type:', documentType);
       
        if (rtecDocuments.status === 'documents_approved') {
           console.log('🔍 Updating TNA to rtec_documents_approved...');
