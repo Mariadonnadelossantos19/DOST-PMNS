@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const {
    requestRTECDocuments,
    getRTECDocumentsByTNA,
+   getRTECDocumentById,
    submitRTECDocument,
    reviewRTECDocument,
    listRTECDocuments,
@@ -55,6 +56,9 @@ router.get('/approved', auth, getApprovedRTECDocuments);
 
 // Get RTEC documents by TNA ID
 router.get('/tna/:tnaId', auth, getRTECDocumentsByTNA);
+
+// Get specific RTEC document by ID
+router.get('/:id', auth, getRTECDocumentById);
 
 // Review RTEC document (approve/reject)
 router.post('/review/:tnaId', auth, reviewRTECDocument);

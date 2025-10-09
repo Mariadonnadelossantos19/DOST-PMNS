@@ -183,6 +183,52 @@ const getRTECDocumentsByTNA = async (req, res) => {
    }
 };
 
+// Get specific RTEC document by ID
+const getRTECDocumentById = async (req, res) => {
+   try {
+      const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid RTEC document ID'
+         });
+      }
+
+      const rtecDocument = await RTECDocuments.findById(id)
+         .populate('tnaId')
+         .populate('applicationId')
+         .populate('proponentId')
+         .populate('requestedBy')
+         .populate('submittedBy')
+         .populate('reviewedBy')
+         .populate('partialdocsrtec.uploadedBy')
+         .populate('partialdocsrtec.reviewedBy')
+         .populate('additionalDocumentsRequired.uploadedBy')
+         .populate('additionalDocumentsRequired.reviewedBy');
+
+      if (!rtecDocument) {
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC document not found'
+         });
+      }
+
+      res.json({
+         success: true,
+         data: rtecDocument
+      });
+
+   } catch (error) {
+      console.error('Error fetching RTEC document:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 // Submit RTEC document
 const submitRTECDocument = async (req, res) => {
    try {
@@ -905,6 +951,7 @@ const getRTECDocumentsForPSTO = async (req, res) => {
 module.exports = {
    requestRTECDocuments,
    getRTECDocumentsByTNA,
+   getRTECDocumentById,
    submitRTECDocument,
    reviewRTECDocument,
    listRTECDocuments,
