@@ -156,7 +156,9 @@ const getRTECDocumentsByTNA = async (req, res) => {
          .populate('submittedBy')
          .populate('reviewedBy')
          .populate('partialdocsrtec.uploadedBy')
-         .populate('partialdocsrtec.reviewedBy');
+         .populate('partialdocsrtec.reviewedBy')
+         .populate('additionalDocumentsRequired.uploadedBy')
+         .populate('additionalDocumentsRequired.reviewedBy');
 
       if (!rtecDocuments) {
          return res.status(404).json({
@@ -164,6 +166,11 @@ const getRTECDocumentsByTNA = async (req, res) => {
             message: 'RTEC documents not found'
          });
       }
+
+      console.log('🔍 RTEC Documents API Response Debug:');
+      console.log('   Regular documents count:', rtecDocuments.partialdocsrtec?.length || 0);
+      console.log('   Additional documents count:', rtecDocuments.additionalDocumentsRequired?.length || 0);
+      console.log('   Additional documents details:', rtecDocuments.additionalDocumentsRequired);
 
       res.json({
          success: true,
