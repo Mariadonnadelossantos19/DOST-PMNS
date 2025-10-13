@@ -215,7 +215,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
             </svg>
          ),
          path: '/refund-documents',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA and Super Admin users
+         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
       },
       {
          id: 'rtec-scheduling',

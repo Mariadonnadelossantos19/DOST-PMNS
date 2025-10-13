@@ -40,12 +40,15 @@ const requestRefundDocuments = async (req, res) => {
       console.log('TNA found:', !!tna);
       console.log('TNA status:', tna.status);
 
-      // Check if TNA is in the correct status (rtec_completed)
-      if (tna.status !== 'rtec_completed') {
+      // Check if TNA is in the correct status (rtec_completed or other completed statuses)
+      const validStatuses = ['rtec_completed', 'rtec_documents_approved', 'dost_mimaropa_approved'];
+      if (!validStatuses.includes(tna.status)) {
          console.log('TNA status check failed');
+         console.log('Expected statuses:', validStatuses);
+         console.log('Actual status:', tna.status);
          return res.status(400).json({
             success: false,
-            message: 'TNA must be completed (RTEC status) before requesting refund documents'
+            message: `TNA must be completed (RTEC status) before requesting refund documents. Current status: ${tna.status}`
          });
       }
 

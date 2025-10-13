@@ -47,6 +47,34 @@ router.patch('/:tnaId/dost-mimaropa/review', auth, reviewTNAReport);
 // Get approved TNAs for DOST MIMAROPA
 router.get('/dost-mimaropa/approved', auth, getApprovedTNAs);
 
+// Get RTEC completed applications for refund documents
+router.get('/rtec-completed', auth, async (req, res) => {
+   try {
+      const TNA = require('../models/TNA');
+      // Fetch TNAs with any status that indicates they're ready for refund
+      const validStatuses = ['rtec_completed', 'rtec_documents_approved', 'dost_mimaropa_approved'];
+      const rtecCompletedTNAs = await TNA.find({ status: { $in: validStatuses } })
+         .populate('applicationId', 'enterpriseName projectTitle programName')
+         .populate('proponentId', 'firstName lastName email')
+         .sort({ updatedAt: -1 });
+      
+      console.log('Found RTEC completed TNAs:', rtecCompletedTNAs.length);
+      console.log('Statuses found:', [...new Set(rtecCompletedTNAs.map(tna => tna.status))]);
+      
+      res.json({
+         success: true,
+         data: rtecCompletedTNAs
+      });
+   } catch (error) {
+      console.error('Error fetching RTEC completed applications:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+});
+
 // Upload signed TNA report (DOST MIMAROPA)
 router.post('/:tnaId/upload-signed-report', auth, upload.single('signedTnaReport'), uploadSignedTNAReport);
 
