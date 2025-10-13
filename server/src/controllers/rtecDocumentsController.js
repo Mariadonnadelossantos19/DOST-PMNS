@@ -82,7 +82,7 @@ const requestRTECDocuments = async (req, res) => {
       });
 
       console.log('RTEC documents object created');
-s
+
       // Initialize default document types (this also saves the document)
       console.log('Initializing document types...');
       await rtecDocuments.initializeDocumentTypes();

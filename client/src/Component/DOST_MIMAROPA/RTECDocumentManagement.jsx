@@ -397,16 +397,7 @@ const RTECDocumentManagement = () => {
                             selectedDocument.applicationId?.programName || 'N/A'}
                         </p>
                      </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Amount Requested</label>
-                        <p className="mt-1 text-sm text-gray-900 font-medium">
-                           {selectedDocument.amountRequested ? 
-                              `₱${selectedDocument.amountRequested.toLocaleString()}` : 
-                              selectedDocument.applicationId?.amountRequested ? 
-                                 `₱${selectedDocument.applicationId.amountRequested.toLocaleString()}` : 
-                                 'N/A'}
-                        </p>
-                     </div>
+                     
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Status</label>
                         <div className="mt-1">{getStatusBadge(selectedDocument.status)}</div>
