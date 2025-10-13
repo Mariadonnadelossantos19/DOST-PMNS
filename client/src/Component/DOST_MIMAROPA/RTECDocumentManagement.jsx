@@ -115,26 +115,6 @@ const RTECDocumentManagement = () => {
       }
    };
 
-   const requestRefundDocuments = async (rtecDoc) => {
-      try {
-         setIsSubmitting(true);
-         const tnaId = rtecDoc.tnaId?._id || rtecDoc.tnaId;
-         
-         console.log('Requesting refund documents for TNA:', tnaId);
-         
-         const response = await api.post(`/refund-documents/request/${tnaId}`);
-         
-         if (response.data.success) {
-            showToast('Refund documents request created successfully', 'success');
-            // Optionally refresh the list or update the UI
-         }
-      } catch (error) {
-         console.error('Error requesting refund documents:', error);
-         showToast(error.response?.data?.message || 'Failed to request refund documents', 'error');
-      } finally {
-         setIsSubmitting(false);
-      }
-   };
 
    const getStatusBadge = (status) => {
       const statusConfig = {
@@ -254,13 +234,10 @@ const RTECDocumentManagement = () => {
       {
          key: 'actions',
          header: 'Actions',
-         width: '120px',
+         width: '80px',
          render: (value, item) => {
-            const tnaStatus = item?.tnaId?.status || item?.status;
-            const canRequestRefund = tnaStatus === 'rtec_completed';
-            
             return (
-               <div className="flex justify-center space-x-1">
+               <div className="flex justify-center">
                   <Button
                      size="sm"
                      variant="outline"
@@ -269,18 +246,6 @@ const RTECDocumentManagement = () => {
                   >
                      View
                   </Button>
-                  {canRequestRefund && (
-                     <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => requestRefundDocuments(item)}
-                        disabled={isSubmitting}
-                        className="text-xs px-2 py-1"
-                        title="Request Refund Documents"
-                     >
-                        Refund
-                     </Button>
-                  )}
                </div>
             );
          }
