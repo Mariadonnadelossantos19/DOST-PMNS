@@ -231,11 +231,15 @@ const submitRefundDocument = async (req, res) => {
       // Find refund documents
       const refundDocuments = await RefundDocuments.findOne({ tnaId });
       if (!refundDocuments) {
+         console.log('Refund documents not found for TNA ID:', tnaId);
          return res.status(404).json({
             success: false,
             message: 'Refund documents request not found'
          });
       }
+
+      console.log('Found refund documents:', refundDocuments._id);
+      console.log('Available document types:', refundDocuments.refundDocuments.map(doc => doc.type));
 
       // Check if document type is valid (use the same enum values as the model)
       const validDocumentTypes = [
@@ -270,25 +274,35 @@ const submitRefundDocument = async (req, res) => {
       };
 
       // Submit document
-      await refundDocuments.submitDocument(documentType, fileData, userId);
+      try {
+         await refundDocuments.submitDocument(documentType, fileData, userId);
+      } catch (submitError) {
+         console.error('Error submitting document:', submitError);
+         return res.status(500).json({
+            success: false,
+            message: 'Failed to submit document: ' + submitError.message
+         });
+      }
 
       // Update TNA status if all documents are submitted
       if (refundDocuments.status === 'documents_submitted') {
-         const tna = await TNA.findById(tnaId);
-         await tna.markRefundDocumentsSubmitted(userId);
-
          // Create notification for DOST-MIMAROPA
-         await Notification.create({
-            recipientId: refundDocuments.requestedBy,
-            recipientType: 'dost_mimaropa',
-            type: 'refund_document_request',
-            title: 'Refund Documents Submitted',
-            message: `PSTO has submitted all required refund documents for review`,
-            data: {
-               tnaId: tnaId,
-               refundDocumentsId: refundDocuments._id
-            }
-         });
+         try {
+            await Notification.create({
+               recipientId: refundDocuments.requestedBy,
+               recipientType: 'dost_mimaropa',
+               type: 'refund_document_request',
+               title: 'Refund Documents Submitted',
+               message: `PSTO has submitted all required refund documents for review`,
+               data: {
+                  tnaId: tnaId,
+                  refundDocumentsId: refundDocuments._id
+               }
+            });
+         } catch (notificationError) {
+            console.error('Error creating notification:', notificationError);
+            // Don't fail the entire request if notification creation fails
+         }
       }
 
       console.log('Refund document submitted successfully');
@@ -363,42 +377,68 @@ const reviewRefundDocument = async (req, res) => {
          });
       }
 
+      console.log('🔍 Document found:', {
+         type: document.type,
+         name: document.name,
+         documentStatus: document.documentStatus,
+         filename: document.filename,
+         uploadedAt: document.uploadedAt
+      });
+
       if (document.documentStatus !== 'submitted') {
+         console.log('🔍 Document status check failed:', {
+            expected: 'submitted',
+            actual: document.documentStatus,
+            document: document
+         });
          return res.status(400).json({
             success: false,
-            message: 'Document must be submitted before review'
+            message: `Document must be submitted before review. Current status: ${document.documentStatus}`
          });
       }
 
       // Review document
-      if (action === 'approve') {
-         if (isAdditionalDocument) {
-            await refundDocuments.approveAdditionalDocument(documentType, userId, comments);
-         } else {
-            await refundDocuments.approveDocument(documentType, userId, comments);
+      try {
+         if (action === 'approve') {
+            if (isAdditionalDocument) {
+               await refundDocuments.approveAdditionalDocument(documentType, userId, comments);
+            } else {
+               await refundDocuments.approveDocument(documentType, userId, comments);
+            }
+         } else if (action === 'reject') {
+            if (isAdditionalDocument) {
+               await refundDocuments.rejectAdditionalDocument(documentType, userId, comments);
+            } else {
+               await refundDocuments.rejectDocument(documentType, userId, comments);
+            }
          }
-      } else if (action === 'reject') {
-         if (isAdditionalDocument) {
-            await refundDocuments.rejectAdditionalDocument(documentType, userId, comments);
-         } else {
-            await refundDocuments.rejectDocument(documentType, userId, comments);
-         }
+      } catch (reviewError) {
+         console.error('Error reviewing document:', reviewError);
+         return res.status(500).json({
+            success: false,
+            message: 'Failed to review document: ' + reviewError.message
+         });
       }
 
       // Create notification for PSTO
-      await Notification.create({
-         recipientId: refundDocuments.proponentId,
-         recipientType: 'proponent',
-         type: 'refund_document_review',
-         title: `Refund Document ${action === 'approve' ? 'Approved' : 'Rejected'}`,
-         message: `Your refund document "${document.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}. ${comments ? `Comments: ${comments}` : ''}`,
-         data: {
-            tnaId: tnaId,
-            refundDocumentsId: refundDocuments._id,
-            documentType: documentType,
-            action: action
-         }
-      });
+      try {
+         await Notification.create({
+            recipientId: refundDocuments.proponentId,
+            recipientType: 'proponent',
+            type: 'refund_document_review',
+            title: `Refund Document ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+            message: `Your refund document "${document.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}. ${comments ? `Comments: ${comments}` : ''}`,
+            data: {
+               tnaId: tnaId,
+               refundDocumentsId: refundDocuments._id,
+               documentType: documentType,
+               action: action
+            }
+         });
+      } catch (notificationError) {
+         console.error('Error creating notification:', notificationError);
+         // Don't fail the entire request if notification creation fails
+      }
 
       console.log(`Refund document ${action}ed successfully`);
 

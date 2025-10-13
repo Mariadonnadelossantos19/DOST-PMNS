@@ -12,6 +12,10 @@ const RefundDocument = () => {
    const [uploading, setUploading] = useState(false);
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
    const [currentUser, setCurrentUser] = useState(null);
+   const [showReviewModal, setShowReviewModal] = useState(false);
+   const [reviewAction, setReviewAction] = useState('');
+   const [reviewComments, setReviewComments] = useState('');
+   const [isSubmitting, setIsSubmitting] = useState(false);
 
    // Get current user data to determine role
    useEffect(() => {
@@ -27,6 +31,13 @@ const RefundDocument = () => {
       }
    }, []);
 
+   // Refresh selected document when modal is opened
+   useEffect(() => {
+      if (selectedDocument && selectedDocument._id && currentUser?.role === 'dost_mimaropa') {
+         refreshSelectedDocument(selectedDocument._id);
+      }
+   }, [selectedDocument, currentUser?.role]);
+
    const fetchRefundDocuments = useCallback(async () => {
       try {
          setLoading(true);
@@ -41,9 +52,17 @@ const RefundDocument = () => {
                   const docs = response.data.data.docs || response.data.data || [];
                   console.log('🔍 PSTO Refund Documents (All):', docs);
                   
-                  // Filter to only show documents that have been requested (not ready_for_refund)
-                  const requestedDocs = docs.filter(doc => doc.status === 'documents_requested');
+                  // Filter to show documents that have been requested or submitted
+                  const requestedDocs = docs.filter(doc => 
+                     doc.status === 'documents_requested' || 
+                     doc.status === 'documents_submitted' ||
+                     doc.status === 'documents_under_review' ||
+                     doc.status === 'documents_approved' ||
+                     doc.status === 'documents_rejected' ||
+                     doc.status === 'documents_revision_requested'
+                  );
                   console.log('🔍 Filtered Requested Documents:', requestedDocs);
+                  console.log('🔍 Document Statuses:', docs.map(doc => ({ id: doc._id, status: doc.status })));
                   console.log('🔍 PSTO User Province:', currentUser.province);
                   
                   setRefundDocuments(requestedDocs);
@@ -208,8 +227,58 @@ const RefundDocument = () => {
       }
    };
 
+   // Handle document review (approve/reject)
+   const handleReviewDocument = (refundDoc, documentType, action) => {
+      setSelectedDocument(refundDoc);
+      setCurrentDocumentType(documentType);
+      setReviewAction(action);
+      setReviewComments('');
+      setShowReviewModal(true);
+   };
 
+   // Refresh selected document data
+   const refreshSelectedDocument = async (documentId) => {
+      try {
+         const response = await api.get(`/refund-documents/${documentId}`);
+         if (response.data.success) {
+            setSelectedDocument(response.data.data);
+         }
+      } catch (error) {
+         console.error('Error refreshing selected document:', error);
+      }
+   };
 
+   // Submit document review    
+   const submitDocumentReview = async () => {
+      try {
+         setIsSubmitting(true);
+         const tnaId = selectedDocument.tnaId?._id || selectedDocument.tnaId;
+         
+         const response = await api.post(`/refund-documents/review/${tnaId}`, {
+            documentType: currentDocumentType,
+            action: reviewAction,
+            comments: reviewComments
+         });
+
+         if (response.data.success) {
+            showToast(`Document ${reviewAction}d successfully`, 'success');
+            setShowReviewModal(false);
+            
+            // Update the selectedDocument with fresh data
+            const updatedDocument = response.data.data;
+            if (updatedDocument) {
+               setSelectedDocument(updatedDocument);
+            }
+            
+            fetchRefundDocuments();
+         }
+      } catch (error) {
+         console.error('Error reviewing document:', error);
+         showToast(error.response?.data?.message || `Failed to ${reviewAction} document`, 'error');
+      } finally {
+         setIsSubmitting(false);
+      }
+   };
 
    const showToast = (message, type) => {
       setToast({ show: true, message, type });
@@ -307,6 +376,7 @@ const RefundDocument = () => {
          width: '120px',
          render: (value, item) => {
             const canRequestRefund = item?.status === 'ready_for_refund';
+            const canReview = item?.status === 'documents_submitted';
             
             return (
                <div className="flex justify-center space-x-1">
@@ -328,6 +398,17 @@ const RefundDocument = () => {
                         title="Request Refund Documents"
                      >
                         Request
+                     </Button>
+                  )}
+                  {canReview && (
+                     <Button
+                        size="sm"
+                        variant="success"
+                        onClick={() => setSelectedDocument(item)}
+                        className="text-xs px-2 py-1"
+                        title="Review Documents"
+                     >
+                        Review
                      </Button>
                   )}
                </div>
@@ -475,51 +556,123 @@ const RefundDocument = () => {
                         </div>
                      </div>
 
-                     {/* Documents Section */}
-                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <h4 className="text-lg font-medium text-purple-900 mb-4">Documents</h4>
-                        <div className="space-y-3">
-                           {application.refundDocuments?.map((doc, docIndex) => (
-                              <div key={docIndex} className="flex items-center justify-between py-2">
-                                 <div className="flex-1">
-                                    <span className="text-sm font-medium text-gray-900">{doc.name}</span>
+                        {/* Documents Section */}
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                           <h4 className="text-lg font-medium text-purple-900 mb-4">Documents</h4>
+                           <div className="space-y-2">
+                              {application.refundDocuments?.map((doc, docIndex) => (
+                                 <div key={docIndex} className="bg-white border border-gray-200 rounded-md p-2">
+                                    <div className="flex items-center justify-between">
+                                       <div className="flex-1">
+                                          <div className="flex items-center space-x-2">
+                                             <h5 className="text-xs font-semibold text-gray-900">{doc.name}</h5>
+                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                doc.filename 
+                                                   ? 'bg-green-100 text-green-800' 
+                                                   : 'bg-gray-100 text-gray-800'
+                                             }`}>
+                                                {doc.filename ? 'Submitted' : 'Pending'}
+                                             </span>
+                                          </div>
+                                          
+                                          {doc.filename && (
+                                             <div className="mt-1 bg-green-50 border border-green-200 rounded p-1 flex items-center space-x-1">
+                                                <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-xs text-green-800 font-medium truncate max-w-32">{doc.originalName || doc.filename}</span>
+                                             </div>
+                                          )}
+
+                                          {/* Review Comments for PSTO */}
+                                          {doc.reviewComments && (
+                                             <div className="mt-1">
+                                                <p className="text-xs text-gray-600">
+                                                   <strong>Review Comments:</strong> {doc.reviewComments}
+                                                </p>
+                                                {doc.reviewedAt && (
+                                                   <p className="text-xs text-gray-500">
+                                                      Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                                   </p>
+                                                )}
+                                             </div>
+                                          )}
+
+                                          {/* Review Status for PSTO */}
+                                          {doc.documentStatus === 'approved' && (
+                                             <div className="flex items-center space-x-1 mt-1">
+                                                <Badge color="green" className="text-xs">Approved</Badge>
+                                                {doc.reviewedAt && (
+                                                   <span className="text-xs text-gray-500">
+                                                      {new Date(doc.reviewedAt).toLocaleDateString()}
+                                                   </span>
+                                                )}
+                                             </div>
+                                          )}
+                                          
+                                          {doc.documentStatus === 'rejected' && (
+                                             <div className="flex items-center space-x-1 mt-1">
+                                                <Badge color="red" className="text-xs">Rejected</Badge>
+                                                {doc.reviewedAt && (
+                                                   <span className="text-xs text-gray-500">
+                                                      {new Date(doc.reviewedAt).toLocaleDateString()}
+                                                   </span>
+                                                )}
+                                             </div>
+                                          )}
+                                       </div>
+                                       
+                                       <div className="flex items-center space-x-1">
+                                          {application.status === 'documents_requested' && currentUser?.role === 'psto' && !doc.filename && (
+                                             <Button
+                                                size="sm"
+                                                variant="primary"
+                                                onClick={() => {
+                                                   setSelectedDocument(application);
+                                                   setCurrentDocumentType(doc.type);
+                                                   setShowUploadModal(true);
+                                                }}
+                                                className="px-2 py-1 text-xs"
+                                             >
+                                                Upload
+                                             </Button>
+                                          )}
+                                          
+                                          {doc.filename && (
+                                             <>
+                                                <Button
+                                                   size="sm"
+                                                   variant="outline"
+                                                   onClick={() => {
+                                                      const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                                      window.open(fileUrl, '_blank');
+                                                   }}
+                                                   className="px-2 py-1 text-xs"
+                                                >
+                                                   View
+                                                </Button>
+                                                {application.status === 'documents_requested' && currentUser?.role === 'psto' && (
+                                                   <Button
+                                                      size="sm"
+                                                      variant="outline"
+                                                      onClick={() => {
+                                                         setSelectedDocument(application);
+                                                         setCurrentDocumentType(doc.type);
+                                                         setShowUploadModal(true);
+                                                      }}
+                                                      className="px-2 py-1 text-xs"
+                                                   >
+                                                      Replace
+                                                   </Button>
+                                                )}
+                                             </>
+                                          )}
+                                       </div>
+                                    </div>
                                  </div>
-                                 <div className="flex items-center space-x-3">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                       {doc.filename ? 'Submitted' : 'Pending'}
-                                    </span>
-                                    {application.status === 'documents_requested' && currentUser?.role === 'psto' && !doc.filename && (
-                                       <Button
-                                          size="sm"
-                                          variant="primary"
-                                          onClick={() => {
-                                             setSelectedDocument(application);
-                                             setCurrentDocumentType(doc.type);
-                                             setShowUploadModal(true);
-                                          }}
-                                          className="px-4 py-1 text-sm"
-                                       >
-                                          Upload
-                                       </Button>
-                                    )}
-                                    {doc.filename && (
-                                       <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                             const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
-                                             window.open(fileUrl, '_blank');
-                                          }}
-                                          className="px-4 py-1 text-sm"
-                                       >
-                                          View
-                                       </Button>
-                                    )}
-                                 </div>
-                              </div>
-                           ))}
+                              ))}
+                           </div>
                         </div>
-                     </div>
                   </Card>
                   ))}
                </div>
@@ -531,7 +684,7 @@ const RefundDocument = () => {
             <Modal
                isOpen={showUploadModal}
                onClose={() => setShowUploadModal(false)}
-               title="Upload Refund Document"
+               title={currentDocumentType ? `Upload ${selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.name}` : 'Upload Refund Document'}
                size="md"
             >
                <div className="space-y-4">
@@ -552,6 +705,24 @@ const RefundDocument = () => {
                         {selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.description}
                      </p>
                   </div>
+
+                  {/* Show current file if replacing */}
+                  {selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.filename && (
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                           Current File
+                        </label>
+                        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center space-x-2">
+                           <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                           </svg>
+                           <span className="text-sm text-green-800 font-medium">
+                              {selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.originalName || 
+                               selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.filename}
+                           </span>
+                        </div>
+                     </div>
+                  )}
 
                   <div>
                      <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -581,7 +752,229 @@ const RefundDocument = () => {
                         onClick={submitDocument}
                         disabled={!uploadFile || uploading}
                      >
-                        {uploading ? 'Uploading...' : 'Upload Document'}
+                        {uploading 
+                           ? 'Uploading...' 
+                           : selectedDocument?.refundDocuments?.find(doc => doc.type === currentDocumentType)?.filename 
+                              ? 'Replace Document' 
+                              : 'Upload Document'
+                        }
+                     </Button>
+                  </div>
+               </div>
+            </Modal>
+         )}
+
+         {/* Document Review Modal for DOST Users */}
+         {selectedDocument && currentUser?.role === 'dost_mimaropa' && (
+            <Modal
+               isOpen={!!selectedDocument}
+               onClose={() => setSelectedDocument(null)}
+               title="Review Refund Documents"
+               size="lg"
+            >
+               <div className="space-y-6">
+                  {/* Application Info */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                     <h4 className="text-lg font-medium text-gray-900 mb-3">Application Information</h4>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                           <span className="text-sm font-medium text-blue-600">Enterprise:</span>
+                           <span className="ml-2 text-sm text-gray-900">
+                              {selectedDocument.applicationId?.enterpriseName || 
+                               selectedDocument.applicationId?.companyName || 'N/A'}
+                           </span>
+                        </div>
+                        <div>
+                           <span className="text-sm font-medium text-green-600">Project:</span>
+                           <span className="ml-2 text-sm text-gray-900">
+                              {selectedDocument.applicationId?.projectTitle || 'N/A'}
+                           </span>
+                        </div>
+                        <div>
+                           <span className="text-sm font-medium text-blue-600">Proponent:</span>
+                           <span className="ml-2 text-sm text-gray-900">
+                              {selectedDocument.proponentId?.firstName} {selectedDocument.proponentId?.lastName}
+                           </span>
+                        </div>
+                        <div>
+                           <span className="text-sm font-medium text-green-600">Status:</span>
+                           <span className="ml-2 text-sm text-gray-900">
+                              {getStatusBadge(selectedDocument.status)}
+                           </span>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Documents Section */}
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                     <h4 className="text-lg font-medium text-purple-900 mb-4">Submitted Documents</h4>
+                     <div className="space-y-3">
+                        {selectedDocument.refundDocuments?.map((doc, docIndex) => (
+                           <div key={docIndex} className="bg-white border border-gray-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                 <div className="flex-1">
+                                    <div className="flex items-center space-x-2">
+                                       <h5 className="text-sm font-semibold text-gray-900">{doc.name}</h5>
+                                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                          doc.documentStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                          doc.documentStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                          doc.filename ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                       }`}>
+                                          {doc.documentStatus === 'approved' ? 'Approved' :
+                                           doc.documentStatus === 'rejected' ? 'Rejected' :
+                                           doc.filename ? 'Submitted' : 'Pending'}
+                                       </span>
+                                    </div>
+                                    
+                                    {doc.filename && (
+                                       <div className="mt-2 bg-green-50 border border-green-200 rounded-md p-2 flex items-center space-x-2">
+                                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                          </svg>
+                                          <span className="text-sm text-green-800 font-medium">{doc.originalName || doc.filename}</span>
+                                       </div>
+                                    )}
+
+                                    {doc.reviewComments && (
+                                       <div className="mt-2">
+                                          <p className="text-sm text-gray-600">
+                                             <strong>Review Comments:</strong> {doc.reviewComments}
+                                          </p>
+                                          {doc.reviewedAt && (
+                                             <p className="text-xs text-gray-500 mt-1">
+                                                Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                             </p>
+                                          )}
+                                       </div>
+                                    )}
+
+                                    {/* Show review status for already reviewed documents */}
+                                    {doc.documentStatus === 'approved' && (
+                                       <div className="flex items-center space-x-2 mt-2">
+                                          <Badge color="green">Approved</Badge>
+                                          {doc.reviewedAt && (
+                                             <span className="text-sm text-gray-500">
+                                                Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                             </span>
+                                          )}
+                                       </div>
+                                    )}
+                                    
+                                    {doc.documentStatus === 'rejected' && (
+                                       <div className="flex items-center space-x-2 mt-2">
+                                          <Badge color="red">Rejected</Badge>
+                                          {doc.reviewedAt && (
+                                             <span className="text-sm text-gray-500">
+                                                Reviewed: {new Date(doc.reviewedAt).toLocaleDateString()}
+                                             </span>
+                                          )}
+                                       </div>
+                                    )}
+                                 </div>
+                                 
+                                 <div className="flex items-center space-x-2">
+                                    {doc.filename && (
+                                       <>
+                                          <Button
+                                             size="sm"
+                                             variant="outline"
+                                             onClick={() => {
+                                                const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                                window.open(fileUrl, '_blank');
+                                             }}
+                                             className="px-2 py-1 text-xs"
+                                          >
+                                             View
+                                          </Button>
+                                          <Button
+                                             size="sm"
+                                             variant="outline"
+                                             onClick={() => {
+                                                const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                                const link = document.createElement('a');
+                                                link.href = fileUrl;
+                                                link.download = doc.originalName || doc.filename;
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                             }}
+                                             className="px-2 py-1 text-xs"
+                                          >
+                                             Download
+                                          </Button>
+                                          
+                                          {/* Review buttons - only show for submitted documents */}
+                                          {doc.documentStatus === 'submitted' && (
+                                             <>
+                                                <Button
+                                                   size="sm"
+                                                   variant="success"
+                                                   onClick={() => handleReviewDocument(selectedDocument, doc.type, 'approve')}
+                                                   className="px-2 py-1 text-xs"
+                                                >
+                                                   Approve
+                                                </Button>
+                                                <Button
+                                                   size="sm"
+                                                   variant="danger"
+                                                   onClick={() => handleReviewDocument(selectedDocument, doc.type, 'reject')}
+                                                   className="px-2 py-1 text-xs"
+                                                >
+                                                   Reject
+                                                </Button>
+                                             </>
+                                          )}
+                                       </>
+                                    )}
+                                 </div>
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            </Modal>
+         )}
+
+         {/* Review Modal */}
+         {showReviewModal && selectedDocument && (
+            <Modal
+               isOpen={showReviewModal}
+               onClose={() => setShowReviewModal(false)}
+               title={`${reviewAction === 'approve' ? 'Approve' : 'Reject'} Document`}
+            >
+               <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                     Are you sure you want to {reviewAction} this document?
+                  </p>
+                  
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Comments {reviewAction === 'reject' ? '(Required)' : '(Optional)'}
+                     </label>
+                     <textarea
+                        value={reviewComments}
+                        onChange={(e) => setReviewComments(e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your comments..."
+                     />
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                     <Button
+                        variant="outline"
+                        onClick={() => setShowReviewModal(false)}
+                        disabled={isSubmitting}
+                     >
+                        Cancel
+                     </Button>
+                     <Button
+                        variant={reviewAction === 'approve' ? 'success' : 'danger'}
+                        onClick={submitDocumentReview}
+                        disabled={isSubmitting || (reviewAction === 'reject' && !reviewComments.trim())}
+                     >
+                        {isSubmitting ? 'Processing...' : `${reviewAction === 'approve' ? 'Approve' : 'Reject'} Document`}
                      </Button>
                   </div>
                </div>

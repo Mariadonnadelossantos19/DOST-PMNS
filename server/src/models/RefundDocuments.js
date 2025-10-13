@@ -388,6 +388,12 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
       document.uploadedAt = new Date();
       document.uploadedBy = userId;
       document.documentStatus = 'submitted';
+      
+      console.log('🔍 Document status updated to submitted:', {
+         type: documentType,
+         documentStatus: document.documentStatus,
+         filename: document.filename
+      });
    } else {
       throw new Error(`Document type ${documentType} not found for submission.`);
    }
@@ -406,6 +412,12 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
       this.submittedBy = userId;
       this.submittedAt = new Date();
    }
+   
+   console.log('🔍 Saving document with status:', this.refundDocuments.map(doc => ({
+      type: doc.type,
+      documentStatus: doc.documentStatus,
+      filename: doc.filename
+   })));
    
    return this.save();
 };
