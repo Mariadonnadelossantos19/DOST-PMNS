@@ -357,6 +357,38 @@ const FundingDocument = () => {
          }
       },
       {
+         key: 'psto',
+         header: 'PSTO',
+         width: '120px',
+         render: (value, item) => {
+            const proponent = item?.proponentId;
+            if (!proponent || !proponent.province) {
+               return (
+                  <div className="truncate text-gray-500" title="No PSTO assigned">
+                     N/A
+                  </div>
+               );
+            }
+            
+            const provinceToPSTO = {
+               'marinduque': 'PSTO Marinduque',
+               'romblon': 'PSTO Romblon',
+               'palawan': 'PSTO Palawan',
+               'mindoro_oriental': 'PSTO Oriental Mindoro',
+               'mindoro_occidental': 'PSTO Occidental Mindoro'
+            };
+            
+            const pstoName = provinceToPSTO[proponent.province] || `PSTO ${proponent.province}`;
+            return (
+               <div className="truncate" title={pstoName}>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                     {pstoName}
+                  </span>
+               </div>
+            );
+         }
+      },
+      {
          key: 'status',
          header: 'Status',
          render: (value, item) => getStatusBadge(item.status)

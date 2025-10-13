@@ -129,7 +129,7 @@ const getFundingDocumentsByTNA = async (req, res) => {
       const fundingDocuments = await FundingDocuments.findOne({ tnaId })
          .populate('tnaId')
          .populate('applicationId')
-         .populate('proponentId')
+         .populate('proponentId', 'firstName lastName email province')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy');
@@ -171,7 +171,7 @@ const getFundingDocumentById = async (req, res) => {
       const fundingDocument = await FundingDocuments.findById(id)
          .populate('tnaId')
          .populate('applicationId')
-         .populate('proponentId')
+         .populate('proponentId', 'firstName lastName email province')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy');
@@ -472,13 +472,24 @@ const listFundingDocuments = async (req, res) => {
       const fundingDocuments = await FundingDocuments.find(filter)
          .populate('tnaId')
          .populate('applicationId')
-         .populate('proponentId')
+         .populate('proponentId', 'firstName lastName email province')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy')
          .sort({ createdAt: -1 })
          .skip(skip)
          .limit(parseInt(limit));
+
+      // Debug logging
+      console.log('🔍 Funding Documents Debug:');
+      fundingDocuments.forEach((doc, index) => {
+         console.log(`Document ${index + 1}:`);
+         console.log(`  - ID: ${doc._id}`);
+         console.log(`  - Proponent ID: ${doc.proponentId?._id}`);
+         console.log(`  - Proponent Name: ${doc.proponentId?.firstName} ${doc.proponentId?.lastName}`);
+         console.log(`  - Proponent Province: ${doc.proponentId?.province}`);
+         console.log(`  - Status: ${doc.status}`);
+      });
 
       const total = await FundingDocuments.countDocuments(filter);
 
@@ -509,7 +520,7 @@ const getApprovedFundingDocuments = async (req, res) => {
       const fundingDocuments = await FundingDocuments.find({ status: 'documents_approved' })
          .populate('tnaId')
          .populate('applicationId')
-         .populate('proponentId')
+         .populate('proponentId', 'firstName lastName email province')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy')
@@ -553,7 +564,7 @@ const getFundingDocumentsForPSTO = async (req, res) => {
       let allFundingDocuments = await FundingDocuments.find({})
          .populate('tnaId')
          .populate('applicationId')
-         .populate('proponentId')
+         .populate('proponentId', 'firstName lastName email province')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy')
