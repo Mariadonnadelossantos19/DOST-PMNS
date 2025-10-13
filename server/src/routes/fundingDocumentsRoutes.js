@@ -13,7 +13,8 @@ const {
    getApprovedFundingDocuments,
    getFundingDocumentsForPSTO,
    completeFunding,
-   serveFile
+   serveFile,
+   updateFundingDocumentsWithRTECData
 } = require('../controllers/fundingDocumentsController');
 
 // Configure multer for file uploads - Store in memory for database storage
@@ -68,5 +69,8 @@ router.post('/submit/:tnaId', auth, upload.single('document'), submitFundingDocu
 
 // File serving route - serves files from database (no auth required for file viewing)
 router.get('/file/:tnaId/:documentType', serveFile);
+
+// Update existing funding documents with RTEC data
+router.post('/update-with-rtec-data', auth, updateFundingDocumentsWithRTECData);
 
 module.exports = router;

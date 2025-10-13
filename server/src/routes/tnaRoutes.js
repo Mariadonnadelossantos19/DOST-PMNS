@@ -51,6 +51,8 @@ router.get('/dost-mimaropa/approved', auth, getApprovedTNAs);
 router.get('/rtec-completed', auth, async (req, res) => {
    try {
       const TNA = require('../models/TNA');
+      const RTECDocuments = require('../models/RTECDocuments');
+      
       // Fetch TNAs with any status that indicates they're ready for refund
       const validStatuses = ['rtec_completed', 'rtec_documents_approved', 'dost_mimaropa_approved'];
       const rtecCompletedTNAs = await TNA.find({ status: { $in: validStatuses } })
@@ -61,9 +63,35 @@ router.get('/rtec-completed', auth, async (req, res) => {
       console.log('Found RTEC completed TNAs:', rtecCompletedTNAs.length);
       console.log('Statuses found:', [...new Set(rtecCompletedTNAs.map(tna => tna.status))]);
       
+      // Fetch RTEC document data for each TNA
+      const enrichedTNAs = await Promise.all(rtecCompletedTNAs.map(async (tna) => {
+         try {
+            const rtecDoc = await RTECDocuments.findOne({ tnaId: tna._id });
+            
+            if (rtecDoc) {
+               // Extract project title, description, and amount from RTEC documents
+               const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
+               const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
+               const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
+               
+               return {
+                  ...tna.toObject(),
+                  projectTitle: projectTitleDoc?.textContent || null,
+                  projectDescription: projectDescriptionDoc?.textContent || null,
+                  amountRequested: amountRequestedDoc?.textContent ? parseFloat(amountRequestedDoc.textContent) : null
+               };
+            }
+            
+            return tna.toObject();
+         } catch (error) {
+            console.error(`Error fetching RTEC data for TNA ${tna._id}:`, error);
+            return tna.toObject();
+         }
+      }));
+      
       res.json({
          success: true,
-         data: rtecCompletedTNAs
+         data: enrichedTNAs
       });
    } catch (error) {
       console.error('Error fetching RTEC completed applications:', error);

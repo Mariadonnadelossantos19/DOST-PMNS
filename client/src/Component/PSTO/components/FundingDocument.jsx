@@ -345,8 +345,16 @@ const FundingDocument = () => {
       },
       {
          key: 'projectTitle',
-         header: 'Project',
-         render: (value, item) => item.applicationId?.projectTitle || 'N/A'
+         header: 'Project Title',
+         render: (value, item) => item.projectTitle || item.applicationId?.projectTitle || 'N/A'
+      },
+      {
+         key: 'amountRequested',
+         header: 'Amount Requested',
+         render: (value, item) => {
+            const amount = item.amountRequested || item.applicationId?.amountRequested;
+            return amount ? `₱${amount.toLocaleString()}` : 'N/A';
+         }
       },
       {
          key: 'proponentName',

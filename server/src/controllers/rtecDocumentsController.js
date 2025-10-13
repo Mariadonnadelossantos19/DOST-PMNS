@@ -236,7 +236,7 @@ const getRTECDocumentById = async (req, res) => {
 const submitRTECDocument = async (req, res) => {
    try {
       const { tnaId } = req.params;
-      const { documentType } = req.body;
+      const { documentType, textContent } = req.body;
       const userId = req.user.id;
 
       console.log('=== SUBMIT RTEC DOCUMENT DEBUG ===');
@@ -245,6 +245,7 @@ const submitRTECDocument = async (req, res) => {
       console.log('User ID:', userId);
       console.log('File:', req.file);
       console.log('Request Body:', req.body);
+      console.log('Text Content:', textContent);
 
       if (!req.file) {
          return res.status(400).json({
@@ -308,7 +309,8 @@ const submitRTECDocument = async (req, res) => {
          originalName: req.file.originalname,
          path: req.file.path,
          size: req.file.size,
-         mimetype: req.file.mimetype
+         mimetype: req.file.mimetype,
+         textContent: textContent || null // Store text content for text input fields
       };
 
       // Submit document

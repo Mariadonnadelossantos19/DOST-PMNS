@@ -123,6 +123,11 @@ const rtecDocumentsSchema = new mongoose.Schema({
          type: String,
          default: null
       },
+      // Text content for text input fields (project title, project description, amount requested)
+      textContent: {
+         type: String,
+         default: null
+      },
       uploadedAt: {
          type: Date,
          default: null
@@ -471,6 +476,8 @@ rtecDocumentsSchema.methods.submitDocument = function(documentType, fileData, us
       document.path = fileData.path;
       document.size = fileData.size;
       document.mimetype = fileData.mimetype;
+      document.textContent = fileData.textContent || null; // Store text content for text input fields
+      console.log('🔍 Storing textContent:', fileData.textContent, 'for document type:', documentType);
       document.uploadedAt = new Date();
       document.uploadedBy = userId;
       document.documentStatus = 'submitted';

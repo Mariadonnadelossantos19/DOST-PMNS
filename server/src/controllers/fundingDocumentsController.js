@@ -64,12 +64,47 @@ const requestFundingDocuments = async (req, res) => {
          });
       }
 
+      // Fetch project title and amount requested from RTEC documents
+      let projectTitle = null;
+      let projectDescription = null;
+      let amountRequested = null;
+
+      try {
+         const RTECDocuments = require('../models/RTECDocuments');
+         const rtecDoc = await RTECDocuments.findOne({ tnaId: tna._id });
+         
+         if (rtecDoc) {
+            // Get project title from RTEC documents
+            const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
+            if (projectTitleDoc && projectTitleDoc.textContent) {
+               projectTitle = projectTitleDoc.textContent;
+            }
+
+            // Get project description from RTEC documents
+            const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
+            if (projectDescriptionDoc && projectDescriptionDoc.textContent) {
+               projectDescription = projectDescriptionDoc.textContent;
+            }
+
+            // Get amount requested from RTEC documents
+            const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
+            if (amountRequestedDoc && amountRequestedDoc.textContent) {
+               amountRequested = parseFloat(amountRequestedDoc.textContent);
+            }
+         }
+      } catch (error) {
+         console.log('Error fetching RTEC document data:', error);
+      }
+
       // Create funding documents request
       const fundingDocuments = new FundingDocuments({
          tnaId: tna._id,
          applicationId: tna.applicationId._id,
          proponentId: tna.proponentId._id,
          programName: tna.programName || 'SETUP',
+         projectTitle: projectTitle,
+         projectDescription: projectDescription,
+         amountRequested: amountRequested,
          requestedBy: userId,
          status: 'documents_requested',
          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
@@ -451,6 +486,88 @@ const reviewFundingDocument = async (req, res) => {
    }
 };
 
+// Update existing funding documents with RTEC data
+const updateFundingDocumentsWithRTECData = async (req, res) => {
+   try {
+      console.log('🔄 Starting update of funding documents with RTEC data...');
+      
+      // Find all funding documents that don't have project title or amount requested
+      const fundingDocs = await FundingDocuments.find({
+         $or: [
+            { projectTitle: { $exists: false } },
+            { projectTitle: null },
+            { amountRequested: { $exists: false } },
+            { amountRequested: null }
+         ]
+      }).populate('tnaId');
+
+      console.log(`🔍 Found ${fundingDocs.length} funding documents to update`);
+
+      let updatedCount = 0;
+
+      for (const fundingDoc of fundingDocs) {
+         try {
+            // Find corresponding RTEC document
+            const RTECDocuments = require('../models/RTECDocuments');
+            const rtecDoc = await RTECDocuments.findOne({ tnaId: fundingDoc.tnaId._id });
+            
+            if (rtecDoc) {
+               let projectTitle = null;
+               let projectDescription = null;
+               let amountRequested = null;
+
+               // Get project title from RTEC documents
+               const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
+               if (projectTitleDoc && projectTitleDoc.textContent) {
+                  projectTitle = projectTitleDoc.textContent;
+               }
+
+               // Get project description from RTEC documents
+               const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
+               if (projectDescriptionDoc && projectDescriptionDoc.textContent) {
+                  projectDescription = projectDescriptionDoc.textContent;
+               }
+
+               // Get amount requested from RTEC documents
+               const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
+               if (amountRequestedDoc && amountRequestedDoc.textContent) {
+                  amountRequested = parseFloat(amountRequestedDoc.textContent);
+               }
+
+               // Update funding document if we found data
+               if (projectTitle || projectDescription || amountRequested) {
+                  await FundingDocuments.findByIdAndUpdate(fundingDoc._id, {
+                     projectTitle: projectTitle || fundingDoc.projectTitle,
+                     projectDescription: projectDescription || fundingDoc.projectDescription,
+                     amountRequested: amountRequested || fundingDoc.amountRequested
+                  });
+                  
+                  console.log(`✅ Updated funding document ${fundingDoc._id} with RTEC data`);
+                  updatedCount++;
+               }
+            }
+         } catch (error) {
+            console.error(`❌ Error updating funding document ${fundingDoc._id}:`, error);
+         }
+      }
+
+      console.log(`🎉 Updated ${updatedCount} funding documents with RTEC data`);
+
+      res.json({
+         success: true,
+         message: `Updated ${updatedCount} funding documents with RTEC data`,
+         updatedCount
+      });
+   } catch (error) {
+      console.error('Error updating funding documents with RTEC data:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error updating funding documents',
+         error: error.message
+      });
+   }
+};
+
 // List all funding documents (for DOST-MIMAROPA)
 const listFundingDocuments = async (req, res) => {
    try {
@@ -480,14 +597,51 @@ const listFundingDocuments = async (req, res) => {
          .skip(skip)
          .limit(parseInt(limit));
 
+      // Fetch RTEC document data for each funding document
+      const enrichedFundingDocuments = await Promise.all(fundingDocuments.map(async (doc) => {
+         try {
+            // If the funding document already has project title and amount, use those
+            if (doc.projectTitle && doc.amountRequested) {
+               return doc.toObject();
+            }
+
+            // Otherwise, fetch from RTEC documents
+            const RTECDocuments = require('../models/RTECDocuments');
+            const rtecDoc = await RTECDocuments.findOne({ tnaId: doc.tnaId._id });
+            
+            if (rtecDoc) {
+               // Extract project title, description, and amount from RTEC documents
+               const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
+               const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
+               const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
+               
+               // Update the funding document with RTEC data
+               const updatedDoc = await FundingDocuments.findByIdAndUpdate(doc._id, {
+                  projectTitle: projectTitleDoc?.textContent || doc.projectTitle,
+                  projectDescription: projectDescriptionDoc?.textContent || doc.projectDescription,
+                  amountRequested: amountRequestedDoc?.textContent ? parseFloat(amountRequestedDoc.textContent) : doc.amountRequested
+               }, { new: true });
+               
+               return updatedDoc ? updatedDoc.toObject() : doc.toObject();
+            }
+            
+            return doc.toObject();
+         } catch (error) {
+            console.error(`Error fetching RTEC data for funding document ${doc._id}:`, error);
+            return doc.toObject();
+         }
+      }));
+
       // Debug logging
       console.log('🔍 Funding Documents Debug:');
-      fundingDocuments.forEach((doc, index) => {
+      enrichedFundingDocuments.forEach((doc, index) => {
          console.log(`Document ${index + 1}:`);
          console.log(`  - ID: ${doc._id}`);
          console.log(`  - Proponent ID: ${doc.proponentId?._id}`);
          console.log(`  - Proponent Name: ${doc.proponentId?.firstName} ${doc.proponentId?.lastName}`);
          console.log(`  - Proponent Province: ${doc.proponentId?.province}`);
+         console.log(`  - Project Title: ${doc.projectTitle || 'N/A'}`);
+         console.log(`  - Amount Requested: ${doc.amountRequested || 'N/A'}`);
          console.log(`  - Status: ${doc.status}`);
       });
 
@@ -496,7 +650,7 @@ const listFundingDocuments = async (req, res) => {
       res.json({
          success: true,
          data: {
-            docs: fundingDocuments,
+            docs: enrichedFundingDocuments,
             total,
             page: parseInt(page),
             limit: parseInt(limit),
@@ -612,10 +766,45 @@ const getFundingDocumentsForPSTO = async (req, res) => {
 
       console.log('🔍 Paginated Documents for PSTO:', paginatedDocuments.length);
 
+      // Fetch RTEC document data for each funding document
+      const enrichedFundingDocuments = await Promise.all(paginatedDocuments.map(async (doc) => {
+         try {
+            // If the funding document already has project title and amount, use those
+            if (doc.projectTitle && doc.amountRequested) {
+               return doc.toObject();
+            }
+
+            // Otherwise, fetch from RTEC documents
+            const RTECDocuments = require('../models/RTECDocuments');
+            const rtecDoc = await RTECDocuments.findOne({ tnaId: doc.tnaId._id });
+            
+            if (rtecDoc) {
+               // Extract project title, description, and amount from RTEC documents
+               const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
+               const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
+               const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
+               
+               // Update the funding document with RTEC data
+               const updatedDoc = await FundingDocuments.findByIdAndUpdate(doc._id, {
+                  projectTitle: projectTitleDoc?.textContent || doc.projectTitle,
+                  projectDescription: projectDescriptionDoc?.textContent || doc.projectDescription,
+                  amountRequested: amountRequestedDoc?.textContent ? parseFloat(amountRequestedDoc.textContent) : doc.amountRequested
+               }, { new: true });
+               
+               return updatedDoc ? updatedDoc.toObject() : doc.toObject();
+            }
+            
+            return doc.toObject();
+         } catch (error) {
+            console.error(`Error fetching RTEC data for funding document ${doc._id}:`, error);
+            return doc.toObject();
+         }
+      }));
+
       res.json({
          success: true,
          data: {
-            docs: paginatedDocuments,
+            docs: enrichedFundingDocuments,
             total: finalDocuments.length,
             page: parseInt(page),
             limit: parseInt(limit),
@@ -798,5 +987,6 @@ module.exports = {
    getApprovedFundingDocuments,
    getFundingDocumentsForPSTO,
    completeFunding,
-   serveFile
+   serveFile,
+   updateFundingDocumentsWithRTECData
 };

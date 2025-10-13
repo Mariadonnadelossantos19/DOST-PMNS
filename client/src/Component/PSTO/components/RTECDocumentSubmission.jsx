@@ -81,6 +81,11 @@ const RTECDocumentSubmission = () => {
          }
          
          formData.append('documentType', currentDocumentType);
+         
+         // For text inputs, also send the text content
+         if (isTextInput) {
+            formData.append('textContent', textInput);
+         }
 
          const response = await api.post(
             `/rtec-documents/submit/${selectedDocument.tnaId._id}`,

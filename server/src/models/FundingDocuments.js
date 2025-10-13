@@ -29,6 +29,27 @@ const fundingDocumentsSchema = new mongoose.Schema({
       default: 'SETUP'
    },
    
+   // Project title from the application
+   projectTitle: {
+      type: String,
+      required: false,
+      default: null
+   },
+   
+   // Amount requested from the application
+   amountRequested: {
+      type: Number,
+      required: false,
+      default: null
+   },
+   
+   // Project description from the application
+   projectDescription: {
+      type: String,
+      required: false,
+      default: null
+   },
+   
    // Document request status
    status: {    
       type: String,
