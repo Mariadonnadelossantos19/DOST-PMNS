@@ -69,7 +69,9 @@ const requestRefundDocuments = async (req, res) => {
          tnaId: tna._id,
          applicationId: tna.applicationId._id,
          proponentId: tna.proponentId._id,
+         programName: tna.programName || 'SETUP',
          requestedBy: userId,
+         status: 'documents_requested',
          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
       });
 
@@ -79,17 +81,23 @@ const requestRefundDocuments = async (req, res) => {
       console.log('Refund documents created successfully');
 
       // Create notification for PSTO
-      await Notification.create({
-         recipientId: tna.proponentId._id,
-         recipientType: 'proponent',
-         type: 'refund_document_request',
-         title: 'Refund Documents Requested',
-         message: `Refund documents have been requested for your application. Please coordinate with PSTO to submit the required documents.`,
-         data: {
-            tnaId: tnaId,
-            refundDocumentsId: refundDocuments._id
-         }
-      });
+      try {
+         await Notification.create({
+            recipientId: tna.proponentId._id,
+            recipientType: 'proponent',
+            type: 'refund_document_request',
+            title: 'Refund Documents Requested',
+            message: `Refund documents have been requested for your application. Please coordinate with PSTO to submit the required documents.`,
+            data: {
+               tnaId: tnaId,
+               refundDocumentsId: refundDocuments._id
+            }
+         });
+         console.log('Notification created successfully');
+      } catch (notificationError) {
+         console.error('Error creating notification:', notificationError);
+         // Don't fail the entire request if notification creation fails
+      }
 
       res.json({
          success: true,
@@ -494,40 +502,79 @@ const getRefundDocumentsForPSTO = async (req, res) => {
    try {
       const { page = 1, limit = 10, status, search } = req.query;
       const skip = (page - 1) * limit;
+      const userId = req.user.id;
 
-      // Build filter
-      const filter = {};
-      if (status) {
-         filter.status = status;
-      }
-      if (search) {
-         filter.$or = [
-            { 'applicationId.enterpriseName': { $regex: search, $options: 'i' } },
-            { 'applicationId.projectTitle': { $regex: search, $options: 'i' } }
-         ];
+      // Get PSTO user's province
+      const User = require('../models/User');
+      const pstoUser = await User.findById(userId);
+      if (!pstoUser) {
+         return res.status(404).json({
+            success: false,
+            message: 'PSTO user not found'
+         });
       }
 
-      const refundDocuments = await RefundDocuments.find(filter)
+      console.log('🔍 PSTO User Province:', pstoUser.province);
+
+      // First, let's get all refund documents and then filter by province
+      let allRefundDocuments = await RefundDocuments.find({})
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
          .populate('requestedBy')
          .populate('submittedBy')
          .populate('reviewedBy')
-         .sort({ createdAt: -1 })
-         .skip(skip)
-         .limit(parseInt(limit));
+         .sort({ createdAt: -1 });
 
-      const total = await RefundDocuments.countDocuments(filter);
+      console.log('🔍 All Refund Documents:', allRefundDocuments.length);
+
+      // Filter by PSTO's province - check the proponent's province
+      const filteredDocuments = allRefundDocuments.filter(doc => {
+         const proponentProvince = doc.proponentId?.province;
+         console.log(`🔍 Document ${doc._id}:`);
+         console.log(`  - Application ID: ${doc.applicationId?._id}`);
+         console.log(`  - Proponent ID: ${doc.proponentId?._id}`);
+         console.log(`  - Proponent Province: ${proponentProvince}`);
+         console.log(`  - PSTO Province: ${pstoUser.province}`);
+         console.log(`  - Proponent Data:`, JSON.stringify(doc.proponentId, null, 2));
+         console.log(`  - Match: ${proponentProvince === pstoUser.province}`);
+         return proponentProvince === pstoUser.province;
+      });
+
+      console.log('🔍 Filtered Documents for PSTO:', filteredDocuments.length);
+
+      // Apply additional filters
+      let finalDocuments = filteredDocuments;
+      
+      if (status) {
+         finalDocuments = finalDocuments.filter(doc => doc.status === status);
+      }
+      if (search) {
+         finalDocuments = finalDocuments.filter(doc => {
+            const enterpriseName = doc.applicationId?.enterpriseName || '';
+            const projectTitle = doc.applicationId?.projectTitle || '';
+            return enterpriseName.toLowerCase().includes(search.toLowerCase()) ||
+                   projectTitle.toLowerCase().includes(search.toLowerCase());
+         });
+      }
+
+      console.log('🔍 Final Documents for PSTO:', finalDocuments.length);
+
+      // Apply pagination
+      const startIndex = skip;
+      const endIndex = startIndex + parseInt(limit);
+      const paginatedDocuments = finalDocuments.slice(startIndex, endIndex);
+
+      console.log('🔍 Paginated Documents for PSTO:', paginatedDocuments.length);
 
       res.json({
          success: true,
          data: {
-            docs: refundDocuments,
-            total,
+            docs: paginatedDocuments,
+            total: finalDocuments.length,
             page: parseInt(page),
             limit: parseInt(limit),
-            pages: Math.ceil(total / limit)
+            pages: Math.ceil(finalDocuments.length / limit)
          }
       });
 
