@@ -1192,7 +1192,18 @@ const TNAWithRDSignature = () => {
                            <p className="text-blue-700">{selectedTnaForRequest.applicationId?.enterpriseName || 'N/A'}</p>
                         </div>
                         <div>
-                           <span className="font-medium text-blue-800">Project:</span>
+                           <span className="font-medium text-blue-800">Project Title:</span>
+                           <p className="text-blue-700">{selectedTnaForRequest.applicationId?.projectTitle || 'N/A'}</p>
+                        </div>
+                        <div>
+                           <span className="font-medium text-blue-800">Amount Requested:</span>
+                           <p className="text-blue-700 font-medium">
+                              {selectedTnaForRequest.applicationId?.amountRequested ? 
+                                 `₱${selectedTnaForRequest.applicationId.amountRequested.toLocaleString()}` : 'N/A'}
+                           </p>
+                        </div>
+                        <div>
+                           <span className="font-medium text-blue-800">Program:</span>
                            <p className="text-blue-700">{selectedTnaForRequest.applicationId?.programName || 'N/A'}</p>
                         </div>
                         <div>
@@ -1213,6 +1224,9 @@ const TNAWithRDSignature = () => {
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                      <h4 className="font-medium text-yellow-900 mb-2">Documents to be Requested</h4>
                      <ul className="text-sm text-yellow-800 space-y-1">
+                        <li>• <strong>Project Title</strong> - Detailed project title and description</li>
+                        <li>• <strong>Project Description</strong> - Detailed description of project objectives and activities</li>
+                        <li>• <strong>Amount Requested</strong> - Total funding amount being requested</li>
                         <li>• Approved TNA Report with Signature</li>
                         <li>• Risk Management Plan</li>
                         <li>• Financial Statements (3 years for SME, 1 year for micro-enterprises)</li>

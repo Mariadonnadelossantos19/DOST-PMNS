@@ -29,6 +29,27 @@ const rtecDocumentsSchema = new mongoose.Schema({
       default: 'SETUP'
    },
    
+   // Project title from the application
+   projectTitle: {
+      type: String,
+      required: false,
+      default: null
+   },
+   
+   // Amount requested from the application
+   amountRequested: {
+      type: Number,
+      required: false,
+      default: null
+   },
+   
+   // Project description from the application
+   projectDescription: {
+      type: String,
+      required: false,
+      default: null
+   },
+   
    // Document request status
    status: {
       type: String,
@@ -50,6 +71,9 @@ const rtecDocumentsSchema = new mongoose.Schema({
       type: {
          type: String,
          enum: [
+            'project title',
+            'project description',
+            'amount requested',
             'approved tna report', 
             'risk management plan', 
             'financial statements', 
@@ -313,6 +337,24 @@ rtecDocumentsSchema.index({ requestedAt: 1 });
 // Method to initialize default document types
 rtecDocumentsSchema.methods.initializeDocumentTypes = function() {
    this.partialdocsrtec = [
+      {
+         type: 'project title',
+         name: 'Project Title',
+         description: 'Detailed project title and description',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'project description',
+         name: 'Project Description',
+         description: 'Detailed description of the project objectives and activities',
+         documentStatus: 'pending'
+      },
+      {
+         type: 'amount requested',
+         name: 'Amount Requested',
+         description: 'Total funding amount being requested',
+         documentStatus: 'pending'
+      },
       {
          type: 'approved tna report',
          name: 'Approved TNA Report',

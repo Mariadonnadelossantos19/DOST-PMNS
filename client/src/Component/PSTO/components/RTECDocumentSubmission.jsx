@@ -9,6 +9,7 @@ const RTECDocumentSubmission = () => {
    const [showUploadModal, setShowUploadModal] = useState(false);
    const [currentDocumentType, setCurrentDocumentType] = useState('');
    const [uploadFile, setUploadFile] = useState(null);
+   const [textInput, setTextInput] = useState('');
    const [uploading, setUploading] = useState(false);
    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
@@ -46,19 +47,39 @@ const RTECDocumentSubmission = () => {
       setSelectedDocument(rtecDoc);
       setCurrentDocumentType(documentType);
       setUploadFile(null);
+      setTextInput('');
       setShowUploadModal(true);
    };
 
    const submitDocument = async () => {
-      if (!uploadFile) {
-         showToast('Please select a file to upload', 'error');
-         return;
+      // Check if it's a text input type (project title, project description, or amount requested)
+      const isTextInput = currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested';
+      
+      if (isTextInput) {
+         if (!textInput.trim()) {
+            showToast('Please enter the required information', 'error');
+            return;
+         }
+      } else {
+         if (!uploadFile) {
+            showToast('Please select a file to upload', 'error');
+            return;
+         }
       }
 
       try {
          setUploading(true);
          const formData = new FormData();
-         formData.append('document', uploadFile);
+         
+         if (isTextInput) {
+            // For text inputs, create a text file with the input
+            const textBlob = new Blob([textInput], { type: 'text/plain' });
+            formData.append('document', textBlob, `${currentDocumentType}.txt`);
+         } else {
+            // For file uploads, use the selected file
+            formData.append('document', uploadFile);
+         }
+         
          formData.append('documentType', currentDocumentType);
 
          const response = await api.post(
@@ -72,13 +93,13 @@ const RTECDocumentSubmission = () => {
          );
 
          if (response.data.success) {
-            showToast('Document uploaded successfully', 'success');
+            showToast('Document submitted successfully', 'success');
             setShowUploadModal(false);
             fetchRTECDocuments();
          }
       } catch (error) {
-         console.error('Error uploading document:', error);
-         showToast(error.response?.data?.message || 'Failed to upload document', 'error');
+         console.error('Error submitting document:', error);
+         showToast(error.response?.data?.message || 'Failed to submit document', 'error');
       } finally {
          setUploading(false);
       }
@@ -300,33 +321,66 @@ const RTECDocumentSubmission = () => {
                                     </div>
                                     
                                     <div className="ml-2 flex-shrink-0">
-                                       {doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || 
-                                        (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ||
-                                        (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
-                                          <Button
-                                             size="sm"
-                                             onClick={() => handleFileUpload(doc.type, rtecDoc)}
-                                             className="text-xs px-2 py-1"
-                                             variant={rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'warning' : 
-                                                     rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'primary' : 'primary'}
-                                          >
-                                             {doc.documentStatus === 'rejected' ? 'Resubmit' : 
-                                              (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 
-                                              (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Upload'}
-                                          </Button>
-                                       ) : doc.documentStatus === 'submitted' ? (
-                                          <Button
-                                             size="sm"
-                                             variant="outline"
-                                             onClick={() => handleFileUpload(doc.type, rtecDoc)}
-                                             className="text-xs px-2 py-1"
-                                          >
-                                             Replace
-                                          </Button>
+                                       {/* Check if this is a text input field */}
+                                       {doc.type === 'project title' || doc.type === 'project description' || doc.type === 'amount requested' ? (
+                                          // Text input fields
+                                          doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || 
+                                          (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ||
+                                          (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
+                                             <Button
+                                                size="sm"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                                variant="primary"
+                                             >
+                                                {doc.documentStatus === 'rejected' ? 'Resubmit' : 
+                                                 (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 
+                                                 (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Input'}
+                                             </Button>
+                                          ) : doc.documentStatus === 'submitted' ? (
+                                             <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                             >
+                                                Edit
+                                             </Button>
+                                          ) : (
+                                             <span className="text-xs font-medium">
+                                                {doc.documentStatus === 'approved' ? '✅' : '⏳'}
+                                             </span>
+                                          )
                                        ) : (
-                                          <span className="text-xs font-medium">
-                                             {doc.documentStatus === 'approved' ? '✅' : '⏳'}
-                                          </span>
+                                          // File upload fields
+                                          doc.documentStatus === 'pending' || doc.documentStatus === 'rejected' || 
+                                          (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ||
+                                          (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? (
+                                             <Button
+                                                size="sm"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                                variant={rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'warning' : 
+                                                        rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type) ? 'primary' : 'primary'}
+                                             >
+                                                {doc.documentStatus === 'rejected' ? 'Resubmit' : 
+                                                 (rtecDoc.status === 'documents_revision_requested' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 
+                                                 (rtecDoc.status === 'additional_documents_required' && rtecDoc.documentsToRevise?.some(revDoc => revDoc.type === doc.type)) ? 'Revise' : 'Upload'}
+                                             </Button>
+                                          ) : doc.documentStatus === 'submitted' ? (
+                                             <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleFileUpload(doc.type, rtecDoc)}
+                                                className="text-xs px-2 py-1"
+                                             >
+                                                Replace
+                                             </Button>
+                                          ) : (
+                                             <span className="text-xs font-medium">
+                                                {doc.documentStatus === 'approved' ? '✅' : '⏳'}
+                                             </span>
+                                          )
                                        )}
                                     </div>
                                  </div>
@@ -481,7 +535,7 @@ const RTECDocumentSubmission = () => {
          <Modal
             isOpen={showUploadModal}
             onClose={() => setShowUploadModal(false)}
-            title="Upload Document"
+            title={(currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested') ? "Submit Information" : "Upload Document"}
          >
             <div className="space-y-4">
                <div>
@@ -502,20 +556,63 @@ const RTECDocumentSubmission = () => {
                   </p>
                </div>
 
-               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Select File
-                  </label>
-                  <input
-                     type="file"
-                     accept=".pdf,.doc,.docx"
-                     onChange={(e) => setUploadFile(e.target.files[0])}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                     Accepted formats: PDF, DOC, DOCX (Max size: 10MB)
-                  </p>
-               </div>
+               {/* Show different input based on document type */}
+               {(currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested') ? (
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {currentDocumentType === 'project title' ? 'Project Title' : 
+                         currentDocumentType === 'project description' ? 'Project Description' : 
+                         'Amount Requested'}
+                     </label>
+                     {currentDocumentType === 'amount requested' ? (
+                        <input
+                           type="number"
+                           value={textInput}
+                           onChange={(e) => setTextInput(e.target.value)}
+                           placeholder="Enter amount (e.g., 500000)"
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                     ) : currentDocumentType === 'project description' ? (
+                        <textarea
+                           value={textInput}
+                           onChange={(e) => setTextInput(e.target.value)}
+                           placeholder="Enter detailed project description"
+                           rows={4}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                     ) : (
+                        <input
+                           type="text"
+                           value={textInput}
+                           onChange={(e) => setTextInput(e.target.value)}
+                           placeholder="Enter project title"
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                     )}
+                     <p className="text-xs text-gray-500 mt-1">
+                        {currentDocumentType === 'amount requested' ? 
+                           'Enter the total funding amount being requested' : 
+                           currentDocumentType === 'project description' ?
+                           'Enter a detailed description of the project objectives and activities' :
+                           'Enter the detailed project title and description'}
+                     </p>
+                  </div>
+               ) : (
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select File
+                     </label>
+                     <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setUploadFile(e.target.files[0])}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     />
+                     <p className="text-xs text-gray-500 mt-1">
+                        Accepted formats: PDF, DOC, DOCX (Max size: 10MB)
+                     </p>
+                  </div>
+               )}
 
                <div className="flex justify-end space-x-3">
                   <Button
@@ -527,9 +624,10 @@ const RTECDocumentSubmission = () => {
                   </Button>
                   <Button
                      onClick={submitDocument}
-                     disabled={!uploadFile || uploading}
+                     disabled={uploading || ((currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested') && !textInput.trim()) || (!(currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested') && !uploadFile)}
                   >
-                     {uploading ? 'Uploading...' : 'Upload Document'}
+                     {uploading ? 'Submitting...' : 
+                      (currentDocumentType === 'project title' || currentDocumentType === 'project description' || currentDocumentType === 'amount requested') ? 'Submit' : 'Upload Document'}
                   </Button>
                </div>
             </div>

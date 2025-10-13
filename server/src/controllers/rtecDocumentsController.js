@@ -73,13 +73,16 @@ const requestRTECDocuments = async (req, res) => {
          applicationId: tna.applicationId._id,
          proponentId: tna.proponentId._id,
          programName: tna.programName,
+         projectTitle: tna.applicationId?.projectTitle || null,
+         projectDescription: tna.applicationId?.projectDescription || null,
+         amountRequested: tna.applicationId?.amountRequested || null,
          requestedBy: userId,
          status: 'documents_requested',
          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
       });
 
       console.log('RTEC documents object created');
-
+s
       // Initialize default document types (this also saves the document)
       console.log('Initializing document types...');
       await rtecDocuments.initializeDocumentTypes();

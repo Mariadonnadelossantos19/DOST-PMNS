@@ -184,10 +184,24 @@ const RTECDocumentManagement = () => {
          header: 'Project',
          width: '180px',
          render: (value, item) => {
-            const projectName = item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
+            const projectName = item?.projectTitle || item?.applicationId?.projectTitle || item?.applicationId?.programName || 'N/A';
             return (
                <div className="truncate" title={projectName}>
                   {projectName}
+               </div>
+            );
+         }
+      },
+      {
+         key: 'amountRequested',
+         header: 'Amount Requested',
+         width: '120px',
+         render: (value, item) => {
+            const amount = item?.amountRequested || item?.applicationId?.amountRequested;
+            if (!amount) return <div className="text-gray-500">N/A</div>;
+            return (
+               <div className="truncate font-medium" title={`₱${amount.toLocaleString()}`}>
+                  ₱{amount.toLocaleString()}
                </div>
             );
          }
@@ -378,8 +392,19 @@ const RTECDocumentManagement = () => {
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Project</label>
                         <p className="mt-1 text-sm text-gray-900">
-                           {selectedDocument.applicationId?.projectTitle || 
+                           {selectedDocument.projectTitle || 
+                            selectedDocument.applicationId?.projectTitle || 
                             selectedDocument.applicationId?.programName || 'N/A'}
+                        </p>
+                     </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700">Amount Requested</label>
+                        <p className="mt-1 text-sm text-gray-900 font-medium">
+                           {selectedDocument.amountRequested ? 
+                              `₱${selectedDocument.amountRequested.toLocaleString()}` : 
+                              selectedDocument.applicationId?.amountRequested ? 
+                                 `₱${selectedDocument.applicationId.amountRequested.toLocaleString()}` : 
+                                 'N/A'}
                         </p>
                      </div>
                      <div>
