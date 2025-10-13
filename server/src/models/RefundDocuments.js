@@ -49,14 +49,18 @@ const refundDocumentsSchema = new mongoose.Schema({
    refundDocuments: [{
       type: {
          type: String,
-         enum: [
-            'partial_budget_analysis',
-            'rtec_report',
-            'approval_letter',
-            'bank_account',
-            'moa',
-            'promissory_notes'
-         ],
+          enum: [
+             'partial_budget_analysis',
+             'rtec_report',
+             'approval_letter',
+             'bank_account',
+             'moa',
+             'promissory_notes',
+             'form_008',
+             'certification_from_the_dost_agency',
+             'acknowledgment_reciept',
+             'csf'
+          ],
          required: true
       },
       name: {
@@ -336,6 +340,30 @@ refundDocumentsSchema.methods.initializeRefundDocumentTypes = function() {
          type: 'promissory_notes',
          name: 'Promissory Notes',
          description: 'Promissory notes and payment agreements for refund terms',
+         documentStatus: 'pending'
+      },
+       {
+          type: 'form_008',
+          name: 'Form 008',
+          description: 'Form 008 for refund processing',
+          documentStatus: 'pending'
+       },
+       {
+          type: 'certification_from_the_dost_agency',
+          name: 'Certification from the DOST Agency',
+          description: 'Certification from the DOST Agency (for applicant with previous DOST Assistance)',
+          documentStatus: 'pending'
+       },
+       {
+          type: 'acknowledgment_reciept',
+          name: 'Acknowledgment Receipt',
+          description: 'Acknowledgment Receipt (for PDC received by PSTO)',
+          documentStatus: 'pending'
+       },
+      {
+         type: 'csf',
+         name: 'CSF',
+         description: 'Customer Satisfaction Form',
          documentStatus: 'pending'
       }
    ];

@@ -159,6 +159,9 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
          case 'rtec-documents':
             console.log('Rendering RTEC Documents');
             return renderDashboard(); // Will be handled by the dashboard routing
+         case 'refund-documents':
+            console.log('Rendering Refund Documents');
+            return renderDashboard(); // Will be handled by the dashboard routing
          case 'rtec-scheduling':
             console.log('Rendering RTEC Scheduling');
             return renderDashboard(); // Will be handled by the dashboard routing
