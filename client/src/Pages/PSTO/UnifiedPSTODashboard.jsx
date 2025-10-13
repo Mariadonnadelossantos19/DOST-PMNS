@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePSTOData } from '../../hooks/usePSTOData';
 import { Card, Button, DataTable, StatusBadge } from '../../Component/UI';
 import { TNAManagement, DocumentValidation, TNAReportUpload, RTECDocumentSubmission, RTECMeetingInterface } from '../../Component/PSTO/components';
-import RefundDocument from '../../Component/PSTO/components/RefundDocument';
+import FundingDocument from '../../Component/PSTO/components/FundingDocument';
 import ProponentManagement from '../../Component/PSTO/ProponentManagement';
 import PSTOStats from '../../Component/PSTO/PSTOStats';
 import PSTOManagementDashboard from './PSTOManagementDashboard';
@@ -213,8 +213,8 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
    ), [currentUser]);
 
    // Render refund documents content
-   const renderRefundDocuments = useCallback(() => (
-      <RefundDocument />
+   const renderFundingDocuments = useCallback(() => (
+      <FundingDocument />
    ), []);
 
    // Get current view based on currentPage prop or URL hash
@@ -235,8 +235,8 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       if (currentPage === 'rtec-documents') {
          return 'rtec-documents';
       }
-      if (currentPage === 'refund-documents') {
-         return 'refund-documents';
+      if (currentPage === 'funding-documents') {
+         return 'funding-documents';
       }
       if (currentPage === 'rtec-meetings') {
          return 'rtec-meetings';
@@ -290,12 +290,12 @@ const UnifiedPSTODashboard = React.memo(({ currentUser, currentPage = 'dashboard
       'document-validation': renderDocumentValidation,
       'tna-reports': renderTNAReports,
       'rtec-documents': renderRTECDocuments,
-      'refund-documents': renderRefundDocuments,
+      'funding-documents': renderFundingDocuments,
       'rtec-meetings': renderRTECMeetings,
       proponents: renderProponents,
       'proponent-management': renderProponentManagement,
       notifications: renderNotifications
-   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderRTECDocuments, renderRefundDocuments, renderRTECMeetings, renderProponents, renderProponentManagement, renderNotifications]);
+   }), [renderOverview, renderApplications, renderManagement, renderTNAManagement, renderDocumentValidation, renderTNAReports, renderRTECDocuments, renderFundingDocuments, renderRTECMeetings, renderProponents, renderProponentManagement, renderNotifications]);
 
    const renderContent = useCallback(() => {
       const renderer = viewRenderers[currentView];

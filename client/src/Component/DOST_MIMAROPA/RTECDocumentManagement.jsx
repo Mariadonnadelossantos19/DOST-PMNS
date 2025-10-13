@@ -206,6 +206,40 @@ const RTECDocumentManagement = () => {
          }
       },
       {
+         key: 'psto',
+         header: 'PSTO',
+         width: '120px',
+         render: (value, item) => {
+            // Get PSTO information from the proponent's province
+            const proponent = item?.proponentId;
+            if (!proponent || !proponent.province) {
+               return (
+                  <div className="truncate text-gray-500" title="No PSTO assigned">
+                     N/A
+                  </div>
+               );
+            }
+            
+            // Map province to PSTO name
+            const provinceToPSTO = {
+               'marinduque': 'PSTO Marinduque',
+               'romblon': 'PSTO Romblon',
+               'palawan': 'PSTO Palawan',
+               'mindoro_oriental': 'PSTO Oriental Mindoro',
+               'mindoro_occidental': 'PSTO Occidental Mindoro'
+            };
+            
+            const pstoName = provinceToPSTO[proponent.province] || `PSTO ${proponent.province}`;
+            return (
+               <div className="truncate" title={pstoName}>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                     {pstoName}
+                  </span>
+               </div>
+            );
+         }
+      },
+      {
          key: 'status',
          header: 'Status',
          width: '120px',
@@ -351,6 +385,32 @@ const RTECDocumentManagement = () => {
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Status</label>
                         <div className="mt-1">{getStatusBadge(selectedDocument.status)}</div>
+                     </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700">PSTO</label>
+                        <div className="mt-1">
+                           {(() => {
+                              const proponent = selectedDocument?.proponentId;
+                              if (!proponent || !proponent.province) {
+                                 return <span className="text-gray-500">N/A</span>;
+                              }
+                              
+                              const provinceToPSTO = {
+                                 'marinduque': 'PSTO Marinduque',
+                                 'romblon': 'PSTO Romblon',
+                                 'palawan': 'PSTO Palawan',
+                                 'mindoro_oriental': 'PSTO Oriental Mindoro',
+                                 'mindoro_occidental': 'PSTO Occidental Mindoro'
+                              };
+                              
+                              const pstoName = provinceToPSTO[proponent.province] || `PSTO ${proponent.province}`;
+                              return (
+                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {pstoName}
+                                 </span>
+                              );
+                           })()}
+                        </div>
                      </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Due Date</label>

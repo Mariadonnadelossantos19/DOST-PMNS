@@ -37,7 +37,7 @@ app.use('/api/programs', programRoutes);
 app.use('/api/tna', tnaRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/rtec-documents', require('./routes/rtecDocumentsRoutes'));
-app.use('/api/refund-documents', require('./routes/refundDocumentsRoutes'));
+app.use('/api/funding-documents', require('./routes/fundingDocumentsRoutes'));
 app.use('/api/rtec-meetings', rtecMeetingRoutes);
 
 // Error handling middleware

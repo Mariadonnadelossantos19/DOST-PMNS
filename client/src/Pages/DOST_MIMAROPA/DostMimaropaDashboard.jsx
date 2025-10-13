@@ -11,7 +11,7 @@ import { Card, Button, Badge, Modal, Textarea } from '../../Component/UI';
 import TNAManagement from '../../Component/PSTO/components/TNAManagement';
 import RTECDocumentManagement from '../../Component/DOST_MIMAROPA/RTECDocumentManagement';
 import RTECScheduleManagement from '../../Component/DOST_MIMAROPA/RTECScheduleManagement';
-import RefundDocument from '../../Component/PSTO/components/RefundDocument';
+import FundingDocument from '../../Component/PSTO/components/FundingDocument';
 import { DOSTNotificationCenter } from '../../Component/Notifications';
 
 const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
@@ -354,10 +354,10 @@ const DostMimaropaDashboard = ({ currentPath = '/dashboard' }) => {
                </div>
             );
 
-         case '/refund-documents':
+         case '/funding-documents':
             return (
                <div className="space-y-6">
-                  <RefundDocument />
+                  <FundingDocument />
                </div>
             );
 

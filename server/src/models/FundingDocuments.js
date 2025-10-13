@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const refundDocumentsSchema = new mongoose.Schema({
+const fundingDocumentsSchema = new mongoose.Schema({
    // Reference to the TNA
    tnaId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +30,7 @@ const refundDocumentsSchema = new mongoose.Schema({
    },
    
    // Document request status
-   status: {
+   status: {    
       type: String,
       enum: [
          'documents_requested',
@@ -38,15 +38,15 @@ const refundDocumentsSchema = new mongoose.Schema({
          'documents_under_review',
          'documents_approved',
          'documents_rejected',
-         'refund_completed',
+         'funding_completed',
          'additional_documents_required',
          'documents_revision_requested'
       ],
       default: 'documents_requested'
    },
    
-   // Refund documents - the required document types for refund process
-   refundDocuments: [{
+   // Funding documents - the required document types for funding process
+   fundingDocuments: [{
       type: {
          type: String,
           enum: [
@@ -90,6 +90,10 @@ const refundDocumentsSchema = new mongoose.Schema({
       },
       mimetype: {
          type: String,
+         default: null
+      },
+      buffer: {
+         type: Buffer,
          default: null
       },
       uploadedAt: {
@@ -177,13 +181,13 @@ const refundDocumentsSchema = new mongoose.Schema({
       default: null
    },
    
-   // Refund completion tracking
-   refundCompletedAt: {
+   // Funding completion tracking
+   fundingCompletedAt: {
       type: Date,
       default: null
    },
    
-   refundCompletedBy: {
+   fundingCompletedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
@@ -222,7 +226,7 @@ const refundDocumentsSchema = new mongoose.Schema({
       }
    }],
    
-   // Additional documents required for refund process
+   // Additional documents required for funding process
    additionalDocumentsRequired: [{
       type: {
          type: String,
@@ -261,6 +265,10 @@ const refundDocumentsSchema = new mongoose.Schema({
          type: String,
          default: null
       },
+      buffer: {
+         type: Buffer,
+         default: null
+      },
       uploadedAt: {
          type: Date,
          default: null
@@ -293,59 +301,59 @@ const refundDocumentsSchema = new mongoose.Schema({
    }]
 }, {
    timestamps: true,
-   collection: 'refunddocuments'
+   collection: 'fundingdocuments'
 });
 
 // Index for efficient queries
-refundDocumentsSchema.index({ tnaId: 1 });
-refundDocumentsSchema.index({ applicationId: 1 });
-refundDocumentsSchema.index({ proponentId: 1 });
-refundDocumentsSchema.index({ status: 1 });
-refundDocumentsSchema.index({ requestedAt: 1 });
+fundingDocumentsSchema.index({ tnaId: 1 });
+fundingDocumentsSchema.index({ applicationId: 1 });
+fundingDocumentsSchema.index({ proponentId: 1 });
+fundingDocumentsSchema.index({ status: 1 });
+fundingDocumentsSchema.index({ requestedAt: 1 });
 
-// Method to initialize default refund document types
-refundDocumentsSchema.methods.initializeRefundDocumentTypes = function() {
-   this.refundDocuments = [
+// Method to initialize default funding document types
+fundingDocumentsSchema.methods.initializeFundingDocumentTypes = function() {
+   this.fundingDocuments = [
       {
          type: 'partial_budget_analysis',
          name: 'Partial Budget Analysis',
-         description: 'Detailed budget analysis showing partial refund calculations and breakdown',
+         description: 'Detailed budget analysis showing partial funding calculations and breakdown',
          documentStatus: 'pending'
       },
       {
          type: 'rtec_report',
          name: 'RTEC Report',
-         description: 'Regional Technical Evaluation Committee report for refund assessment',
+         description: 'Regional Technical Evaluation Committee report for funding assessment',
          documentStatus: 'pending'
       },
       {
          type: 'approval_letter',
          name: 'Approval Letter',
-         description: 'Official approval letter for refund processing',
+         description: 'Official approval letter for funding processing',
          documentStatus: 'pending'
       },
       {
          type: 'bank_account',
          name: 'Bank Account Details',
-         description: 'Bank account information for refund disbursement',
+         description: 'Bank account information for funding disbursement',
          documentStatus: 'pending'
       },
       {
          type: 'moa',
          name: 'Memorandum of Agreement (MOA)',
-         description: 'Memorandum of Agreement between parties for refund terms',
+         description: 'Memorandum of Agreement between parties for funding terms',
          documentStatus: 'pending'
       },
       {
          type: 'promissory_notes',
          name: 'Promissory Notes',
-         description: 'Promissory notes and payment agreements for refund terms',
+         description: 'Promissory notes and payment agreements for funding terms',
          documentStatus: 'pending'
       },
        {
           type: 'form_008',
           name: 'Form 008',
-          description: 'Form 008 for refund processing',
+          description: 'Form 008 for funding processing',
           documentStatus: 'pending'
        },
        {
@@ -370,9 +378,9 @@ refundDocumentsSchema.methods.initializeRefundDocumentTypes = function() {
    return this.save();
 };
 
-// Method to submit a refund document
-refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, userId) {
-   let document = this.refundDocuments.find(doc => doc.type === documentType);
+// Method to submit a funding document
+fundingDocumentsSchema.methods.submitDocument = function(documentType, fileData, userId) {
+   let document = this.fundingDocuments.find(doc => doc.type === documentType);
    
    if (!document) {
       // Check if it's an additional document
@@ -385,6 +393,7 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
       document.path = fileData.path;
       document.size = fileData.size;
       document.mimetype = fileData.mimetype;
+      document.buffer = fileData.buffer; // Store binary data
       document.uploadedAt = new Date();
       document.uploadedBy = userId;
       document.documentStatus = 'submitted';
@@ -398,11 +407,11 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
       throw new Error(`Document type ${documentType} not found for submission.`);
    }
    
-   // Check if all documents are submitted (both refundDocuments and additionalDocumentsRequired)
-   const allRefundDocsSubmitted = this.refundDocuments.every(doc => doc.documentStatus === 'submitted');
+   // Check if all documents are submitted (both fundingDocuments and additionalDocumentsRequired)
+   const allFundingDocsSubmitted = this.fundingDocuments.every(doc => doc.documentStatus === 'submitted');
    const allAdditionalDocsSubmitted = this.additionalDocumentsRequired.every(doc => doc.documentStatus === 'submitted');
    
-   if (allRefundDocsSubmitted && allAdditionalDocsSubmitted) {
+   if (allFundingDocsSubmitted && allAdditionalDocsSubmitted) {
       this.status = 'documents_submitted';
       this.submittedBy = userId;
       this.submittedAt = new Date();
@@ -413,7 +422,7 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
       this.submittedAt = new Date();
    }
    
-   console.log('🔍 Saving document with status:', this.refundDocuments.map(doc => ({
+   console.log('🔍 Saving document with status:', this.fundingDocuments.map(doc => ({
       type: doc.type,
       documentStatus: doc.documentStatus,
       filename: doc.filename
@@ -422,9 +431,9 @@ refundDocumentsSchema.methods.submitDocument = function(documentType, fileData, 
    return this.save();
 };
 
-// Method to approve a refund document
-refundDocumentsSchema.methods.approveDocument = function(documentType, userId, comments = null) {
-   const document = this.refundDocuments.find(doc => doc.type === documentType);
+// Method to approve a funding document
+fundingDocumentsSchema.methods.approveDocument = function(documentType, userId, comments = null) {
+   const document = this.fundingDocuments.find(doc => doc.type === documentType);
    if (document) {
       document.documentStatus = 'approved';
       document.reviewedBy = userId;
@@ -442,14 +451,14 @@ refundDocumentsSchema.methods.approveDocument = function(documentType, userId, c
       
       // Check if all documents that needed revision have been reviewed
       const allRevisedDocumentsReviewed = revisedDocuments.every(docType => {
-         const doc = this.refundDocuments.find(d => d.type === docType);
+         const doc = this.fundingDocuments.find(d => d.type === docType);
          return doc && (doc.documentStatus === 'approved' || doc.documentStatus === 'rejected');
       });
       
       if (allRevisedDocumentsReviewed) {
          // All revised documents have been reviewed, check if any were rejected
          const hasRejectedRevisedDocuments = revisedDocuments.some(docType => {
-            const doc = this.refundDocuments.find(d => d.type === docType);
+            const doc = this.fundingDocuments.find(d => d.type === docType);
             return doc && doc.documentStatus === 'rejected';
          });
          
@@ -466,12 +475,12 @@ refundDocumentsSchema.methods.approveDocument = function(documentType, userId, c
       }
    } else {
       // Normal workflow - only update overall status if all documents have been reviewed
-      const allDocumentsReviewed = this.refundDocuments.every(doc => 
+      const allDocumentsReviewed = this.fundingDocuments.every(doc => 
          doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
       );
       
       if (allDocumentsReviewed) {
-         const hasRejectedDocuments = this.refundDocuments.some(doc => doc.documentStatus === 'rejected');
+         const hasRejectedDocuments = this.fundingDocuments.some(doc => doc.documentStatus === 'rejected');
          this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
          this.reviewedBy = userId;
          this.reviewedAt = new Date();
@@ -484,9 +493,9 @@ refundDocumentsSchema.methods.approveDocument = function(documentType, userId, c
    return this.save();
 };
 
-// Method to reject a refund document
-refundDocumentsSchema.methods.rejectDocument = function(documentType, userId, comments) {
-   const document = this.refundDocuments.find(doc => doc.type === documentType);
+// Method to reject a funding document
+fundingDocumentsSchema.methods.rejectDocument = function(documentType, userId, comments) {
+   const document = this.fundingDocuments.find(doc => doc.type === documentType);
    if (document) {
       document.documentStatus = 'rejected';
       document.reviewedBy = userId;
@@ -502,14 +511,14 @@ refundDocumentsSchema.methods.rejectDocument = function(documentType, userId, co
       
       // Check if all documents that needed revision have been reviewed  
       const allRevisedDocumentsReviewed = revisedDocuments.every(docType => {
-         const doc = this.refundDocuments.find(d => d.type === docType);
+         const doc = this.fundingDocuments.find(d => d.type === docType);
          return doc && (doc.documentStatus === 'approved' || doc.documentStatus === 'rejected');
       });
       
       if (allRevisedDocumentsReviewed) {
          // All revised documents have been reviewed, check if any were rejected
          const hasRejectedRevisedDocuments = revisedDocuments.some(docType => {
-            const doc = this.refundDocuments.find(d => d.type === docType);
+            const doc = this.fundingDocuments.find(d => d.type === docType);
             return doc && doc.documentStatus === 'rejected';
          });
          
@@ -526,12 +535,12 @@ refundDocumentsSchema.methods.rejectDocument = function(documentType, userId, co
       }
    } else {
       // Normal workflow - only update overall status if all documents have been reviewed
-      const allDocumentsReviewed = this.refundDocuments.every(doc => 
+      const allDocumentsReviewed = this.fundingDocuments.every(doc => 
          doc.documentStatus === 'approved' || doc.documentStatus === 'rejected'
       );
       
       if (allDocumentsReviewed) {
-         const hasRejectedDocuments = this.refundDocuments.some(doc => doc.documentStatus === 'rejected');
+         const hasRejectedDocuments = this.fundingDocuments.some(doc => doc.documentStatus === 'rejected');
          this.status = hasRejectedDocuments ? 'documents_rejected' : 'documents_approved';
          this.reviewedBy = userId;
          this.reviewedAt = new Date();
@@ -545,7 +554,7 @@ refundDocumentsSchema.methods.rejectDocument = function(documentType, userId, co
 };
 
 // Method to approve an additional document
-refundDocumentsSchema.methods.approveAdditionalDocument = function(documentType, userId, comments) {
+fundingDocumentsSchema.methods.approveAdditionalDocument = function(documentType, userId, comments) {
    const document = this.additionalDocumentsRequired.find(doc => doc.type === documentType);
    if (document) {
       document.documentStatus = 'approved';
@@ -562,7 +571,7 @@ refundDocumentsSchema.methods.approveAdditionalDocument = function(documentType,
    if (allAdditionalDocumentsApproved) {
       const hasRejectedAdditionalDocuments = this.additionalDocumentsRequired.some(doc => doc.documentStatus === 'rejected');
       if (!hasRejectedAdditionalDocuments) {
-         // All additional documents approved - ready for refund processing
+         // All additional documents approved - ready for funding processing
          this.status = 'documents_approved';
          this.reviewedBy = userId;
          this.reviewedAt = new Date();
@@ -579,7 +588,7 @@ refundDocumentsSchema.methods.approveAdditionalDocument = function(documentType,
 };
 
 // Method to reject an additional document
-refundDocumentsSchema.methods.rejectAdditionalDocument = function(documentType, userId, comments) {
+fundingDocumentsSchema.methods.rejectAdditionalDocument = function(documentType, userId, comments) {
    const document = this.additionalDocumentsRequired.find(doc => doc.type === documentType);
    if (document) {
       document.documentStatus = 'rejected';
@@ -606,17 +615,17 @@ refundDocumentsSchema.methods.rejectAdditionalDocument = function(documentType, 
    return this.save();
 };
 
-// Method to mark refund as completed
-refundDocumentsSchema.methods.completeRefund = function(userId) {
-   this.status = 'refund_completed';
-   this.refundCompletedBy = userId;
-   this.refundCompletedAt = new Date();
+// Method to mark funding as completed
+fundingDocumentsSchema.methods.completeFunding = function(userId) {
+   this.status = 'funding_completed';
+   this.fundingCompletedBy = userId;
+   this.fundingCompletedAt = new Date();
    return this.save();
 };
 
 // Ensure virtual fields are serialized
-refundDocumentsSchema.set('toJSON', {
+fundingDocumentsSchema.set('toJSON', {
    virtuals: true
 });
 
-module.exports = mongoose.model('RefundDocuments', refundDocumentsSchema);
+module.exports = mongoose.model('FundingDocuments', fundingDocumentsSchema);

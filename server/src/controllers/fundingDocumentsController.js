@@ -1,4 +1,4 @@
-const RefundDocuments = require('../models/RefundDocuments');
+const FundingDocuments = require('../models/FundingDocuments');
 const TNA = require('../models/TNA');
 const SETUPApplication = require('../models/SETUPApplication');
 const User = require('../models/User');
@@ -7,13 +7,13 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-// Request refund documents from PSTO
-const requestRefundDocuments = async (req, res) => {
+// Request funding documents from PSTO
+const requestFundingDocuments = async (req, res) => {
    try {
       const { tnaId } = req.params;
       const userId = req.user.id;
 
-      console.log('=== REQUEST REFUND DOCUMENTS DEBUG ===');
+      console.log('=== REQUEST FUNDING DOCUMENTS DEBUG ===');
       console.log('TNA ID:', tnaId);
       console.log('User ID:', userId);
 
@@ -25,7 +25,7 @@ const requestRefundDocuments = async (req, res) => {
          });
       }
 
-      // Find TNA
+      // Find TNA and populate related data
       const tna = await TNA.findById(tnaId)
          .populate('applicationId')
          .populate('proponentId');
@@ -48,24 +48,24 @@ const requestRefundDocuments = async (req, res) => {
          console.log('Actual status:', tna.status);
          return res.status(400).json({
             success: false,
-            message: `TNA must be completed (RTEC status) before requesting refund documents. Current status: ${tna.status}`
+            message: `TNA must be completed (RTEC status) before requesting funding documents. Current status: ${tna.status}`
          });
       }
 
       console.log('TNA status check passed');
 
-      // Check if refund documents already requested
-      const existingRequest = await RefundDocuments.findOne({ tnaId });
+      // Check if funding documents already requested
+      const existingRequest = await FundingDocuments.findOne({ tnaId });
       if (existingRequest) {
-         console.log('Refund documents already exist');
+         console.log('Funding documents already exist');
          return res.status(400).json({
             success: false,
-            message: 'Refund documents already requested for this TNA'
+            message: 'Funding documents already requested for this TNA'
          });
       }
 
-      // Create refund documents request
-      const refundDocuments = new RefundDocuments({
+      // Create funding documents request
+      const fundingDocuments = new FundingDocuments({
          tnaId: tna._id,
          applicationId: tna.applicationId._id,
          proponentId: tna.proponentId._id,
@@ -75,25 +75,24 @@ const requestRefundDocuments = async (req, res) => {
          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
       });
 
-      // Initialize default refund document types
-      await refundDocuments.initializeRefundDocumentTypes();
+      // Initialize default funding document types
+      await fundingDocuments.initializeFundingDocumentTypes();
 
-      console.log('Refund documents created successfully');
+      console.log('Funding documents created successfully');
 
       // Create notification for PSTO
       try {
          await Notification.create({
             recipientId: tna.proponentId._id,
             recipientType: 'proponent',
-            type: 'refund_document_request',
-            title: 'Refund Documents Requested',
-            message: `Refund documents have been requested for your application. Please coordinate with PSTO to submit the required documents.`,
+            type: 'funding_document_request',
+            title: 'Funding Documents Requested',
+            message: `Funding documents have been requested for your application. Please coordinate with PSTO to submit the required documents.`,
             data: {
                tnaId: tnaId,
-               refundDocumentsId: refundDocuments._id
+               fundingDocumentsId: fundingDocuments._id
             }
          });
-         console.log('Notification created successfully');
       } catch (notificationError) {
          console.error('Error creating notification:', notificationError);
          // Don't fail the entire request if notification creation fails
@@ -101,12 +100,12 @@ const requestRefundDocuments = async (req, res) => {
 
       res.json({
          success: true,
-         message: 'Refund documents request created successfully',
-         data: refundDocuments
+         message: 'Funding documents request created successfully',
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error('Error requesting refund documents:', error);
+      console.error('Error requesting funding documents:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -115,8 +114,8 @@ const requestRefundDocuments = async (req, res) => {
    }
 };
 
-// Get refund documents by TNA ID
-const getRefundDocumentsByTNA = async (req, res) => {
+// Get funding documents by TNA ID
+const getFundingDocumentsByTNA = async (req, res) => {
    try {
       const { tnaId } = req.params;
 
@@ -127,7 +126,7 @@ const getRefundDocumentsByTNA = async (req, res) => {
          });
       }
 
-      const refundDocuments = await RefundDocuments.findOne({ tnaId })
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId })
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
@@ -135,20 +134,20 @@ const getRefundDocumentsByTNA = async (req, res) => {
          .populate('submittedBy')
          .populate('reviewedBy');
 
-      if (!refundDocuments) {
+      if (!fundingDocuments) {
          return res.status(404).json({
             success: false,
-            message: 'Refund documents not found'
+            message: 'Funding documents not found'
          });
       }
 
       res.json({
          success: true,
-         data: refundDocuments
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error('Error fetching refund documents:', error);
+      console.error('Error fetching funding documents:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -157,19 +156,19 @@ const getRefundDocumentsByTNA = async (req, res) => {
    }
 };
 
-// Get refund document by ID
-const getRefundDocumentById = async (req, res) => {
+// Get funding document by ID
+const getFundingDocumentById = async (req, res) => {
    try {
       const { id } = req.params;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
          return res.status(400).json({
             success: false,
-            message: 'Invalid refund document ID'
+            message: 'Invalid funding document ID'
          });
       }
 
-      const refundDocument = await RefundDocuments.findById(id)
+      const fundingDocument = await FundingDocuments.findById(id)
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
@@ -177,20 +176,20 @@ const getRefundDocumentById = async (req, res) => {
          .populate('submittedBy')
          .populate('reviewedBy');
 
-      if (!refundDocument) {
+      if (!fundingDocument) {
          return res.status(404).json({
             success: false,
-            message: 'Refund document not found'
+            message: 'Funding document not found'
          });
       }
 
       res.json({
          success: true,
-         data: refundDocument
+         data: fundingDocument
       });
 
    } catch (error) {
-      console.error('Error fetching refund document:', error);
+      console.error('Error fetching funding document:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -199,14 +198,14 @@ const getRefundDocumentById = async (req, res) => {
    }
 };
 
-// Submit refund document
-const submitRefundDocument = async (req, res) => {
+// Submit funding document
+const submitFundingDocument = async (req, res) => {
    try {
       const { tnaId } = req.params;
       const { documentType } = req.body;
       const userId = req.user.id;
 
-      console.log('=== SUBMIT REFUND DOCUMENT DEBUG ===');
+      console.log('=== SUBMIT FUNDING DOCUMENT DEBUG ===');
       console.log('TNA ID:', tnaId);
       console.log('Document Type:', documentType);
       console.log('User ID:', userId);
@@ -228,31 +227,24 @@ const submitRefundDocument = async (req, res) => {
          });
       }
 
-      // Find refund documents
-      const refundDocuments = await RefundDocuments.findOne({ tnaId });
-      if (!refundDocuments) {
-         console.log('Refund documents not found for TNA ID:', tnaId);
+      // Find funding documents
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId });
+      if (!fundingDocuments) {
+         console.log('Funding documents not found for TNA ID:', tnaId);
          return res.status(404).json({
             success: false,
-            message: 'Refund documents request not found'
+            message: 'Funding documents request not found'
          });
       }
 
-      console.log('Found refund documents:', refundDocuments._id);
-      console.log('Available document types:', refundDocuments.refundDocuments.map(doc => doc.type));
+      console.log('Found funding documents:', fundingDocuments._id);
+      console.log('Available document types:', fundingDocuments.fundingDocuments.map(doc => doc.type));
 
       // Check if document type is valid (use the same enum values as the model)
       const validDocumentTypes = [
-         'partial_budget_analysis',
-         'rtec_report',
-         'approval_letter',
-         'bank_account',
-         'moa',
-         'promissory_notes',
-         'form_008',
-         'certification_from_the_dost_agency',
-         'acknowledgment_reciept',
-         'csf'
+         'partial_budget_analysis', 'rtec_report', 'approval_letter',
+         'bank_account', 'moa', 'promissory_notes', 'form_008',
+         'certification_from_the_dost_agency', 'acknowledgment_reciept', 'csf'
       ];
       
       if (!validDocumentTypes.includes(documentType)) {
@@ -264,18 +256,19 @@ const submitRefundDocument = async (req, res) => {
          });
       }
 
-      // Prepare file data
+      // Prepare file data - Store binary data in database
       const fileData = {
-         filename: req.file.filename,
+         filename: `fundingDocument-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`,
          originalName: req.file.originalname,
-         path: req.file.path,
+         path: null, // No file path since we're storing in database
          size: req.file.size,
-         mimetype: req.file.mimetype
+         mimetype: req.file.mimetype,
+         buffer: req.file.buffer // Store the actual file content as binary data
       };
 
       // Submit document
       try {
-         await refundDocuments.submitDocument(documentType, fileData, userId);
+         await fundingDocuments.submitDocument(documentType, fileData, userId);
       } catch (submitError) {
          console.error('Error submitting document:', submitError);
          return res.status(500).json({
@@ -285,18 +278,18 @@ const submitRefundDocument = async (req, res) => {
       }
 
       // Update TNA status if all documents are submitted
-      if (refundDocuments.status === 'documents_submitted') {
+      if (fundingDocuments.status === 'documents_submitted') {
          // Create notification for DOST-MIMAROPA
          try {
             await Notification.create({
-               recipientId: refundDocuments.requestedBy,
+               recipientId: fundingDocuments.requestedBy,
                recipientType: 'dost_mimaropa',
-               type: 'refund_document_request',
-               title: 'Refund Documents Submitted',
-               message: `PSTO has submitted all required refund documents for review`,
+               type: 'funding_document_request',
+               title: 'Funding Documents Submitted',
+               message: `PSTO has submitted all required funding documents for review`,
                data: {
                   tnaId: tnaId,
-                  refundDocumentsId: refundDocuments._id
+                  fundingDocumentsId: fundingDocuments._id
                }
             });
          } catch (notificationError) {
@@ -305,16 +298,16 @@ const submitRefundDocument = async (req, res) => {
          }
       }
 
-      console.log('Refund document submitted successfully');
+      console.log('Funding document submitted successfully');
 
       res.json({
          success: true,
          message: 'Document submitted successfully',
-         data: refundDocuments
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error('Error submitting refund document:', error);
+      console.error('Error submitting funding document:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -323,14 +316,14 @@ const submitRefundDocument = async (req, res) => {
    }
 };
 
-// Review refund document (approve/reject)
-const reviewRefundDocument = async (req, res) => {
+// Review funding document (approve/reject)
+const reviewFundingDocument = async (req, res) => {
    try {
       const { tnaId } = req.params;
       const { documentType, action, comments } = req.body; // action: 'approve' or 'reject'
       const userId = req.user.id;
 
-      console.log('=== REVIEW REFUND DOCUMENT DEBUG ===');
+      console.log('=== REVIEW FUNDING DOCUMENT DEBUG ===');
       console.log('TNA ID:', tnaId);
       console.log('Document Type:', documentType);
       console.log('Action:', action);
@@ -351,22 +344,22 @@ const reviewRefundDocument = async (req, res) => {
          });
       }
 
-      // Find refund documents
-      const refundDocuments = await RefundDocuments.findOne({ tnaId });
-      if (!refundDocuments) {
+      // Find funding documents
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId });
+      if (!fundingDocuments) {
          return res.status(404).json({
             success: false,
-            message: 'Refund documents not found'
+            message: 'Funding documents not found'
          });
       }
 
       // Check if the specific document is submitted (check both regular and additional documents)
-      let document = refundDocuments.refundDocuments.find(doc => doc.type === documentType);
+      let document = fundingDocuments.fundingDocuments.find(doc => doc.type === documentType);
       let isAdditionalDocument = false;
       
       if (!document) {
          // Check if it's an additional document
-         document = refundDocuments.additionalDocumentsRequired.find(doc => doc.type === documentType);
+         document = fundingDocuments.additionalDocumentsRequired.find(doc => doc.type === documentType);
          isAdditionalDocument = true;
       }
       
@@ -401,15 +394,15 @@ const reviewRefundDocument = async (req, res) => {
       try {
          if (action === 'approve') {
             if (isAdditionalDocument) {
-               await refundDocuments.approveAdditionalDocument(documentType, userId, comments);
+               await fundingDocuments.approveAdditionalDocument(documentType, userId, comments);
             } else {
-               await refundDocuments.approveDocument(documentType, userId, comments);
+               await fundingDocuments.approveDocument(documentType, userId, comments);
             }
          } else if (action === 'reject') {
             if (isAdditionalDocument) {
-               await refundDocuments.rejectAdditionalDocument(documentType, userId, comments);
+               await fundingDocuments.rejectAdditionalDocument(documentType, userId, comments);
             } else {
-               await refundDocuments.rejectDocument(documentType, userId, comments);
+               await fundingDocuments.rejectDocument(documentType, userId, comments);
             }
          }
       } catch (reviewError) {
@@ -423,14 +416,14 @@ const reviewRefundDocument = async (req, res) => {
       // Create notification for PSTO
       try {
          await Notification.create({
-            recipientId: refundDocuments.proponentId,
+            recipientId: fundingDocuments.proponentId,
             recipientType: 'proponent',
-            type: 'refund_document_review',
-            title: `Refund Document ${action === 'approve' ? 'Approved' : 'Rejected'}`,
-            message: `Your refund document "${document.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}. ${comments ? `Comments: ${comments}` : ''}`,
+            type: 'funding_document_review',
+            title: `Funding Document ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+            message: `Your funding document "${document.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}. ${comments ? `Comments: ${comments}` : ''}`,
             data: {
                tnaId: tnaId,
-               refundDocumentsId: refundDocuments._id,
+               fundingDocumentsId: fundingDocuments._id,
                documentType: documentType,
                action: action
             }
@@ -440,16 +433,16 @@ const reviewRefundDocument = async (req, res) => {
          // Don't fail the entire request if notification creation fails
       }
 
-      console.log(`Refund document ${action}ed successfully`);
+      console.log(`Funding document ${action}ed successfully`);
 
       res.json({
          success: true,
          message: `Document ${action}ed successfully`,
-         data: refundDocuments
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error(`Error ${req.body.action}ing refund document:`, error);
+      console.error(`Error ${req.body.action}ing funding document:`, error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -458,8 +451,8 @@ const reviewRefundDocument = async (req, res) => {
    }
 };
 
-// List all refund documents (for DOST-MIMAROPA)
-const listRefundDocuments = async (req, res) => {
+// List all funding documents (for DOST-MIMAROPA)
+const listFundingDocuments = async (req, res) => {
    try {
       const { page = 1, limit = 10, status, search } = req.query;
       const skip = (page - 1) * limit;
@@ -476,7 +469,7 @@ const listRefundDocuments = async (req, res) => {
          ];
       }
 
-      const refundDocuments = await RefundDocuments.find(filter)
+      const fundingDocuments = await FundingDocuments.find(filter)
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
@@ -487,12 +480,12 @@ const listRefundDocuments = async (req, res) => {
          .skip(skip)
          .limit(parseInt(limit));
 
-      const total = await RefundDocuments.countDocuments(filter);
+      const total = await FundingDocuments.countDocuments(filter);
 
       res.json({
          success: true,
          data: {
-            docs: refundDocuments,
+            docs: fundingDocuments,
             total,
             page: parseInt(page),
             limit: parseInt(limit),
@@ -501,7 +494,7 @@ const listRefundDocuments = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error listing refund documents:', error);
+      console.error('Error fetching funding documents:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -510,10 +503,10 @@ const listRefundDocuments = async (req, res) => {
    }
 };
 
-// Get approved refund documents
-const getApprovedRefundDocuments = async (req, res) => {
+// Get approved funding documents
+const getApprovedFundingDocuments = async (req, res) => {
    try {
-      const refundDocuments = await RefundDocuments.find({ status: 'documents_approved' })
+      const fundingDocuments = await FundingDocuments.find({ status: 'documents_approved' })
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
@@ -524,11 +517,11 @@ const getApprovedRefundDocuments = async (req, res) => {
 
       res.json({
          success: true,
-         data: refundDocuments
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error('Error fetching approved refund documents:', error);
+      console.error('Error fetching approved funding documents:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -537,8 +530,8 @@ const getApprovedRefundDocuments = async (req, res) => {
    }
 };
 
-// Get refund documents for PSTO
-const getRefundDocumentsForPSTO = async (req, res) => {
+// Get funding documents for PSTO
+const getFundingDocumentsForPSTO = async (req, res) => {
    try {
       const { page = 1, limit = 10, status, search } = req.query;
       const skip = (page - 1) * limit;
@@ -556,8 +549,8 @@ const getRefundDocumentsForPSTO = async (req, res) => {
 
       console.log('🔍 PSTO User Province:', pstoUser.province);
 
-      // First, let's get all refund documents and then filter by province
-      let allRefundDocuments = await RefundDocuments.find({})
+      // First, let's get all funding documents and then filter by province
+      let allFundingDocuments = await FundingDocuments.find({})
          .populate('tnaId')
          .populate('applicationId')
          .populate('proponentId')
@@ -566,22 +559,22 @@ const getRefundDocumentsForPSTO = async (req, res) => {
          .populate('reviewedBy')
          .sort({ createdAt: -1 });
 
-      console.log('🔍 All Refund Documents:', allRefundDocuments.length);
+      console.log('🔍 All Funding Documents:', allFundingDocuments.length);
 
       // Filter by PSTO's province - check the proponent's province
-      const filteredDocuments = allRefundDocuments.filter(doc => {
+      const filteredDocuments = allFundingDocuments.filter(doc => {
          const proponentProvince = doc.proponentId?.province;
          console.log(`🔍 Document ${doc._id}:`);
          console.log(`  - Application ID: ${doc.applicationId?._id}`);
          console.log(`  - Proponent ID: ${doc.proponentId?._id}`);
          console.log(`  - Proponent Province: ${proponentProvince}`);
          console.log(`  - PSTO Province: ${pstoUser.province}`);
-         console.log(`  - Proponent Data:`, JSON.stringify(doc.proponentId, null, 2));
          console.log(`  - Match: ${proponentProvince === pstoUser.province}`);
+         
          return proponentProvince === pstoUser.province;
       });
 
-      console.log('🔍 Filtered Documents for PSTO:', filteredDocuments.length);
+      console.log('🔍 Filtered Documents by Province:', filteredDocuments.length);
 
       // Apply additional filters
       let finalDocuments = filteredDocuments;
@@ -589,6 +582,7 @@ const getRefundDocumentsForPSTO = async (req, res) => {
       if (status) {
          finalDocuments = finalDocuments.filter(doc => doc.status === status);
       }
+      
       if (search) {
          finalDocuments = finalDocuments.filter(doc => {
             const enterpriseName = doc.applicationId?.enterpriseName || '';
@@ -619,7 +613,7 @@ const getRefundDocumentsForPSTO = async (req, res) => {
       });
 
    } catch (error) {
-      console.error('Error fetching refund documents for PSTO:', error);
+      console.error('Error fetching funding documents for PSTO:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -628,13 +622,13 @@ const getRefundDocumentsForPSTO = async (req, res) => {
    }
 };
 
-// Complete refund process
-const completeRefund = async (req, res) => {
+// Complete funding process
+const completeFunding = async (req, res) => {
    try {
       const { tnaId } = req.params;
       const userId = req.user.id;
 
-      console.log('=== COMPLETE REFUND DEBUG ===');
+      console.log('=== COMPLETE FUNDING DEBUG ===');
       console.log('TNA ID:', tnaId);
       console.log('User ID:', userId);
 
@@ -646,49 +640,49 @@ const completeRefund = async (req, res) => {
          });
       }
 
-      // Find refund documents
-      const refundDocuments = await RefundDocuments.findOne({ tnaId });
-      if (!refundDocuments) {
+      // Find funding documents
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId });
+      if (!fundingDocuments) {
          return res.status(404).json({
             success: false,
-            message: 'Refund documents not found'
+            message: 'Funding documents not found'
          });
       }
 
       // Check if all documents are approved
-      if (refundDocuments.status !== 'documents_approved') {
+      if (fundingDocuments.status !== 'documents_approved') {
          return res.status(400).json({
             success: false,
-            message: 'All documents must be approved before completing refund'
+            message: 'All documents must be approved before completing funding'
          });
       }
 
-      // Complete refund
-      await refundDocuments.completeRefund(userId);
+      // Complete funding
+      await fundingDocuments.completeFunding(userId);
 
       // Create notification for proponent
       await Notification.create({
-         recipientId: refundDocuments.proponentId,
+         recipientId: fundingDocuments.proponentId,
          recipientType: 'proponent',
-         type: 'refund_completed',
-         title: 'Refund Process Completed',
-         message: `Your refund process has been completed successfully.`,
+         type: 'funding_completed',
+         title: 'Funding Process Completed',
+         message: `Your funding process has been completed successfully.`,
          data: {
             tnaId: tnaId,
-            refundDocumentsId: refundDocuments._id
+            fundingDocumentsId: fundingDocuments._id
          }
       });
 
-      console.log('Refund completed successfully');
+      console.log('Funding completed successfully');
 
       res.json({
          success: true,
-         message: 'Refund process completed successfully',
-         data: refundDocuments
+         message: 'Funding process completed successfully',
+         data: fundingDocuments
       });
 
    } catch (error) {
-      console.error('Error completing refund:', error);
+      console.error('Error completing funding:', error);
       res.status(500).json({
          success: false,
          message: 'Internal server error',
@@ -697,14 +691,101 @@ const completeRefund = async (req, res) => {
    }
 };
 
+// Serve file from database
+const serveFile = async (req, res) => {
+   try {
+      const { tnaId, documentType } = req.params;
+      
+      console.log('🔍 Serving file for tnaId:', tnaId, 'Type:', typeof tnaId, 'documentType:', documentType);
+      
+      // Find the funding document
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId });
+      if (!fundingDocuments) {
+         console.log('❌ Funding documents not found for tnaId:', tnaId);
+         return res.status(404).json({
+            success: false,
+            message: 'Funding documents not found'
+         });
+      }
+      
+      // Find the specific document
+      const document = fundingDocuments.fundingDocuments.find(doc => doc.type === documentType);
+      if (!document) {
+         console.log('❌ Document not found for type:', documentType);
+         console.log('Available documents:', fundingDocuments.fundingDocuments.map(doc => doc.type));
+         return res.status(404).json({
+            success: false,
+            message: 'Document not found'
+         });
+      }
+
+      // Check if document has buffer (new database storage) or path (old file system storage)
+      if (!document.buffer && !document.path) {
+         console.log('❌ Document has no buffer or path for type:', documentType);
+         return res.status(404).json({
+            success: false,
+            message: 'Document not uploaded or corrupted'
+         });
+      }
+
+      // Handle old file system storage
+      if (!document.buffer && document.path) {
+         console.log('📁 Using old file system storage for:', document.originalName);
+         const fs = require('fs');
+         const path = require('path');
+         
+         try {
+            const filePath = path.join(__dirname, '../../uploads', document.filename);
+            const fileBuffer = fs.readFileSync(filePath);
+            
+            res.setHeader('Content-Type', document.mimetype);
+            res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+            res.setHeader('Content-Length', document.size);
+            res.send(fileBuffer);
+            return;
+         } catch (fileError) {
+            console.error('❌ Error reading file from filesystem:', fileError);
+            return res.status(404).json({
+               success: false,
+               message: 'File not found on server'  
+            });
+         }
+      }
+      
+      console.log('✅ Found document:', document.originalName, 'Size:', document.size, 'Type:', document.mimetype);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', document.mimetype);
+      res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+      res.setHeader('Content-Length', document.size);
+      
+      // Send the file buffer
+      res.send(document.buffer);
+      
+   } catch (error) {
+      console.error('❌ Error serving file:', error);
+      console.error('Error details:', {
+         message: error.message,
+         stack: error.stack,
+         tnaId: req.params.tnaId,
+         documentType: req.params.documentType
+      });
+      res.status(500).json({
+         success: false,
+         message: 'Error serving file: ' + error.message
+      });
+   }
+};
+
 module.exports = {
-   requestRefundDocuments,
-   getRefundDocumentsByTNA,
-   getRefundDocumentById,
-   submitRefundDocument,
-   reviewRefundDocument,
-   listRefundDocuments,
-   getApprovedRefundDocuments,
-   getRefundDocumentsForPSTO,
-   completeRefund
+   requestFundingDocuments,
+   getFundingDocumentsByTNA,
+   getFundingDocumentById,
+   submitFundingDocument,
+   reviewFundingDocument,
+   listFundingDocuments,
+   getApprovedFundingDocuments,
+   getFundingDocumentsForPSTO,
+   completeFunding,
+   serveFile
 };

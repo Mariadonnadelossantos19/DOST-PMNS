@@ -41,8 +41,9 @@ const notificationSchema = new mongoose.Schema({
          'rtec_document_request',
          'rtec_revision_requested',
          'rtec_completed',
-         'refund_document_request',
-         'refund_document_review',
+         'funding_document_request',
+         'funding_document_review',
+         'funding_completed',
          'meeting_invitation',
          'proposal_request',
          'general'
