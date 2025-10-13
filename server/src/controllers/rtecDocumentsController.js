@@ -272,6 +272,9 @@ const submitRTECDocument = async (req, res) => {
 
       // Check if document type is valid (use the same enum values as the model)
       const validDocumentTypes = [
+         'project title',
+         'project description', 
+         'amount requested',
          'approved tna report', 
          'risk management plan', 
          'financial statements', 
