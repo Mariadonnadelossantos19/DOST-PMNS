@@ -113,7 +113,9 @@ const FundingDocument = () => {
                   // Store the initial documents and fetch RTEC completed applications
                   setFundingDocuments(documents);
                   
-                  // Fetch RTEC completed applications that can be converted to funding requests
+               // Fetch RTEC completed applications that can be converted to funding requests
+               // Only fetch if there are existing documents or if explicitly enabled
+               if (documents.length > 0) {
                   try {
                      const rtecResponse = await api.get('/tna/rtec-completed');
                      console.log('🔍 RTEC Completed Applications Response:', rtecResponse.data);
@@ -151,6 +153,9 @@ const FundingDocument = () => {
                   } catch (rtecError) {
                      console.error('Error fetching RTEC completed applications:', rtecError);
                   }
+               } else {
+                  console.log('🔍 No existing funding documents found, skipping RTEC applications fetch');
+               }
                } else {
                   setFundingDocuments([]);
                }

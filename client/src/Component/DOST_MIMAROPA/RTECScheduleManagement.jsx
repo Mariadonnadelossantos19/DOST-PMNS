@@ -101,7 +101,7 @@ const RTECScheduleManagement = () => {
    const [showConfirmModal, setShowConfirmModal] = useState(false);
    const [confirmAction, setConfirmAction] = useState(null);
    const [confirmMessage, setConfirmMessage] = useState('Are you sure you want to perform this action?');
-   const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
+   const [activeTab, setActiveTab] = useState('documents'); // 'documents', 'meetings', or 'batch'
    const [showRTECEvaluationModal, setShowRTECEvaluationModal] = useState(false);
    const [availableDocuments, setAvailableDocuments] = useState([]);
    const [showAllMeetings, setShowAllMeetings] = useState(false);
@@ -113,6 +113,22 @@ const RTECScheduleManagement = () => {
       nextSteps: '',
       documentsToRevise: []
    });
+
+   // Batch scheduling states
+   const [showBatchModal, setShowBatchModal] = useState(false);
+   const [selectedPSTO, setSelectedPSTO] = useState('');
+   const [batchFormData, setBatchFormData] = useState({
+      psto: '',
+      meetingTitle: '',
+      meetingDescription: '',
+      scheduledDate: '',
+      scheduledTime: '',
+      location: '',
+      meetingType: 'physical',
+      notes: ''
+   });
+   const [pstoApplications, setPstoApplications] = useState([]);
+   const [selectedApplications, setSelectedApplications] = useState([]);
 
    // Form states for creating meeting
    const [formData, setFormData] = useState({
@@ -231,6 +247,64 @@ const RTECScheduleManagement = () => {
          setLoading(false);
       }
    }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
+
+   // Batch scheduling functions
+   const fetchPSTOApplications = useCallback(async (psto) => {
+      try {
+         console.log('🔄 Fetching applications for PSTO:', psto);
+         const response = await api.get(`/rtec-documents/psto/${psto}/approved`);
+         if (response.data.success) {
+            setPstoApplications(response.data.data || []);
+            console.log('📋 PSTO Applications:', response.data.data?.length || 0);
+         }
+      } catch (error) {
+         console.error('Error fetching PSTO applications:', error);
+         displayToast('Failed to fetch PSTO applications', 'error');
+      }
+   }, [displayToast]);
+
+   const handlePSTOChange = (psto) => {
+      setSelectedPSTO(psto);
+      setBatchFormData(prev => ({ ...prev, psto }));
+      if (psto) {
+         fetchPSTOApplications(psto);
+      }
+   };
+
+   const handleBatchSchedule = async () => {
+      try {
+         if (selectedApplications.length === 0) {
+            displayToast('Please select at least one application', 'error');
+            return;
+         }
+
+         console.log('🚀 Creating batch meetings for PSTO:', selectedPSTO);
+         console.log('📋 Selected applications:', selectedApplications.length);
+
+         const response = await api.post('/rtec-meetings/batch-create', {
+            psto: selectedPSTO,
+            meetingTitle: batchFormData.meetingTitle,
+            meetingDescription: batchFormData.meetingDescription,
+            scheduledDate: batchFormData.scheduledDate,
+            scheduledTime: batchFormData.scheduledTime,
+            location: batchFormData.location,
+            meetingType: batchFormData.meetingType,
+            notes: batchFormData.notes,
+            applicationIds: selectedApplications
+         });
+
+         if (response.data.success) {
+            displayToast(`Successfully scheduled ${selectedApplications.length} meetings for ${selectedPSTO}`, 'success');
+            setShowBatchModal(false);
+            setSelectedApplications([]);
+            setPstoApplications([]);
+            await forceRefresh();
+         }
+      } catch (error) {
+         console.error('Error creating batch meetings:', error);
+         displayToast('Failed to create batch meetings', 'error');
+      }
+   };
 
    const handleScheduleMeeting = (rtecDocument) => {
       const newFormData = {
@@ -1072,6 +1146,16 @@ const RTECScheduleManagement = () => {
                   }`}
                >
                   Documents ({approvedRTECDocuments.length})
+               </button>
+               <button
+                  onClick={() => setActiveTab('batch')}
+                  className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                     activeTab === 'batch'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+               >
+                  Batch Schedule
                </button>
             </nav>
          </div>
