@@ -235,9 +235,13 @@ const FundingDocument = () => {
                message: 'Document submitted successfully',
                type: 'success'
             });
-            fetchFundingDocuments();
+            
+            // Close modal and refresh data
             setShowUploadModal(false);
             setUploadFile(null);
+            
+            // Refresh the documents list to show the new document
+            fetchFundingDocuments();
          }
       } catch (error) {
          console.error('Error uploading document:', error);
@@ -270,6 +274,12 @@ const FundingDocument = () => {
 
    const submitDocumentReview = async (documentType, action, comments) => {
       try {
+         // Prevent multiple submissions
+         if (isSubmitting) {
+            console.log('⚠️ Review already in progress, ignoring duplicate request');
+            return;
+         }
+         
          setIsSubmitting(true);
          // Ensure tnaId is a string, not an object
          const tnaId = typeof selectedDocument.tnaId === 'object' ? selectedDocument.tnaId._id || selectedDocument.tnaId : selectedDocument.tnaId;
@@ -291,7 +301,13 @@ const FundingDocument = () => {
             // Update the selected document with fresh data
             setSelectedDocument(response.data.data);
             
-            fetchFundingDocuments();
+            // Update the specific document in the list without full refresh
+            setFundingDocuments(prev => 
+               prev.map(doc => 
+                  doc._id === selectedDocument._id ? response.data.data : doc
+               )
+            );
+            
             setShowReviewModal(false);
             setReviewComments('');
          }
@@ -765,8 +781,12 @@ const FundingDocument = () => {
                                                       variant="outline"
                                                       onClick={() => {
                                                          console.log('🔍 Viewing file:', doc.filename);
-                                                         const fileUrl = `http://localhost:4000/api/funding-documents/file/${application.tnaId || application._id}/${doc.type}`;
-                                                         console.log('🔍 File URL:', fileUrl);
+                                                         // Ensure tnaId is a string, not an object
+                                                         const tnaId = typeof application.tnaId === 'object' ? 
+                                                            application.tnaId._id || application.tnaId : 
+                                                            application.tnaId || application._id;
+                                                         const fileUrl = `http://localhost:4000/api/funding-documents/file/${tnaId}/${doc.type}`;
+                                                         console.log('🔍 File URL:', fileUrl, 'TNA ID:', tnaId, 'Type:', typeof tnaId);
                                                          
                                                          const newWindow = window.open(fileUrl, '_blank');
                                                          if (!newWindow) {
@@ -910,8 +930,12 @@ const FundingDocument = () => {
                                        variant="outline"
                                        onClick={() => {
                                           console.log('🔍 Viewing file:', doc.filename);
-                                          const fileUrl = `http://localhost:4000/api/funding-documents/file/${selectedDocument.tnaId || selectedDocument._id}/${doc.type}`;
-                                          console.log('🔍 File URL:', fileUrl);
+                                          // Ensure tnaId is a string, not an object
+                                          const tnaId = typeof selectedDocument.tnaId === 'object' ? 
+                                             selectedDocument.tnaId._id || selectedDocument.tnaId : 
+                                             selectedDocument.tnaId || selectedDocument._id;
+                                          const fileUrl = `http://localhost:4000/api/funding-documents/file/${tnaId}/${doc.type}`;
+                                          console.log('🔍 File URL:', fileUrl, 'TNA ID:', tnaId, 'Type:', typeof tnaId);
                                           
                                           const newWindow = window.open(fileUrl, '_blank');
                                           if (!newWindow) {

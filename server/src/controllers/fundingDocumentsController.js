@@ -898,8 +898,27 @@ const serveFile = async (req, res) => {
       
       console.log('🔍 Serving file for tnaId:', tnaId, 'Type:', typeof tnaId, 'documentType:', documentType);
       
+      // Handle tnaId that might be an object string representation
+      let actualTnaId = tnaId;
+      if (typeof tnaId === 'string' && tnaId.includes('[object Object]')) {
+         console.log('❌ Invalid tnaId format detected:', tnaId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID format. Please refresh the page and try again.'
+         });
+      }
+      
+      // Validate TNA ID format
+      if (!mongoose.Types.ObjectId.isValid(actualTnaId)) {
+         console.log('❌ Invalid TNA ID format:', actualTnaId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID format'
+         });
+      }
+      
       // Find the funding document
-      const fundingDocuments = await FundingDocuments.findOne({ tnaId });
+      const fundingDocuments = await FundingDocuments.findOne({ tnaId: actualTnaId });
       if (!fundingDocuments) {
          console.log('❌ Funding documents not found for tnaId:', tnaId);
          return res.status(404).json({
