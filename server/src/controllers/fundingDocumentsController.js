@@ -69,31 +69,60 @@ const requestFundingDocuments = async (req, res) => {
       let projectDescription = null;
       let amountRequested = null;
 
+      console.log('🔍 TNA Application Data:', {
+         applicationId: tna.applicationId?._id,
+         projectTitle: tna.applicationId?.projectTitle,
+         programName: tna.applicationId?.programName,
+         amountRequested: tna.applicationId?.amountRequested,
+         enterpriseName: tna.applicationId?.enterpriseName
+      });
+
       try {
          const RTECDocuments = require('../models/RTECDocuments');
          const rtecDoc = await RTECDocuments.findOne({ tnaId: tna._id });
          
          if (rtecDoc) {
+            console.log('🔍 RTEC Document found, extracting data...');
+            
             // Get project title from RTEC documents
             const projectTitleDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project title');
             if (projectTitleDoc && projectTitleDoc.textContent) {
                projectTitle = projectTitleDoc.textContent;
+               console.log('🔍 Project title from RTEC:', projectTitle);
             }
 
             // Get project description from RTEC documents
             const projectDescriptionDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'project description');
             if (projectDescriptionDoc && projectDescriptionDoc.textContent) {
                projectDescription = projectDescriptionDoc.textContent;
+               console.log('🔍 Project description from RTEC:', projectDescription);
             }
 
             // Get amount requested from RTEC documents
             const amountRequestedDoc = rtecDoc.partialdocsrtec.find(doc => doc.type === 'amount requested');
             if (amountRequestedDoc && amountRequestedDoc.textContent) {
                amountRequested = parseFloat(amountRequestedDoc.textContent);
+               console.log('🔍 Amount requested from RTEC:', amountRequested);
             }
+         } else {
+            console.log('🔍 No RTEC document found, using application data...');
          }
       } catch (error) {
          console.log('Error fetching RTEC document data:', error);
+      }
+
+      // Fallback to application data if RTEC data is not available
+      if (!projectTitle && tna.applicationId?.projectTitle) {
+         projectTitle = tna.applicationId.projectTitle;
+         console.log('🔍 Using project title from application:', projectTitle);
+      }
+      if (!projectTitle && tna.applicationId?.programName) {
+         projectTitle = tna.applicationId.programName;
+         console.log('🔍 Using program name as project title:', projectTitle);
+      }
+      if (!amountRequested && tna.applicationId?.amountRequested) {
+         amountRequested = tna.applicationId.amountRequested;
+         console.log('🔍 Using amount from application:', amountRequested);
       }
 
       // Create funding documents request
@@ -102,12 +131,22 @@ const requestFundingDocuments = async (req, res) => {
          applicationId: tna.applicationId._id,
          proponentId: tna.proponentId._id,
          programName: tna.programName || 'SETUP',
+         enterpriseName: tna.applicationId?.enterpriseName || tna.applicationId?.companyName,
          projectTitle: projectTitle,
          projectDescription: projectDescription,
          amountRequested: amountRequested,
          requestedBy: userId,
          status: 'documents_requested',
          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      });
+
+      console.log('🔍 Creating funding document with data:', {
+         tnaId: tna._id,
+         applicationId: tna.applicationId._id,
+         proponentId: tna.proponentId._id,
+         projectTitle,
+         amountRequested,
+         status: 'documents_requested'
       });
 
       // Initialize default funding document types

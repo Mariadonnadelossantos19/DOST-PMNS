@@ -166,18 +166,24 @@ const RTECScheduleManagement = () => {
    // Fetch RTEC meetings
    const fetchRTECMeetings = useCallback(async () => {
       try {
-         const response = await api.get('/rtec-meetings/list');
+         console.log('🔄 Fetching RTEC meetings...');
+         const response = await api.get('/rtec-meetings/list?limit=100');
          if (response.data.success) {
             const meetings = response.data.data.docs || [];
             console.log('📋 CLIENT: Received meetings:', meetings.length);
             console.log('📋 CLIENT: Meeting details:', meetings.map(meeting => ({
                id: meeting._id,
-               rtecDocumentsId: meeting.rtecDocumentsId?._id || meeting.rtecDocumentsId,
+               rtecDocumentsId: meeting.rtecDocumentsId,
+               rtecDocumentsIdString: meeting.rtecDocumentsId?.toString(),
+               rtecDocumentsIdId: meeting.rtecDocumentsId?._id,
                status: meeting.status,
                title: meeting.meetingTitle,
                applicationName: meeting.applicationId?.enterpriseName || meeting.applicationId?.companyName
             })));
             setRtecMeetings(meetings);
+            console.log('✅ RTEC meetings state updated');
+         } else {
+            console.log('❌ Failed to fetch meetings:', response.data.message);
          }
       } catch (error) {
          console.error('Error fetching RTEC meetings:', error);
@@ -202,9 +208,28 @@ const RTECScheduleManagement = () => {
 
 
    useEffect(() => {
+      console.log('🚀 Initializing RTEC Schedule Management...');
       fetchApprovedRTECDocuments();
       fetchRTECMeetings();
       fetchAvailablePSTOUsers();
+   }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
+
+   // Force refresh function
+   const forceRefresh = useCallback(async () => {
+      console.log('🔄 Force refreshing all data...');
+      setLoading(true);
+      try {
+         await Promise.all([
+            fetchApprovedRTECDocuments(),
+            fetchRTECMeetings(),
+            fetchAvailablePSTOUsers()
+         ]);
+         console.log('✅ Force refresh completed');
+      } catch (error) {
+         console.error('❌ Force refresh failed:', error);
+      } finally {
+         setLoading(false);
+      }
    }, [fetchApprovedRTECDocuments, fetchRTECMeetings, fetchAvailablePSTOUsers]);
 
    const handleScheduleMeeting = (rtecDocument) => {
@@ -238,7 +263,24 @@ const RTECScheduleManagement = () => {
             return;
          }
          
+         console.log('🚀 Creating meeting with data:', {
+            tnaId: formData.tnaId,
+            rtecDocumentsId: formData.rtecDocumentsId,
+            applicationId: formData.applicationId,
+            proponentId: formData.proponentId,
+            meetingTitle: formData.meetingTitle,
+            scheduledDate: formData.scheduledDate,
+            scheduledTime: formData.scheduledTime,
+            location: formData.location
+         });
+         
          const response = await api.post('/rtec-meetings/create', formData);
+         
+         console.log('📋 Server response:', {
+            success: response.data.success,
+            message: response.data.message,
+            data: response.data.data
+         });
          
          if (response.data.success) {
             displayToast('RTEC meeting scheduled successfully', 'success');
@@ -260,11 +302,19 @@ const RTECScheduleManagement = () => {
                virtualMeetingPassword: '',
                notes: ''
             });
-            fetchRTECMeetings();
-            fetchApprovedRTECDocuments();
+            
+            // Refresh both meetings and documents
+            console.log('🔄 Refreshing meetings and documents after successful meeting creation');
+            await fetchRTECMeetings();
+            await fetchApprovedRTECDocuments();
+            
+            // Switch to meetings tab to show the new meeting
+            setActiveTab('meetings');
          }
       } catch (error) {
-         console.error('Error creating meeting:', error);
+         console.error('❌ Error creating meeting:', error);
+         console.error('❌ Error response:', error.response?.data);
+         console.error('❌ Error status:', error.response?.status);
          
          const errorMessage = error.response?.data?.message || error.message || 'Failed to create meeting';
          
@@ -608,9 +658,49 @@ const RTECScheduleManagement = () => {
          width: '80px',
          render: (value, item) => {
             const documentId = item._id || value;
-            const hasMeeting = rtecMeetings.some(meeting => {
-               return meeting.rtecDocumentsId?.toString() === documentId?.toString();
+            
+            // Debug logging
+            console.log('🔍 Checking meeting status for document:', {
+               documentId,
+               documentName: item.applicationId?.enterpriseName || item.applicationId?.companyName,
+               totalMeetings: rtecMeetings.length,
+               meetings: rtecMeetings.map(m => ({
+                  id: m._id,
+                  rtecDocumentsId: m.rtecDocumentsId,
+                  rtecDocumentsIdString: m.rtecDocumentsId?.toString(),
+                  status: m.status,
+                  title: m.meetingTitle
+               }))
             });
+
+            // Special debug for Lechonan
+            if (item.applicationId?.enterpriseName === 'Lechonan' || item.applicationId?.companyName === 'Lechonan') {
+               console.log('🔍 LECHONAN DEBUG:', {
+                  documentId,
+                  documentName: item.applicationId?.enterpriseName || item.applicationId?.companyName,
+                  allMeetings: rtecMeetings,
+                  meetingsForLechonan: rtecMeetings.filter(m => 
+                     m.applicationId?.enterpriseName === 'Lechonan' || 
+                     m.applicationId?.companyName === 'Lechonan' ||
+                     m.meetingTitle?.includes('Lechonan')
+                  )
+               });
+            }
+            
+            const hasMeeting = rtecMeetings.some(meeting => {
+               const meetingDocId = meeting.rtecDocumentsId?._id?.toString() || meeting.rtecDocumentsId?.toString();
+               const docId = documentId?.toString();
+               const match = meetingDocId === docId;
+               console.log('🔍 Meeting comparison:', {
+                  meetingDocId,
+                  docId,
+                  match,
+                  meetingTitle: meeting.meetingTitle
+               });
+               return match;
+            });
+            
+            console.log('🔍 Final hasMeeting result:', hasMeeting);
             
             const isApproved = item.status === 'documents_approved';
             
@@ -1206,7 +1296,14 @@ const RTECScheduleManagement = () => {
                            onClick={fetchRTECMeetings}
                            className="text-sm"
                         >
-                           Refresh
+                           Refresh Meetings
+                        </Button>
+                        <Button
+                           variant="primary"
+                           onClick={forceRefresh}
+                           className="text-sm"
+                        >
+                           Force Refresh All
                         </Button>
                      </div>
                   </div>
@@ -1233,11 +1330,43 @@ const RTECScheduleManagement = () => {
                                  ));
                               })()}
                               <div><strong>Filtered meetings (excluding rtec_revision_requested):</strong> {rtecMeetings.filter(m => m.status !== 'rtec_revision_requested').length}</div>
+                              <div><strong>Meetings with 'scheduled' status:</strong> {rtecMeetings.filter(m => m.status === 'scheduled').length}</div>
+                              <div><strong>Meetings with 'confirmed' status:</strong> {rtecMeetings.filter(m => m.status === 'confirmed').length}</div>
+                              <div><strong>Meetings with 'rtec_scheduled' status:</strong> {rtecMeetings.filter(m => m.status === 'rtec_scheduled').length}</div>
+                              <div><strong>Meetings with 'rtec_completed' status:</strong> {rtecMeetings.filter(m => m.status === 'rtec_completed').length}</div>
+                              <div><strong>Meetings for 'Lechonan':</strong> {rtecMeetings.filter(m => 
+                                 m.meetingTitle?.includes('Lechonan') || 
+                                 m.applicationId?.enterpriseName === 'Lechonan' || 
+                                 m.applicationId?.companyName === 'Lechonan'
+                              ).length}</div>
+                              <div><strong>All meetings details:</strong></div>
+                              <div className="ml-4 max-h-32 overflow-y-auto">
+                                 {rtecMeetings.map((meeting, index) => (
+                                    <div key={index} className="text-xs">
+                                       {index + 1}. {meeting.meetingTitle} - Status: {meeting.status} - App: {meeting.applicationId?.enterpriseName || meeting.applicationId?.companyName}
+                                    </div>
+                                 ))}
+                              </div>
                            </div>
                         </div>
                         
                         <DataTable
-                           data={showAllMeetings ? rtecMeetings : rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested')}
+                           data={(() => {
+                              const filteredMeetings = showAllMeetings ? rtecMeetings : rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested');
+                              console.log('🔍 MEETINGS TAB DEBUG:', {
+                                 showAllMeetings,
+                                 totalMeetings: rtecMeetings.length,
+                                 filteredMeetings: filteredMeetings.length,
+                                 meetings: rtecMeetings.map(m => ({
+                                    id: m._id,
+                                    title: m.meetingTitle,
+                                    status: m.status,
+                                    applicationName: m.applicationId?.enterpriseName || m.applicationId?.companyName,
+                                    rtecDocumentsId: m.rtecDocumentsId
+                                 }))
+                              });
+                              return filteredMeetings;
+                           })()}
                            columns={meetingsColumns}
                            searchable={true}
                            pagination={true}

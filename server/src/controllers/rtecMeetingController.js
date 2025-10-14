@@ -64,7 +64,15 @@ const createRTECMeeting = async (req, res) => {
       // Check if TNA has approved RTEC documents
       const rtecDocuments = await RTECDocuments.findOne({ tnaId });
       
+      console.log('🔍 RTEC Documents found:', {
+         found: !!rtecDocuments,
+         rtecDocumentsId: rtecDocuments?._id,
+         status: rtecDocuments?.status,
+         tnaId: rtecDocuments?.tnaId
+      });
+      
       if (!rtecDocuments) {
+         console.log('❌ No RTEC documents found for TNA:', tnaId);
          return res.status(400).json({
             success: false,
             message: 'RTEC documents must be requested and approved before scheduling a meeting'
@@ -72,6 +80,7 @@ const createRTECMeeting = async (req, res) => {
       }
 
       if (rtecDocuments.status !== 'documents_approved') {
+         console.log('❌ RTEC documents not approved. Status:', rtecDocuments.status);
          return res.status(400).json({
             success: false,
             message: 'RTEC documents must be approved before scheduling a meeting. Current status: ' + rtecDocuments.status
@@ -85,8 +94,18 @@ const createRTECMeeting = async (req, res) => {
       const existingMeeting = await RTECMeeting.findOne({ tnaId });
       console.log('🔍 Existing meeting found:', existingMeeting ? 'Yes' : 'No');
       
+      if (existingMeeting) {
+         console.log('🔍 EXISTING MEETING DETAILS:', {
+            id: existingMeeting._id,
+            status: existingMeeting.status,
+            title: existingMeeting.meetingTitle,
+            tnaId: existingMeeting.tnaId,
+            applicationName: existingMeeting.applicationId?.enterpriseName || existingMeeting.applicationId?.companyName
+         });
+      }
+      
       // Also check all meetings to see what's in the database
-      const allMeetings = await RTECMeeting.find({}).select('_id tnaId meetingTitle status');
+      const allMeetings = await RTECMeeting.find({}).select('_id tnaId meetingTitle status applicationId');
       console.log('🔍 All meetings in database:');
       allMeetings.forEach((meeting, index) => {
          console.log(`Meeting ${index + 1}:`, {
@@ -94,7 +113,20 @@ const createRTECMeeting = async (req, res) => {
             tnaId: meeting.tnaId,
             tnaIdType: typeof meeting.tnaId,
             title: meeting.meetingTitle,
-            status: meeting.status
+            status: meeting.status,
+            applicationName: meeting.applicationId?.enterpriseName || meeting.applicationId?.companyName
+         });
+      });
+      
+      // Check specifically for meetings with the same TNA ID
+      const meetingsForThisTNA = await RTECMeeting.find({ tnaId }).select('_id status meetingTitle applicationId');
+      console.log('🔍 Meetings for this specific TNA:', meetingsForThisTNA.length);
+      meetingsForThisTNA.forEach((meeting, index) => {
+         console.log(`TNA Meeting ${index + 1}:`, {
+            id: meeting._id,
+            status: meeting.status,
+            title: meeting.meetingTitle,
+            applicationName: meeting.applicationId?.enterpriseName || meeting.applicationId?.companyName
          });
       });
       
@@ -170,16 +202,47 @@ const createRTECMeeting = async (req, res) => {
          notes
       });
 
+      console.log('🔍 Creating RTEC meeting with data:', {
+         tnaId: tna._id,
+         rtecDocumentsId: rtecDocuments._id,
+         applicationId: req.body.applicationId || tna.applicationId._id,
+         proponentId: req.body.proponentId || tna.proponentId._id,
+         meetingTitle,
+         status: 'scheduled'
+      });
+
       // Add proponent as participant if not already included
       const proponentIncluded = participants.some(p => p.userId.toString() === tna.proponentId._id.toString());
       if (!proponentIncluded) {
          await rtecMeeting.addParticipant(tna.proponentId._id, 'member');
       }
 
-      await rtecMeeting.save();
+      const savedMeeting = await rtecMeeting.save();
 
-      // Update TNA status to RTEC scheduled
-      await tna.markRTECScheduled(userId);
+      console.log('🔍 RTEC meeting saved successfully:', {
+         meetingId: savedMeeting._id,
+         tnaId: savedMeeting.tnaId,
+         rtecDocumentsId: savedMeeting.rtecDocumentsId,
+         status: savedMeeting.status
+      });
+
+      // Verify the meeting was actually saved
+      if (!savedMeeting._id) {
+         console.error('❌ Meeting save failed - no ID returned');
+         return res.status(500).json({
+            success: false,
+            message: 'Failed to save meeting'
+         });
+      }
+
+      // Update TNA status to RTEC scheduled ONLY after meeting is successfully saved
+      try {
+         await tna.markRTECScheduled(userId);
+         console.log('✅ TNA status updated to rtec_scheduled');
+      } catch (tnaError) {
+         console.error('❌ Error updating TNA status:', tnaError);
+         // Don't fail the entire operation if TNA status update fails
+      }
 
       // Create notifications for participants
       for (const participant of participants) {
@@ -268,6 +331,21 @@ const getRTECMeetings = async (req, res) => {
          .limit(limitNum);
 
       const total = await RTECMeeting.countDocuments(query);
+
+      console.log('🔍 RTEC MEETINGS API DEBUG:');
+      console.log('Query:', query);
+      console.log('Total meetings in database:', total);
+      console.log('Returned meetings:', rtecMeetings.length);
+      console.log('Meetings by status:', rtecMeetings.reduce((acc, meeting) => {
+         acc[meeting.status] = (acc[meeting.status] || 0) + 1;
+         return acc;
+      }, {}));
+      console.log('Meeting details:', rtecMeetings.map(m => ({
+         id: m._id,
+         title: m.meetingTitle,
+         status: m.status,
+         applicationName: m.applicationId?.enterpriseName || m.applicationId?.companyName
+      })));
 
       res.json({
          success: true,

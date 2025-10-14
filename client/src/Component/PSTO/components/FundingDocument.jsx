@@ -393,17 +393,41 @@ const FundingDocument = () => {
       {
          key: 'enterpriseName',
          header: 'Enterprise',
-         render: (value, item) => item.applicationId?.enterpriseName || 'N/A'
+         render: (value, item) => {
+            // Debug logging
+            console.log('Enterprise debug for item:', item._id, {
+               enterpriseName: item.enterpriseName,
+               applicationId: item.applicationId,
+               applicationEnterpriseName: item.applicationId?.enterpriseName
+            });
+            
+            return item.enterpriseName || item.applicationId?.enterpriseName || 'N/A';
+         }
       },
       {
          key: 'projectTitle',
          header: 'Project Title',
-         render: (value, item) => item.projectTitle || item.applicationId?.projectTitle || 'N/A'
+         render: (value, item) => {
+            // Debug logging
+            console.log('Project Title debug for item:', item._id, {
+               projectTitle: item.projectTitle,
+               applicationProjectTitle: item.applicationId?.projectTitle,
+               applicationProgramName: item.applicationId?.programName
+            });
+            
+            return item.projectTitle || item.applicationId?.projectTitle || item.applicationId?.programName || 'N/A';
+         }
       },
       {
          key: 'amountRequested',
          header: 'Amount Requested',
          render: (value, item) => {
+            // Debug logging
+            console.log('Amount debug for item:', item._id, {
+               amountRequested: item.amountRequested,
+               applicationAmount: item.applicationId?.amountRequested
+            });
+            
             const amount = item.amountRequested || item.applicationId?.amountRequested;
             return amount ? `₱${amount.toLocaleString()}` : 'N/A';
          }
