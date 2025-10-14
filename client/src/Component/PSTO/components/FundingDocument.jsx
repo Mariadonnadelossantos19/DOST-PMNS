@@ -87,7 +87,70 @@ const FundingDocument = () => {
                console.log('🔍 DOST Funding Documents Response:', response.data);
                
                if (response.data.success) {
-                  setFundingDocuments(response.data.data.docs || []);
+                  const documents = response.data.data.docs || [];
+                  
+                  // Debug logging for each document
+                  console.log('=== FUNDING DOCUMENTS DEBUG ===');
+                  console.log('Total documents received:', documents.length);
+                  documents.forEach((doc, index) => {
+                     console.log(`\n--- Document ${index} ---`);
+                     console.log('ID:', doc._id);
+                     console.log('Status:', doc.status);
+                     console.log('ApplicationId:', doc.applicationId);
+                     console.log('ProponentId:', doc.proponentId);
+                     console.log('TnaId:', doc.tnaId);
+                     
+                     // Check if proponent data is properly populated
+                     if (doc.proponentId) {
+                        console.log('Proponent firstName:', doc.proponentId.firstName);
+                        console.log('Proponent lastName:', doc.proponentId.lastName);
+                        console.log('Proponent email:', doc.proponentId.email);
+                     } else {
+                        console.log('❌ ProponentId is null/undefined');
+                     }
+                  });
+                  
+                  // Store the initial documents and fetch RTEC completed applications
+                  setFundingDocuments(documents);
+                  
+                  // Fetch RTEC completed applications that can be converted to funding requests
+                  try {
+                     const rtecResponse = await api.get('/tna/rtec-completed');
+                     console.log('🔍 RTEC Completed Applications Response:', rtecResponse.data);
+                     
+                     if (rtecResponse.data.success) {
+                        const rtecApplications = rtecResponse.data.data.map(app => ({
+                           ...app,
+                           status: 'ready_for_funding',
+                           _id: app._id,
+                           applicationId: app.applicationId,
+                           proponentId: app.proponentId,
+                           tnaId: app._id
+                        }));
+                        
+                        // Filter out applications that already have funding document requests
+                        const existingTnaIds = documents.map(doc => {
+                           const tnaId = doc.tnaId?._id || doc.tnaId;
+                           return tnaId?.toString();
+                        });
+                        
+                        const newApplications = rtecApplications.filter(app => {
+                           const appTnaId = app._id?.toString();
+                           const isDuplicate = existingTnaIds.includes(appTnaId);
+                           console.log(`Checking TNA ${appTnaId}: ${isDuplicate ? 'DUPLICATE' : 'NEW'}`);
+                           return !isDuplicate;
+                        });
+                        
+                        console.log('🔍 Existing TNA IDs:', existingTnaIds);
+                        console.log('🔍 RTEC Applications:', rtecApplications.length);
+                        console.log('🔍 New Applications (after deduplication):', newApplications.length);
+                        
+                        // Update with both existing documents and new RTEC applications
+                        setFundingDocuments(prev => [...prev, ...newApplications]);
+                     }
+                  } catch (rtecError) {
+                     console.error('Error fetching RTEC completed applications:', rtecError);
+                  }
                } else {
                   setFundingDocuments([]);
                }
@@ -101,33 +164,6 @@ const FundingDocument = () => {
                });
             }
 
-            // Also fetch RTEC completed applications that can be converted to funding requests
-            try {
-               const rtecResponse = await api.get('/tna/rtec-completed');
-               console.log('🔍 RTEC Completed Applications Response:', rtecResponse.data);
-               
-               if (rtecResponse.data.success) {
-                  const rtecApplications = rtecResponse.data.data.map(app => ({
-                     ...app,
-                     status: 'ready_for_funding',
-                     _id: app._id,
-                     applicationId: app.applicationId,
-                     proponentId: app.proponentId,
-                     tnaId: app._id
-                  }));
-                  
-                  // Filter out applications that already have funding document requests
-                  const existingTnaIds = fundingDocuments.map(doc => doc.tnaId?._id || doc.tnaId);
-                  const newApplications = rtecApplications.filter(app => 
-                     !existingTnaIds.includes(app._id)
-                  );
-                  
-                  console.log('🔍 New RTEC Applications for Funding:', newApplications.length);
-                  setFundingDocuments(prev => [...prev, ...newApplications]);
-               }
-            } catch (error) {
-               console.error('Error fetching RTEC completed applications:', error);
-            }
          }
       } catch (error) {
          console.error('Error fetching funding documents:', error);
@@ -361,7 +397,21 @@ const FundingDocument = () => {
          header: 'Proponent',
          render: (value, item) => {
             const proponent = item.proponentId;
-            return proponent ? `${proponent.firstName} ${proponent.lastName}` : 'N/A';
+            if (!proponent) return 'N/A';
+            
+            const firstName = proponent.firstName || '';
+            const lastName = proponent.lastName || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            // Debug logging
+            console.log('Funding Document Proponent debug:', {
+               proponentId: proponent,
+               firstName,
+               lastName,
+               fullName
+            });
+            
+            return fullName || 'N/A';
          }
       },
       {
@@ -408,7 +458,21 @@ const FundingDocument = () => {
             if (item.status === 'ready_for_funding') {
                return 'Not Requested';
             }
-            return item.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
+            
+            const date = item.requestedAt;
+            if (!date) return 'N/A';
+            
+            try {
+               const parsedDate = new Date(date);
+               if (isNaN(parsedDate.getTime())) {
+                  console.log('Invalid date for requestedAt:', date);
+                  return 'Invalid Date';
+               }
+               return parsedDate.toLocaleDateString();
+            } catch (error) {
+               console.log('Error parsing requestedAt date:', date, error);
+               return 'Invalid Date';
+            }
          }
       },
       {
@@ -418,7 +482,21 @@ const FundingDocument = () => {
             if (item.status === 'ready_for_funding') {
                return 'N/A';
             }
-            return item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
+            
+            const date = item.dueDate;
+            if (!date) return 'N/A';
+            
+            try {
+               const parsedDate = new Date(date);
+               if (isNaN(parsedDate.getTime())) {
+                  console.log('Invalid date for dueDate:', date);
+                  return 'Invalid Date';
+               }
+               return parsedDate.toLocaleDateString();
+            } catch (error) {
+               console.log('Error parsing dueDate date:', date, error);
+               return 'Invalid Date';
+            }
          }
       },
       {

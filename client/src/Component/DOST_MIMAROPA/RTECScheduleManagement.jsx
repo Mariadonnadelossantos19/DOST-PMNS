@@ -104,6 +104,7 @@ const RTECScheduleManagement = () => {
    const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'meetings'
    const [showRTECEvaluationModal, setShowRTECEvaluationModal] = useState(false);
    const [availableDocuments, setAvailableDocuments] = useState([]);
+   const [showAllMeetings, setShowAllMeetings] = useState(false);
    const [rtecEvaluationData, setRtecEvaluationData] = useState({
       meetingId: '',
       evaluationComment: '',
@@ -1192,13 +1193,22 @@ const RTECScheduleManagement = () => {
                <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                      <h2 className="text-xl font-medium text-gray-900">Meetings</h2>
-                     <Button
-                        variant="outline"
-                        onClick={fetchRTECMeetings}
-                        className="text-sm"
-                     >
-                        Refresh
-                     </Button>
+                     <div className="flex space-x-2">
+                        <Button
+                           variant="outline"
+                           onClick={() => setShowAllMeetings(!showAllMeetings)}
+                           className="text-sm"
+                        >
+                           {showAllMeetings ? 'Hide All' : 'Show All'} Meetings
+                        </Button>
+                        <Button
+                           variant="outline"
+                           onClick={fetchRTECMeetings}
+                           className="text-sm"
+                        >
+                           Refresh
+                        </Button>
+                     </div>
                   </div>
                
                   {loading ? (
@@ -1206,12 +1216,33 @@ const RTECScheduleManagement = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                      </div>
                    ) : (
-                      <DataTable
-                         data={rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested')}
-                         columns={meetingsColumns}
-                         searchable={true}
-                         pagination={true}
-                      />
+                      <>
+                        {/* Debug Information */}
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                           <h4 className="font-medium text-blue-900 mb-2">Debug Information</h4>
+                           <div className="text-sm text-blue-700 space-y-1">
+                              <div><strong>Total meetings in database:</strong> {rtecMeetings.length}</div>
+                              <div><strong>Meetings by status:</strong></div>
+                              {(() => {
+                                 const statusCounts = rtecMeetings.reduce((acc, meeting) => {
+                                    acc[meeting.status] = (acc[meeting.status] || 0) + 1;
+                                    return acc;
+                                 }, {});
+                                 return Object.entries(statusCounts).map(([status, count]) => (
+                                    <div key={status} className="ml-4">• {status}: {count}</div>
+                                 ));
+                              })()}
+                              <div><strong>Filtered meetings (excluding rtec_revision_requested):</strong> {rtecMeetings.filter(m => m.status !== 'rtec_revision_requested').length}</div>
+                           </div>
+                        </div>
+                        
+                        <DataTable
+                           data={showAllMeetings ? rtecMeetings : rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested')}
+                           columns={meetingsColumns}
+                           searchable={true}
+                           pagination={true}
+                        />
+                      </>
                    )}
                </div>
             </div>

@@ -27,6 +27,28 @@ const RTECDocumentManagement = () => {
          
          if (response.data.success) {
             const documents = response.data.data?.docs || response.data.data || [];
+            
+            // Debug logging for each document
+            console.log('=== RTEC DOCUMENTS DEBUG ===');
+            console.log('Total documents received:', documents.length);
+            documents.forEach((doc, index) => {
+               console.log(`\n--- Document ${index} ---`);
+               console.log('ID:', doc._id);
+               console.log('Status:', doc.status);
+               console.log('ApplicationId:', doc.applicationId);
+               console.log('ProponentId:', doc.proponentId);
+               console.log('TnaId:', doc.tnaId);
+               
+               // Check if proponent data is properly populated
+               if (doc.proponentId) {
+                  console.log('Proponent firstName:', doc.proponentId.firstName);
+                  console.log('Proponent lastName:', doc.proponentId.lastName);
+                  console.log('Proponent email:', doc.proponentId.email);
+               } else {
+                  console.log('❌ ProponentId is null/undefined');
+               }
+            });
+            
             setRtecDocuments(documents);
          } else {
             setRtecDocuments([]);
@@ -211,7 +233,18 @@ const RTECDocumentManagement = () => {
          header: 'Proponent',
          width: '150px',
          render: (value, item) => {
-            const fullName = `${item?.proponentId?.firstName || ''} ${item?.proponentId?.lastName || ''}`.trim();
+            const firstName = item?.proponentId?.firstName || '';
+            const lastName = item?.proponentId?.lastName || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            // Debug logging
+            console.log('Proponent debug:', {
+               proponentId: item?.proponentId,
+               firstName,
+               lastName,
+               fullName
+            });
+            
             return (
                <div className="truncate" title={fullName || 'N/A'}>
                   {fullName || 'N/A'}
@@ -268,7 +301,20 @@ const RTECDocumentManagement = () => {
          header: 'Requested',
          width: '100px',
          render: (value, item) => {
-            return item?.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : 'N/A';
+            const date = item?.requestedAt;
+            if (!date) return 'N/A';
+            
+            try {
+               const parsedDate = new Date(date);
+               if (isNaN(parsedDate.getTime())) {
+                  console.log('Invalid date for requestedAt:', date);
+                  return 'Invalid Date';
+               }
+               return parsedDate.toLocaleDateString();
+            } catch (error) {
+               console.log('Error parsing requestedAt date:', date, error);
+               return 'Invalid Date';
+            }
          }
       },
       {
@@ -276,7 +322,20 @@ const RTECDocumentManagement = () => {
          header: 'Due Date',
          width: '100px',
          render: (value, item) => {
-            return item?.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'N/A';
+            const date = item?.dueDate;
+            if (!date) return 'N/A';
+            
+            try {
+               const parsedDate = new Date(date);
+               if (isNaN(parsedDate.getTime())) {
+                  console.log('Invalid date for dueDate:', date);
+                  return 'Invalid Date';
+               }
+               return parsedDate.toLocaleDateString();
+            } catch (error) {
+               console.log('Error parsing dueDate date:', date, error);
+               return 'Invalid Date';
+            }
          }
       },
       {

@@ -113,7 +113,7 @@ const createRTECMeeting = async (req, res) => {
             console.log('❌ Meeting already exists for this TNA with status:', existingMeeting.status);
             return res.status(400).json({
                success: false,
-               message: `RTEC meeting already scheduled for this TNA. Current meeting status: ${existingMeeting.status}`
+               message: `A meeting has already been scheduled for this application. Please check the meetings list. Current meeting status: ${existingMeeting.status}. You can update the existing meeting or complete it before scheduling a new one.`
             });
          }
       }
