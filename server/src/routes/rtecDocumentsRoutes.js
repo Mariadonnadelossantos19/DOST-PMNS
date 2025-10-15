@@ -11,7 +11,8 @@ const {
    reviewRTECDocument,
    listRTECDocuments,
    getApprovedRTECDocuments,
-   getRTECDocumentsForPSTO
+   getRTECDocumentsForPSTO,
+   serveFile
 } = require('../controllers/rtecDocumentsController');
 
 // Configure multer for file uploads
@@ -74,5 +75,8 @@ router.get('/psto/list', auth, getRTECDocumentsForPSTO);
 
 // Submit RTEC document
 router.post('/submit/:tnaId', auth, upload.single('document'), submitRTECDocument);
+
+// Serve RTEC document file
+router.get('/serve/:tnaId/:documentType', auth, serveFile);
 
 module.exports = router;

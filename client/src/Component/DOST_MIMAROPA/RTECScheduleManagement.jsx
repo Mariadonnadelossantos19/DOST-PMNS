@@ -167,7 +167,7 @@ const RTECScheduleManagement = () => {
             console.log('📋 CLIENT: Received approved documents:', approvedDocs.length);
             console.log('📋 CLIENT: Document IDs:', approvedDocs.map(doc => doc._id));
             setApprovedRTECDocuments(approvedDocs);
-         } else {
+               } else {
             setApprovedRTECDocuments([]);
          }
       } catch (error) {
@@ -188,8 +188,8 @@ const RTECScheduleManagement = () => {
             const meetings = response.data.data.docs || [];
             console.log('📋 CLIENT: Received meetings:', meetings.length);
             console.log('📋 CLIENT: Meeting details:', meetings.map(meeting => ({
-               id: meeting._id,
-               rtecDocumentsId: meeting.rtecDocumentsId,
+                  id: meeting._id,
+                  rtecDocumentsId: meeting.rtecDocumentsId,
                rtecDocumentsIdString: meeting.rtecDocumentsId?.toString(),
                rtecDocumentsIdId: meeting.rtecDocumentsId?._id,
                status: meeting.status,
@@ -900,15 +900,15 @@ const RTECScheduleManagement = () => {
             const participantCount = value?.length || 0;
             const confirmedCount = value?.filter(p => p.status === 'confirmed')?.length || 0;
             return (
-               <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1">
                   <span className="text-sm font-medium">{participantCount}</span>
-                  <span className="text-xs text-gray-500">participants</span>
+               <span className="text-xs text-gray-500">participants</span>
                   {confirmedCount > 0 && (
                      <div className="ml-1">
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                            {confirmedCount} confirmed
                         </span>
-                     </div>
+            </div>
                   )}
                </div>
             );
@@ -1104,7 +1104,7 @@ const RTECScheduleManagement = () => {
             </Button>
          </div>
 
-          {/* Stats Cards */}
+         {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
              <div className="bg-white p-4 rounded-lg border border-gray-200">
                 <div className="text-2xl font-bold text-gray-900">{rtecMeetings.filter(m => m.status !== 'rtec_revision_requested').length}</div>
@@ -1122,7 +1122,7 @@ const RTECScheduleManagement = () => {
                 <div className="text-2xl font-bold text-purple-600">{rtecMeetings.filter(m => m.rtecCompleted || m.status === 'rtec_completed').length}</div>
                 <div className="text-sm text-gray-500">Completed</div>
              </div>
-          </div>
+         </div>
 
          {/* Tab Navigation */}
          <div className="border-b border-gray-200 mb-6">
@@ -1202,7 +1202,7 @@ const RTECScheduleManagement = () => {
                      </div>
                      <div className="flex space-x-2">
                         <Button
-                           variant="outline" 
+                           variant="outline"
                            onClick={fetchApprovedRTECDocuments}
                         >
                            Refresh
@@ -1242,21 +1242,21 @@ const RTECScheduleManagement = () => {
                   });
                   
                   return documentsNeedingScheduling.length > 0 && (
-                     <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center">
-                           <div className="flex-shrink-0">
-                              <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                           </div>
-                           <div className="ml-3">
-                              <p className="text-sm text-green-800">
+                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                     <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                           <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                           </svg>
+                        </div>
+                        <div className="ml-3">
+                           <p className="text-sm text-green-800">
                                  <strong>{documentsNeedingScheduling.length} approved document(s)</strong> are ready for meeting scheduling. 
-                                 Click "Schedule Meeting" to create a meeting for each approved application.
-                              </p>
-                           </div>
+                              Click "Schedule Meeting" to create a meeting for each approved application.
+                           </p>
                         </div>
                      </div>
+                  </div>
                   );
                })()}
                
@@ -1392,11 +1392,11 @@ const RTECScheduleManagement = () => {
                      </div>
                   </div>
                
-                  {loading ? (
+               {loading ? (
                      <div className="flex justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                     </div>
-                   ) : (
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+               ) : (
                       <>
                         {/* Debug Information */}
                         <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -1434,7 +1434,7 @@ const RTECScheduleManagement = () => {
                            </div>
                         </div>
                         
-                        <DataTable
+                  <DataTable
                            data={(() => {
                               const filteredMeetings = showAllMeetings ? rtecMeetings : rtecMeetings.filter(meeting => meeting.status !== 'rtec_revision_requested');
                               console.log('🔍 MEETINGS TAB DEBUG:', {
@@ -1451,12 +1451,12 @@ const RTECScheduleManagement = () => {
                               });
                               return filteredMeetings;
                            })()}
-                           columns={meetingsColumns}
-                           searchable={true}
-                           pagination={true}
-                        />
+                     columns={meetingsColumns}
+                     searchable={true}
+                     pagination={true}
+                  />
                       </>
-                   )}
+               )}
                </div>
             </div>
          )}
@@ -2114,12 +2114,12 @@ const RTECScheduleManagement = () => {
          </Modal>
 
          {/* Toast */}
-         <Toast
+            <Toast
             isVisible={showToast}
-            message={toastMessage}
-            type={toastType}
-            onClose={() => setShowToast(false)}
-         />
+               message={toastMessage}
+               type={toastType}
+               onClose={() => setShowToast(false)}
+            />
       </div>
    );
 };

@@ -303,13 +303,14 @@ const submitRTECDocument = async (req, res) => {
          });
       }
 
-      // Prepare file data
+      // Prepare file data - Store in both filesystem and database
       const fileData = {
          filename: req.file.filename,
          originalName: req.file.originalname,
          path: req.file.path,
          size: req.file.size,
          mimetype: req.file.mimetype,
+         buffer: req.file.buffer, // Store file content in database for backup
          textContent: textContent || null // Store text content for text input fields
       };
 
@@ -956,6 +957,105 @@ const getRTECDocumentsForPSTO = async (req, res) => {
    }
 };
 
+// Serve file from database with filesystem fallback
+const serveFile = async (req, res) => {
+   try {
+      const { tnaId, documentType } = req.params;
+      
+      console.log('🔍 Serving RTEC file for tnaId:', tnaId, 'Type:', typeof tnaId, 'documentType:', documentType);
+      
+      // Handle tnaId that might be an object string representation
+      let actualTnaId = tnaId;
+      if (typeof tnaId === 'string' && tnaId.includes('[object Object]')) {
+         console.log('❌ Invalid tnaId format detected:', tnaId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID format. Please refresh the page and try again.'
+         });
+      }
+      
+      // Validate TNA ID format
+      if (!mongoose.Types.ObjectId.isValid(actualTnaId)) {
+         console.log('❌ Invalid TNA ID format:', actualTnaId);
+         return res.status(400).json({
+            success: false,
+            message: 'Invalid TNA ID format'
+         });
+      }
+      
+      // Find the RTEC document
+      const rtecDocuments = await RTECDocuments.findOne({ tnaId: actualTnaId });
+      if (!rtecDocuments) {
+         console.log('❌ RTEC documents not found for tnaId:', tnaId);
+         return res.status(404).json({
+            success: false,
+            message: 'RTEC documents not found'
+         });
+      }
+      
+      // Find the specific document
+      const document = rtecDocuments.partialdocsrtec.find(doc => doc.type === documentType);
+      if (!document) {
+         console.log('❌ Document not found for type:', documentType);
+         console.log('Available documents:', rtecDocuments.partialdocsrtec.map(doc => doc.type));
+         return res.status(404).json({
+            success: false,
+            message: 'Document not found'
+         });
+      }
+
+      // Check if document has buffer (database storage) or path (filesystem storage)
+      if (!document.buffer && !document.path) {
+         console.log('❌ Document has no buffer or path for type:', documentType);
+         return res.status(404).json({
+            success: false,
+            message: 'Document not uploaded or corrupted'
+         });
+      }
+
+      // Handle filesystem storage (fallback)
+      if (!document.buffer && document.path) {
+         console.log('📁 Using filesystem storage for:', document.originalName);
+         const fs = require('fs');
+         const path = require('path');
+         
+         try {
+            const filePath = path.join(__dirname, '../../uploads', document.filename);
+            const fileBuffer = fs.readFileSync(filePath);
+            
+            res.setHeader('Content-Type', document.mimetype);
+            res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+            res.setHeader('Content-Length', document.size);
+            res.send(fileBuffer);
+            return;
+         } catch (fileError) {
+            console.error('❌ Error reading file from filesystem:', fileError);
+            return res.status(404).json({
+               success: false,
+               message: 'File not found on server'  
+            });
+         }
+      }
+      
+      console.log('✅ Found document in database:', document.originalName, 'Size:', document.size, 'Type:', document.mimetype);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', document.mimetype);
+      res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+      res.setHeader('Content-Length', document.size);
+      
+      // Send the file buffer from database
+      res.send(document.buffer);
+      
+   } catch (error) {
+      console.error('❌ Error serving RTEC file:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Error serving file: ' + error.message
+      });
+   }
+};
+
 module.exports = {
    requestRTECDocuments,
    getRTECDocumentsByTNA,
@@ -964,5 +1064,6 @@ module.exports = {
    reviewRTECDocument,
    listRTECDocuments,
    getApprovedRTECDocuments,
-   getRTECDocumentsForPSTO
+   getRTECDocumentsForPSTO,
+   serveFile
 };

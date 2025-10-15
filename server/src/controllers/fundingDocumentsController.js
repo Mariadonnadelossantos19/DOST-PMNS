@@ -330,14 +330,21 @@ const submitFundingDocument = async (req, res) => {
          });
       }
 
-      // Prepare file data - Store binary data in database
+      // Prepare file data - Store in both filesystem and database
+      const filename = `fundingDocument-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`;
+      const filePath = path.join(__dirname, '../../uploads', filename);
+      
+      // Save file to filesystem
+      const fs = require('fs');
+      fs.writeFileSync(filePath, req.file.buffer);
+      
       const fileData = {
-         filename: `fundingDocument-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`,
+         filename: filename,
          originalName: req.file.originalname,
-         path: null, // No file path since we're storing in database
+         path: filePath, // Store file path for filesystem access
          size: req.file.size,
          mimetype: req.file.mimetype,
-         buffer: req.file.buffer // Store the actual file content as binary data
+         buffer: req.file.buffer // Store the actual file content as binary data for backup
       };
 
       // Submit document

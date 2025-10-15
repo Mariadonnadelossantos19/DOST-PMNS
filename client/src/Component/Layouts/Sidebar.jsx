@@ -141,7 +141,7 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
       color: 'indigo'
    };
 
-   // Management sections
+   // Management sections - Reordered for PSTO users
    const managementSections = [
       {
          id: 'management',
@@ -155,6 +155,58 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          ),
          path: '/management'
       },
+      {
+         id: 'tna-management',
+         label: 'TNA Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-management',
+         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
+      },
+      {
+         id: 'rtec-documents',
+         label: 'RTEC Documents',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/rtec-documents'
+      },
+      {
+         id: 'rtec-meetings',
+         label: 'RTEC Meeting',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M17 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/rtec-meetings',
+         roles: ['psto', 'proponent', 'super_admin'] // Show for PSTO, Proponent, and Super Admin users
+      },
+      {
+         id: 'funding-documents',
+         label: 'Funding Documents',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M8 16l-4-4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/funding-documents',
+         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
+      },
+      // DOST MIMAROPA specific sections
       {
          id: 'psto-applications',
          label: 'PSTO Applications Review',
@@ -192,32 +244,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
-         id: 'rtec-documents',
-         label: 'RTEC Documents',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/rtec-documents'
-      },
-      {
-         id: 'funding-documents',
-         label: 'Funding Documents',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M8 16l-4-4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/funding-documents',
-         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
-      },
-      {
          id: 'rtec-scheduling',
          label: 'RTEC Scheduling Management',
          icon: (
@@ -231,31 +257,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA and Super Admin users
       },
       {
-         id: 'tna-management',
-         label: 'TNA Management',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/tna-management',
-         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
-      },
-      {
-         id: 'rtec-meetings',
-         label: 'RTEC Meetings',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M17 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/rtec-meetings',
-         roles: ['psto', 'proponent', 'super_admin'] // Show for PSTO, Proponent, and Super Admin users
-      },
-      {
          id: 'monitoring',
          label: 'Application Monitoring',
          icon: (
@@ -263,7 +264,8 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/monitoring'
+         path: '/monitoring',
+         roles: ['dost_mimaropa', 'super_admin', 'proponent'] // Show for DOST MIMAROPA, Super Admin, and Proponent users (exclude PSTO)
       },
       {
          id: 'proponent-dashboard',

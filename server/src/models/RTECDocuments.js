@@ -123,6 +123,11 @@ const rtecDocumentsSchema = new mongoose.Schema({
          type: String,
          default: null
       },
+      // File content stored as buffer for database backup
+      buffer: {
+         type: Buffer,
+         default: null
+      },
       // Text content for text input fields (project title, project description, amount requested)
       textContent: {
          type: String,
@@ -476,8 +481,10 @@ rtecDocumentsSchema.methods.submitDocument = function(documentType, fileData, us
       document.path = fileData.path;
       document.size = fileData.size;
       document.mimetype = fileData.mimetype;
+      document.buffer = fileData.buffer || null; // Store file content in database for backup
       document.textContent = fileData.textContent || null; // Store text content for text input fields
       console.log('🔍 Storing textContent:', fileData.textContent, 'for document type:', documentType);
+      console.log('🔍 Storing buffer:', fileData.buffer ? `${fileData.buffer.length} bytes` : 'No buffer', 'for document type:', documentType);
       document.uploadedAt = new Date();
       document.uploadedBy = userId;
       document.documentStatus = 'submitted';
