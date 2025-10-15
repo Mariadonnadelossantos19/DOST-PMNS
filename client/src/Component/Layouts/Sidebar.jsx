@@ -155,17 +155,30 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          ),
          path: '/management'
       },
+      // DOST MIMAROPA specific sections - Reordered as requested
       {
-         id: 'tna-management',
-         label: 'TNA Management',
+         id: 'tna-report-review',
+         label: 'TNA Report Review',
          icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
          ),
-         path: '/tna-management',
-         roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
+         path: '/tna-report-review',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
+      },
+      {
+         id: 'approved-tna-management',
+         label: 'Approved TNA Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-rd-signature',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
       },
       {
          id: 'rtec-documents',
@@ -178,6 +191,31 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
             </svg>
          ),
          path: '/rtec-documents'
+      },
+      {
+         id: 'rtec-scheduling',
+         label: 'RTEC Scheduling Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M17 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/rtec-scheduling',
+         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA and Super Admin users
+      },
+      {
+         id: 'tna-management',
+         label: 'TNA Management',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/tna-management',
+         roles: ['psto', 'super_admin'] // Show for PSTO and Super Admin users only (removed dost_mimaropa)
       },
       {
          id: 'rtec-meetings',
@@ -205,56 +243,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          ),
          path: '/funding-documents',
          roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
-      },
-      // DOST MIMAROPA specific sections
-      {
-         id: 'psto-applications',
-         label: 'PSTO Applications Review',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M15 3v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/psto-applications-review',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
-      },
-      {
-         id: 'tna-report-review',
-         label: 'TNA Report Review',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/tna-report-review',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
-      },
-      {
-         id: 'approved-tna-management',
-         label: 'Approved TNAs Management',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/tna-rd-signature',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA users
-      },
-      {
-         id: 'rtec-scheduling',
-         label: 'RTEC Scheduling Management',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M17 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/rtec-scheduling',
-         roles: ['dost_mimaropa', 'super_admin'] // Only show for DOST MIMAROPA and Super Admin users
       },
       {
          id: 'monitoring',
