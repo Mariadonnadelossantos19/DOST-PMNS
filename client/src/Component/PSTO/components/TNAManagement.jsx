@@ -15,7 +15,7 @@ const TNAManagement = ({ currentUser }) => {
    const [searchTerm, setSearchTerm] = useState('');
    const [statusFilter, setStatusFilter] = useState('all');
    const [sortBy, setSortBy] = useState('createdAt');
-   const [showReadyApplications, setShowReadyApplications] = useState(false);
+   const [activeTab, setActiveTab] = useState('tnas'); // 'tnas' or 'ready-apps'
    
    // TNA Details Modal states
    const [selectedTNA, setSelectedTNA] = useState(null);
@@ -703,22 +703,34 @@ const TNAManagement = ({ currentUser }) => {
                   </div>
                </div>
 
-                  {/* Show Ready Applications Toggle - Only for PSTO users */}
+                  {/* Tab Navigation - Only for PSTO users */}
                   {currentUser?.role !== 'dost_mimaropa' && (
-                     <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-gray-700">Ready Apps:</span>
+                     <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
                         <button
-                           onClick={() => setShowReadyApplications(!showReadyApplications)}
-                           className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center space-x-1 ${
-                              showReadyApplications
-                                 ? 'bg-green-600 text-white shadow-sm'
-                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                           onClick={() => setActiveTab('tnas')}
+                           className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                              activeTab === 'tnas'
+                                 ? 'bg-white text-gray-900 shadow-sm'
+                                 : 'text-gray-600 hover:text-gray-900'
                            }`}
                         >
-                           <span>{showReadyApplications ? 'Hide' : 'Show'}</span>
-                           <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                              showReadyApplications 
-                                 ? 'bg-green-500 text-white' 
+                           <span>Technology Needs Assessments</span>
+                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                              {stats.totalTNAs}
+                           </span>
+                        </button>
+                        <button
+                           onClick={() => setActiveTab('ready-apps')}
+                           className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                              activeTab === 'ready-apps'
+                                 ? 'bg-white text-gray-900 shadow-sm'
+                                 : 'text-gray-600 hover:text-gray-900'
+                           }`}
+                        >
+                           <span>Ready Applications</span>
+                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              activeTab === 'ready-apps'
+                                 ? 'bg-green-500 text-white'
                                  : 'bg-gray-200 text-gray-700'
                            }`}>
                               {stats.readyForTNA}
@@ -729,18 +741,23 @@ const TNAManagement = ({ currentUser }) => {
 
                   {/* Results Count */}
                   <div className="text-right">
-                     <p className="text-sm font-medium text-gray-900">{filteredTNAs.length}</p>
+                     <p className="text-sm font-medium text-gray-900">
+                        {activeTab === 'tnas' ? filteredTNAs.length : stats.readyForTNA}
+                     </p>
                      <p className="text-xs text-gray-500">
-                        {statusFilter === 'all' ? 'Total TNAs' : `${statusFilter.replace('_', ' ')} TNAs`}
+                        {activeTab === 'tnas' 
+                           ? (statusFilter === 'all' ? 'Total TNAs' : `${statusFilter.replace('_', ' ')} TNAs`)
+                           : 'Ready Applications'
+                        }
                         {searchTerm && ` matching "${searchTerm}"`}
                      </p>
                   </div>
                </div>
             </div>
          </div>
-
-         {/* Applications Ready for TNA - Only show for PSTO users and when toggled on */}
-         {currentUser?.role !== 'dost_mimaropa' && showReadyApplications && (
+        
+         {/* Applications Ready for TNA - Only show for PSTO users when activeTab is 'ready-apps' */}
+         {currentUser?.role !== 'dost_mimaropa' && activeTab === 'ready-apps' && (
          <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
                <div className="flex items-center space-x-3">
@@ -828,7 +845,8 @@ const TNAManagement = ({ currentUser }) => {
          </Card>
          )}
 
-         {/* TNAs Display */}
+         {/* TNAs Display - Only show when activeTab is 'tnas' */}
+         {activeTab === 'tnas' && (
          <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
                <div className="flex items-center justify-between">
@@ -1300,6 +1318,7 @@ const TNAManagement = ({ currentUser }) => {
             )}
             </div>
          </Card>
+         )}
 
          {/* TNA Scheduler Modal */}
          {showScheduler && selectedApplication && (

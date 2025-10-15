@@ -1,0 +1,9 @@
+A Permittree is a tree-based permission structure where:
+
+Each node in the tree represents an entity, such as a user, process, thread, or resource.
+
+Edges represent hierarchical relationships (e.g., parent-child permissions).
+
+Permissions (or permits) can be granted, revoked, or inherited through this hierarchy.
+
+It’s often used in systems that implement fine-grained access control, mutual exclusion (mutex), or distributed synchronization mechanisms.
