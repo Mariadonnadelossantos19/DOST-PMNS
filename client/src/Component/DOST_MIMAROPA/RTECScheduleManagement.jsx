@@ -125,6 +125,9 @@ const RTECScheduleManagement = () => {
       scheduledTime: '',
       location: '',
       meetingType: 'physical',
+      virtualMeetingLink: '',
+      virtualMeetingId: '',
+      virtualMeetingPassword: '',
       notes: ''
    });
    const [pstoApplications, setPstoApplications] = useState([]);
@@ -271,6 +274,7 @@ const RTECScheduleManagement = () => {
       }
    };
 
+   // Batch meeting creation handler
    const handleBatchSchedule = async () => {
       try {
          if (selectedApplications.length === 0) {
@@ -278,10 +282,39 @@ const RTECScheduleManagement = () => {
             return;
          }
 
-         console.log('🚀 Creating batch meetings for PSTO:', selectedPSTO);
-         console.log('📋 Selected applications:', selectedApplications.length);
+         if (!batchFormData.meetingTitle || !batchFormData.scheduledDate || !batchFormData.scheduledTime || !batchFormData.location) {
+            displayToast('Please fill in all required meeting details', 'error');
+            return;
+         }
 
-         const response = await api.post('/rtec-meetings/batch-create', {
+         console.log('🚀 Creating batch meeting for PSTO:', selectedPSTO);
+         console.log('📋 Selected applications:', selectedApplications.length);
+         console.log('📋 Meeting details:', batchFormData);
+         console.log('📋 Selected application IDs:', selectedApplications);
+
+         // Debug: Check what we have in the arrays
+         console.log('🔍 Debug arrays:');
+         console.log('pstoApplications:', pstoApplications);
+         console.log('selectedApplications:', selectedApplications);
+         console.log('pstoApplications[0] applicationId:', pstoApplications[0]?.applicationId);
+         console.log('pstoApplications[0] _id:', pstoApplications[0]?._id);
+
+         // Get the RTEC document IDs from the selected applications
+         const rtecDocumentIds = pstoApplications
+            .filter(app => {
+               const appId = app.applicationId?._id || app.applicationId;
+               const isSelected = selectedApplications.includes(appId);
+               console.log(`Checking app ${appId} - selected: ${isSelected}`);
+               return isSelected;
+            })
+            .map(app => {
+               console.log(`Mapping app ${app._id} for RTEC document ID`);
+               return app._id;
+            });
+
+         console.log('📋 Selected RTEC Document IDs:', rtecDocumentIds);
+
+         const requestData = {
             psto: selectedPSTO,
             meetingTitle: batchFormData.meetingTitle,
             meetingDescription: batchFormData.meetingDescription,
@@ -289,20 +322,45 @@ const RTECScheduleManagement = () => {
             scheduledTime: batchFormData.scheduledTime,
             location: batchFormData.location,
             meetingType: batchFormData.meetingType,
+            virtualMeetingLink: batchFormData.virtualMeetingLink,
+            virtualMeetingId: batchFormData.virtualMeetingId,
+            virtualMeetingPassword: batchFormData.virtualMeetingPassword,
             notes: batchFormData.notes,
-            applicationIds: selectedApplications
-         });
+            rtecDocumentIds: rtecDocumentIds
+         };
+
+         console.log('📤 Sending request data:', requestData);
+         console.log('📤 Application IDs type:', typeof selectedApplications[0]);
+         console.log('📤 Application IDs content:', selectedApplications);
+
+         const response = await api.post('/rtec-meetings/batch-create', requestData);
 
          if (response.data.success) {
-            displayToast(`Successfully scheduled ${selectedApplications.length} meetings for ${selectedPSTO}`, 'success');
+            displayToast(`Successfully scheduled batch meeting for ${selectedApplications.length} applications from ${selectedPSTO}`, 'success');
             setShowBatchModal(false);
             setSelectedApplications([]);
             setPstoApplications([]);
+            setBatchFormData({
+               psto: '',
+               meetingTitle: '',
+               meetingDescription: '',
+               scheduledDate: '',
+               scheduledTime: '',
+               location: '',
+               meetingType: 'physical',
+               virtualMeetingLink: '',
+               virtualMeetingId: '',
+               virtualMeetingPassword: '',
+               notes: ''
+            });
             await forceRefresh();
          }
       } catch (error) {
-         console.error('Error creating batch meetings:', error);
-         displayToast('Failed to create batch meetings', 'error');
+         console.error('Error creating batch meeting:', error);
+         console.error('Error response:', error.response?.data);
+         console.error('Error status:', error.response?.status);
+         const errorMessage = error.response?.data?.message || 'Failed to create batch meeting';
+         displayToast(errorMessage, 'error');
       }
    };
 
@@ -1461,6 +1519,70 @@ const RTECScheduleManagement = () => {
             </div>
          )}
 
+         {/* Batch Schedule Tab */}
+         {activeTab === 'batch' && (
+            <Card>
+               <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                     <div>
+                        <h2 className="text-xl font-medium text-gray-900">Batch Schedule RTEC Meetings</h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                           Schedule one meeting for multiple applications from the same PSTO
+                        </p>
+                     </div>
+                     <Button
+                        onClick={() => setShowBatchModal(true)}
+                        className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-medium"
+                     >
+                        + Create Batch Meeting
+                     </Button>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                     <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                           <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                           </svg>
+                        </div>
+                        <div className="ml-3">
+                           <h3 className="text-sm font-medium text-blue-800">Batch Scheduling Information</h3>
+                           <div className="mt-2 text-sm text-blue-700">
+                              <p>Batch scheduling allows you to create one RTEC meeting that covers multiple applications from the same PSTO. This is more efficient than scheduling individual meetings for each application.</p>
+                              <ul className="mt-2 list-disc list-inside space-y-1">
+                                 <li>Select a PSTO to see their approved applications</li>
+                                 <li>Choose multiple applications for the same meeting</li>
+                                 <li>Set one meeting schedule for all selected applications</li>
+                                 <li>All applications will be evaluated together in the same RTEC meeting</li>
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="text-2xl font-bold text-blue-600">{approvedRTECDocuments.length}</div>
+                        <div className="text-sm text-gray-500">Total Approved Documents</div>
+                     </div>
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="text-2xl font-bold text-green-600">
+                           {(() => {
+                              const pstos = [...new Set(approvedRTECDocuments.map(doc => doc.proponentId?.province).filter(Boolean))];
+                              return pstos.length;
+                           })()}
+                        </div>
+                        <div className="text-sm text-gray-500">PSTOs with Applications</div>
+                     </div>
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="text-2xl font-bold text-purple-600">{rtecMeetings.length}</div>
+                        <div className="text-sm text-gray-500">Total Meetings</div>
+                     </div>
+                  </div>
+               </div>
+            </Card>
+         )}
+
          {/* Create Meeting Modal */}
          <Modal
             isOpen={showCreateModal}
@@ -2109,6 +2231,229 @@ const RTECScheduleManagement = () => {
                   className="bg-blue-600 hover:bg-blue-700"
                >
                   Submit RTEC Evaluation
+               </Button>
+            </div>
+         </Modal>
+
+         {/* Batch Schedule Modal */}
+         <Modal
+            isOpen={showBatchModal}
+            onClose={() => setShowBatchModal(false)}
+            title="Batch Schedule RTEC Meeting"
+            size="xl"
+         >
+            <div className="space-y-6">
+               {/* PSTO Selection */}
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Select PSTO <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                     value={selectedPSTO}
+                     onChange={(e) => handlePSTOChange(e.target.value)}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     required
+                  >
+                     <option value="">Choose PSTO...</option>
+                     <option value="Marinduque">Marinduque</option>
+                     <option value="Occidental Mindoro">Occidental Mindoro</option>
+                     <option value="Oriental Mindoro">Oriental Mindoro</option>
+                     <option value="Romblon">Romblon</option>
+                     <option value="Palawan">Palawan</option>
+                  </select>
+               </div>
+
+               {/* Meeting Details */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Meeting Title <span className="text-red-500">*</span>
+                     </label>
+                     <Input
+                        value={batchFormData.meetingTitle}
+                        onChange={(e) => setBatchFormData({...batchFormData, meetingTitle: e.target.value})}
+                        placeholder="e.g., RTEC Meeting - Marinduque Applications"
+                        required
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Meeting Type <span className="text-red-500">*</span>
+                     </label>
+                     <select
+                        value={batchFormData.meetingType}
+                        onChange={(e) => setBatchFormData({...batchFormData, meetingType: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                     >
+                        <option value="physical">Physical</option>
+                        <option value="virtual">Virtual</option>
+                        <option value="hybrid">Hybrid</option>
+                     </select>
+                  </div>
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Meeting Description
+                  </label>
+                  <Textarea
+                     value={batchFormData.meetingDescription}
+                     onChange={(e) => setBatchFormData({...batchFormData, meetingDescription: e.target.value})}
+                     placeholder="Describe the purpose and agenda of this batch RTEC meeting..."
+                     rows={3}
+                  />
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Scheduled Date <span className="text-red-500">*</span>
+                     </label>
+                     <Input
+                        type="date"
+                        value={batchFormData.scheduledDate}
+                        onChange={(e) => setBatchFormData({...batchFormData, scheduledDate: e.target.value})}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Scheduled Time <span className="text-red-500">*</span>
+                     </label>
+                     <Input
+                        type="time"
+                        value={batchFormData.scheduledTime}
+                        onChange={(e) => setBatchFormData({...batchFormData, scheduledTime: e.target.value})}
+                        required
+                     />
+                  </div>
+               </div>
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Location <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                     value={batchFormData.location}
+                     onChange={(e) => setBatchFormData({...batchFormData, location: e.target.value})}
+                     placeholder="Enter meeting location"
+                     required
+                  />
+               </div>
+
+               {/* Virtual Meeting Details */}
+               {(batchFormData.meetingType === 'virtual' || batchFormData.meetingType === 'hybrid') && (
+                  <div className="space-y-4">
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                           Virtual Meeting Link
+                        </label>
+                        <Input
+                           value={batchFormData.virtualMeetingLink}
+                           onChange={(e) => setBatchFormData({...batchFormData, virtualMeetingLink: e.target.value})}
+                           placeholder="Enter meeting link"
+                        />
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                           <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Meeting ID
+                           </label>
+                           <Input
+                              value={batchFormData.virtualMeetingId}
+                              onChange={(e) => setBatchFormData({...batchFormData, virtualMeetingId: e.target.value})}
+                              placeholder="Enter meeting ID"
+                           />
+                        </div>
+                        <div>
+                           <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Password
+                           </label>
+                           <Input
+                              value={batchFormData.virtualMeetingPassword}
+                              onChange={(e) => setBatchFormData({...batchFormData, virtualMeetingPassword: e.target.value})}
+                              placeholder="Enter password"
+                           />
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Notes
+                  </label>
+                  <Textarea
+                     value={batchFormData.notes}
+                     onChange={(e) => setBatchFormData({...batchFormData, notes: e.target.value})}
+                     placeholder="Additional notes for the meeting..."
+                     rows={3}
+                  />
+               </div>
+
+               {/* Application Selection */}
+               {selectedPSTO && (
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Applications to Include <span className="text-red-500">*</span>
+                     </label>
+                     <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                        {pstoApplications.map((app, index) => (
+                           <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                              <input
+                                 type="checkbox"
+                                 id={`app-${index}`}
+                                 checked={selectedApplications.includes(app._id)}
+                                 onChange={(e) => {
+                                    if (e.target.checked) {
+                                       setSelectedApplications([...selectedApplications, app._id]);
+                                    } else {
+                                       setSelectedApplications(selectedApplications.filter(id => id !== app._id));
+                                    }
+                                 }}
+                                 className="rounded border-gray-300"
+                              />
+                              <label htmlFor={`app-${index}`} className="flex-1 cursor-pointer">
+                                 <div className="font-medium">{app.applicationId?.enterpriseName || app.applicationId?.companyName}</div>
+                                 <div className="text-sm text-gray-500">{app.applicationId?.projectTitle}</div>
+                                 <div className="text-xs text-gray-400">
+                                    Proponent: {app.proponentId?.firstName} {app.proponentId?.lastName}
+                                 </div>
+                              </label>
+                           </div>
+                        ))}
+                        {pstoApplications.length === 0 && (
+                           <div className="text-center py-4 text-gray-500">
+                              No approved applications found for {selectedPSTO}
+                           </div>
+                        )}
+                     </div>
+                     <p className="text-xs text-gray-600 mt-2">
+                        Selected {selectedApplications.length} application(s) for this batch meeting
+                     </p>
+                  </div>
+               )}
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+               <Button
+                  variant="outline"
+                  onClick={() => setShowBatchModal(false)}
+               >
+                  Cancel
+               </Button>
+               <Button
+                  onClick={() => {
+                     setConfirmMessage(`Are you sure you want to create a batch meeting for ${selectedApplications.length} applications from ${selectedPSTO}?`);
+                     setConfirmAction(() => () => handleBatchSchedule());
+                     setShowConfirmModal(true);
+                  }}
+                  disabled={selectedApplications.length === 0}
+                  className="bg-blue-600 hover:bg-blue-700"
+               >
+                  Create Batch Meeting ({selectedApplications.length})
                </Button>
             </div>
          </Modal>

@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const {
    createRTECMeeting,
+   createBatchRTECMeeting,
    getRTECMeetings,
    getRTECMeetingById,
    updateRTECMeeting,
@@ -24,6 +25,9 @@ const {
 
 // Create RTEC meeting (DOST-MIMAROPA only)
 router.post('/create', auth, createRTECMeeting);
+
+// Create batch RTEC meeting (DOST-MIMAROPA only)
+router.post('/batch-create', auth, createBatchRTECMeeting);
 
 // Get all RTEC meetings (DOST-MIMAROPA dashboard)
 router.get('/list', auth, getRTECMeetings);

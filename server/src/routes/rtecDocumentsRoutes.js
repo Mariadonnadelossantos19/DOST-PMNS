@@ -11,6 +11,7 @@ const {
    reviewRTECDocument,
    listRTECDocuments,
    getApprovedRTECDocuments,
+   getApprovedRTECDocumentsByPSTO,
    getRTECDocumentsForPSTO,
    serveFile
 } = require('../controllers/rtecDocumentsController');
@@ -59,6 +60,9 @@ router.get('/list', auth, listRTECDocuments);
 
 // Get approved RTEC documents (for scheduling meetings)
 router.get('/approved', auth, getApprovedRTECDocuments);
+
+// Get approved RTEC documents by PSTO (for batch scheduling)
+router.get('/psto/:psto/approved', auth, getApprovedRTECDocumentsByPSTO);
 
 // Get RTEC documents by TNA ID
 router.get('/tna/:tnaId', auth, getRTECDocumentsByTNA);

@@ -1,32 +1,40 @@
 const mongoose = require('mongoose');
 
 const rtecMeetingSchema = new mongoose.Schema({
-   // Reference to the TNA
+   // Reference to the TNA (optional for batch meetings)
    tnaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'TNA',
-      required: true
+      required: function() {
+         return !this.isBatchMeeting;
+      }
    },
    
-   // Reference to the RTEC Documents (must be approved)
+   // Reference to the RTEC Documents (must be approved, optional for batch meetings)
    rtecDocumentsId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'RTECDocuments',
-      required: true
+      required: function() {
+         return !this.isBatchMeeting;
+      }
    },
    
-   // Reference to the application
+   // Reference to the application (optional for batch meetings)
    applicationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'SETUPApplication',
-      required: true
+      required: function() {
+         return !this.isBatchMeeting;
+      }
    },
    
-   // Reference to the proponent
+   // Reference to the proponent (optional for batch meetings)
    proponentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: function() {
+         return !this.isBatchMeeting;
+      }
    },
    
    // Program name
@@ -201,7 +209,32 @@ const rtecMeetingSchema = new mongoose.Schema({
    notes: {
       type: String,
       trim: true
-   }
+   },
+
+   // Batch meeting fields
+   isBatchMeeting: {
+      type: Boolean,
+      default: false
+   },
+
+   pstoProvince: {
+      type: String,
+      required: false,
+      trim: true
+   },
+
+   applications: [{
+      applicationId: {
+         type: mongoose.Schema.Types.ObjectId,
+         ref: 'SETUPApplication',
+         required: true
+      },
+      status: {
+         type: String,
+         enum: ['scheduled', 'completed', 'cancelled'],
+         default: 'scheduled'
+      }
+   }]
 }, {
    timestamps: true,
    collection: 'rtec_meetings'

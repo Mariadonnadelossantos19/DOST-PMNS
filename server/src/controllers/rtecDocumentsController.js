@@ -866,6 +866,51 @@ const getApprovedRTECDocuments = async (req, res) => {
    }
 };
 
+// Get approved RTEC documents by PSTO province (for batch scheduling)
+const getApprovedRTECDocumentsByPSTO = async (req, res) => {
+   try {
+      const { psto } = req.params;
+      console.log('=== PSTO APPROVED DOCUMENTS DEBUG ===');
+      console.log('PSTO:', psto);
+
+      // First, find all approved RTEC documents
+      const allApprovedDocs = await RTECDocuments.find({ 
+         status: 'documents_approved'
+      })
+      .populate('applicationId', 'enterpriseName companyName projectTitle')
+      .populate('proponentId', 'firstName lastName email province')
+      .populate('tnaId', 'status signedTnaReport')
+      .sort({ createdAt: -1 });
+
+      console.log('Total approved documents:', allApprovedDocs.length);
+      console.log('All documents with proponent provinces:', allApprovedDocs.map(doc => ({
+         id: doc._id,
+         proponentProvince: doc.proponentId?.province,
+         enterpriseName: doc.applicationId?.enterpriseName
+      })));
+
+      // Filter by PSTO province
+      const approvedDocs = allApprovedDocs.filter(doc => 
+         doc.proponentId && doc.proponentId.province === psto
+      );
+
+      console.log('Found approved documents for PSTO:', approvedDocs.length);
+      console.log('Document IDs for PSTO:', approvedDocs.map(doc => doc._id));
+
+      return res.json({
+         success: true,
+         data: approvedDocs,
+         count: approvedDocs.length
+      });
+   } catch (error) {
+      console.error('Error fetching PSTO approved documents:', error);
+      return res.status(500).json({
+         success: false,
+         message: 'Error fetching PSTO approved documents'
+      });
+   }
+};
+
 // Get RTEC documents for PSTO (by user)
 const getRTECDocumentsForPSTO = async (req, res) => {
    try {
@@ -1064,6 +1109,7 @@ module.exports = {
    reviewRTECDocument,
    listRTECDocuments,
    getApprovedRTECDocuments,
+   getApprovedRTECDocumentsByPSTO,
    getRTECDocumentsForPSTO,
    serveFile
 };

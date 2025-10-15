@@ -1713,8 +1713,217 @@ const completeRTEC = async (req, res) => {
    }
 };
 
+// Create batch RTEC meeting for multiple applications from same PSTO
+const createBatchRTECMeeting = async (req, res) => {
+   try {
+      const {
+         psto,
+         meetingTitle,
+         meetingDescription,
+         scheduledDate,
+         scheduledTime,
+         location,
+         meetingType = 'physical',
+         virtualMeetingLink,
+         virtualMeetingId,
+         virtualMeetingPassword,
+         notes,
+         rtecDocumentIds = []
+      } = req.body;
+      
+      const userId = req.user.id;
+
+      console.log('=== CREATE BATCH RTEC MEETING DEBUG ===');
+      console.log('PSTO:', psto);
+      console.log('User ID:', userId);
+      console.log('Meeting Title:', meetingTitle);
+      console.log('Scheduled Date:', scheduledDate);
+      console.log('Scheduled Time:', scheduledTime);
+      console.log('Location:', location);
+      console.log('RTEC Document IDs:', rtecDocumentIds);
+      console.log('RTEC Document IDs length:', rtecDocumentIds.length);
+      console.log('RTEC Document IDs types:', rtecDocumentIds.map(id => typeof id));
+      console.log('Request body:', req.body);
+
+      // Validate inputs
+      if (!psto || !meetingTitle || !scheduledDate || !scheduledTime || !location) {
+         console.log('❌ Validation failed:');
+         console.log('PSTO:', psto, 'valid:', !!psto);
+         console.log('Meeting Title:', meetingTitle, 'valid:', !!meetingTitle);
+         console.log('Scheduled Date:', scheduledDate, 'valid:', !!scheduledDate);
+         console.log('Scheduled Time:', scheduledTime, 'valid:', !!scheduledTime);
+         console.log('Location:', location, 'valid:', !!location);
+         return res.status(400).json({
+            success: false,
+            message: 'PSTO, meeting title, scheduled date, time, and location are required'
+         });
+      }
+
+      if (!rtecDocumentIds || rtecDocumentIds.length === 0) {
+         return res.status(400).json({
+            success: false,
+            message: 'At least one RTEC document must be selected for batch meeting'
+         });
+      }
+
+      // Validate all RTEC document IDs
+      for (const docId of rtecDocumentIds) {
+         if (!mongoose.Types.ObjectId.isValid(docId)) {
+            return res.status(400).json({
+               success: false,
+               message: `Invalid RTEC document ID: ${docId}`
+            });
+         }
+      }
+
+      // Debug: Check what RTEC documents exist for these document IDs
+      console.log('🔍 Debugging RTEC documents query...');
+      console.log('RTEC Document IDs to search:', rtecDocumentIds);
+      
+      // Find the RTEC documents by their IDs
+      const rtecDocuments = await RTECDocuments.find({
+         _id: { $in: rtecDocumentIds },
+         status: 'documents_approved'
+      })
+      .populate('applicationId', 'enterpriseName companyName projectTitle')
+      .populate('proponentId', 'firstName lastName email province')
+      .populate('tnaId', 'status signedTnaReport');
+
+      console.log('✅ Found approved RTEC documents for batch:', rtecDocuments.length);
+      console.log('📋 Document details:', rtecDocuments.map(doc => ({
+         id: doc._id,
+         applicationId: doc.applicationId?._id,
+         status: doc.status,
+         enterpriseName: doc.applicationId?.enterpriseName
+      })));
+
+      if (rtecDocuments.length === 0) {
+         return res.status(400).json({
+            success: false,
+            message: 'No approved RTEC documents found for the selected applications'
+         });
+      }
+
+      // Verify all documents are from the same PSTO
+      const provinces = [...new Set(rtecDocuments.map(doc => doc.proponentId?.province).filter(Boolean))];
+      if (provinces.length > 1 || (provinces.length === 1 && provinces[0] !== psto)) {
+         return res.status(400).json({
+            success: false,
+            message: 'All applications must be from the same PSTO province'
+         });
+      }
+
+      // Create the batch meeting
+      const batchMeeting = new RTECMeeting({
+         meetingTitle,
+         meetingDescription,
+         scheduledDate: new Date(scheduledDate),
+         scheduledTime,
+         location,
+         meetingType,
+         virtualMeetingLink,
+         virtualMeetingId,
+         virtualMeetingPassword,
+         notes,
+         status: 'rtec_scheduled',
+         createdBy: userId,
+         scheduledBy: userId, // Add required scheduledBy field
+         isBatchMeeting: true,
+         pstoProvince: psto,
+         applications: rtecDocuments.map(doc => ({
+            applicationId: doc.applicationId._id,
+            status: 'scheduled'
+         }))
+      });
+
+      let savedMeeting;
+      try {
+         savedMeeting = await batchMeeting.save();
+         console.log('✅ Batch meeting created:', savedMeeting._id);
+      } catch (saveError) {
+         console.error('❌ Failed to save batch meeting:', saveError);
+         console.error('Save error details:', saveError.message);
+         console.error('Save error validation:', saveError.errors);
+         return res.status(400).json({
+            success: false,
+            message: 'Failed to save batch meeting',
+            error: saveError.message,
+            details: saveError.errors
+         });
+      }
+
+      // Update TNA status for all applications
+      const updatePromises = rtecDocuments.map(async (doc) => {
+         try {
+            if (doc.tnaId && doc.tnaId._id) {
+               await TNA.findByIdAndUpdate(doc.tnaId._id, {
+                  status: 'rtec_scheduled',
+                  scheduledDate: new Date(scheduledDate),
+                  meetingId: savedMeeting._id
+               });
+               console.log(`✅ Updated TNA ${doc.tnaId._id} to rtec_scheduled`);
+            }
+         } catch (error) {
+            console.error(`❌ Failed to update TNA ${doc.tnaId?._id}:`, error);
+         }
+      });
+
+      await Promise.all(updatePromises);
+
+      // Create notifications for all proponents
+      const notificationPromises = rtecDocuments.map(async (doc) => {
+         if (doc.proponentId && doc.proponentId._id) {
+            const notification = new Notification({
+               userId: doc.proponentId._id,
+               type: 'rtec_meeting_scheduled',
+               title: 'RTEC Meeting Scheduled',
+               message: `Your application "${doc.applicationId?.enterpriseName || doc.applicationId?.companyName}" has been scheduled for RTEC meeting on ${scheduledDate} at ${scheduledTime}`,
+               relatedId: savedMeeting._id,
+               relatedType: 'rtec_meeting'
+            });
+            return notification.save();
+         }
+      });
+
+      await Promise.all(notificationPromises.filter(Boolean));
+
+      console.log('✅ Batch meeting creation completed successfully');
+
+      return res.json({
+         success: true,
+         message: `Successfully created batch meeting for ${rtecDocuments.length} applications from ${psto}`,
+         data: {
+            meetingId: savedMeeting._id,
+            meetingTitle: savedMeeting.meetingTitle,
+            scheduledDate: savedMeeting.scheduledDate,
+            applicationsCount: rtecDocuments.length,
+            psto: psto
+         }
+      });
+
+   } catch (error) {
+      console.error('Error creating batch RTEC meeting:', error);
+      
+      if (error.name === 'ValidationError') {
+         return res.status(400).json({
+            success: false,
+            message: 'Database validation error',
+            error: error.message,
+            details: error.errors
+         });
+      }
+      
+      res.status(500).json({
+         success: false,
+         message: 'Internal server error',
+         error: error.message
+      });
+   }
+};
+
 module.exports = {
    createRTECMeeting,
+   createBatchRTECMeeting,
    getRTECMeetings,
    getRTECMeetingById,
    updateRTECMeeting,
