@@ -218,6 +218,43 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          roles: ['psto', 'super_admin'] // Show for PSTO and Super Admin users only (removed dost_mimaropa)
       },
       {
+         id: 'proponent-dashboard',
+         label: 'Proponent Dashboard',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M12 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M8 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               <path d="M16 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/proponent-dashboard',
+         roles: ['proponent'] // Only show for proponent users
+      },
+      {
+         id: 'applications',
+         label: 'My Applications',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/applications',
+         roles: ['proponent'] // Only show for proponent users
+      },
+      {
+         id: 'monitoring',
+         label: 'Application Monitoring',
+         icon: (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+               <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         ),
+         path: '/monitoring',
+         roles: ['dost_mimaropa', 'super_admin', 'proponent'] // Show for DOST MIMAROPA, Super Admin, and Proponent users (exclude PSTO)
+      },
+      {
          id: 'rtec-meetings',
          label: 'RTEC Meeting',
          icon: (
@@ -243,43 +280,6 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
          ),
          path: '/funding-documents',
          roles: ['psto', 'dost_mimaropa', 'super_admin'] // Show for PSTO, DOST MIMAROPA, and Super Admin users
-      },
-      {
-         id: 'monitoring',
-         label: 'Application Monitoring',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 11H7a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2zM13 7H11a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zM17 3H15a2 2 0 00-2 2v15a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/monitoring',
-         roles: ['dost_mimaropa', 'super_admin', 'proponent'] // Show for DOST MIMAROPA, Super Admin, and Proponent users (exclude PSTO)
-      },
-      {
-         id: 'proponent-dashboard',
-         label: 'Proponent Dashboard',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M12 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M8 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               <path d="M16 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/proponent-dashboard',
-         roles: ['proponent'] // Only show for proponent users
-      },
-      {
-         id: 'applications',
-         label: 'My Applications',
-         icon: (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         ),
-         path: '/applications',
-         roles: ['proponent'] // Only show for proponent users
       },
       {
          id: 'proponent-management',
@@ -457,8 +457,8 @@ const Sidebar = ({ isOpen, onClose, currentPath, userRole = 'applicant', isColla
                            .filter(section => {
                               // Filter sections based on user role
                               if (userRole === 'proponent') {
-                                 // For proponents, only show specific sections
-                                 const allowedSections = ['proponent-dashboard', 'monitoring', 'notifications', 'reports', 'settings', 'applications', 'rtec-meetings'];
+                                 // For proponents, only show specific sections in the specified order
+                                 const allowedSections = ['proponent-dashboard', 'applications', 'monitoring', 'rtec-meetings', 'notifications', 'reports', 'settings'];
                                  return allowedSections.includes(section.id);
                               }
                               // For DOST MIMAROPA, exclude Application Management, PSTO Applications Review, Application Monitoring, and Proponent Management
