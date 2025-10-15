@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { LandingPage } from './Component';
 import { MainLayout, NotificationProvider } from './Component';
-import UnifiedLayout from './Component/Layouts/UnifiedLayout';
+import UnifiedLayout from './Component/layouts/UnifiedLayout';
 import UnifiedPSTODashboard from './Pages/PSTO/UnifiedPSTODashboard';
 import { ToastProvider } from './Component/UI';
 import { FloatingMiniGamesButton } from './Component/Interactive';
 import { DarkModeProvider } from './Component/Context';
 import DostMimaropaDashboard from './Pages/DOST_MIMAROPA/DostMimaropaDashboard';
+import { SuperAdminDashboard } from './Pages/superAdmin';
 import { ProponentMainPage } from './Pages/Proponents/pages';
 import { ProgramSelectionPage } from './Pages/ProgramSelection';
 import { ApplicationMonitorPage } from './Pages/ApplicationMonitor';
@@ -63,7 +64,11 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
 
    // Render different dashboards based on user role
    const renderDashboard = () => {
-      if (currentUser.role === 'dost_mimaropa' || currentUser.role === 'super_admin') {
+      if (currentUser.role === 'super_admin') {
+         const superAdminCurrentPath = `/${currentPage}`;
+         console.log('App.jsx - Rendering SuperAdminDashboard for super admin with path:', superAdminCurrentPath, 'currentPage:', currentPage);
+         return <SuperAdminDashboard currentUser={currentUser} currentPath={superAdminCurrentPath} />;
+      } else if (currentUser.role === 'dost_mimaropa') {
          const dostCurrentPath = `/${currentPage}`;
          console.log('App.jsx - Passing currentPath to DostMimaropaDashboard:', dostCurrentPath);
          return <DostMimaropaDashboard currentPath={dostCurrentPath} />;
@@ -164,6 +169,9 @@ const AppContent = ({ onLogout, currentPage, onNavigate }) => {
             return renderDashboard(); // Will be handled by the dashboard routing
          case 'rtec-scheduling':
             console.log('Rendering RTEC Scheduling');
+            return renderDashboard(); // Will be handled by the dashboard routing
+         case 'user-management':
+            console.log('Rendering User Management');
             return renderDashboard(); // Will be handled by the dashboard routing
          case 'learn-more':
             console.log('Rendering Learn More Page');

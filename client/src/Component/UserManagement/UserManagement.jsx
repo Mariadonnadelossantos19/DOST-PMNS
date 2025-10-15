@@ -9,6 +9,10 @@ const UserManagement = ({ currentUser }) => {
    const [alert, setAlert] = useState({ show: false, type: '', message: '' });
    const [searchTerm, setSearchTerm] = useState('');
    const [filterRole, setFilterRole] = useState('all');
+   const [filterStatus, setFilterStatus] = useState('all');
+   const [filterProvince, setFilterProvince] = useState('all');
+   const [sortBy, setSortBy] = useState('createdAt');
+   const [sortOrder, setSortOrder] = useState('desc');
 
    const [newUser, setNewUser] = useState({
       firstName: '',
@@ -118,12 +122,52 @@ const UserManagement = ({ currentUser }) => {
    };
 
    // Filter users based on search and role
+   // Enhanced filtering logic
    const filteredUsers = users.filter(user => {
       const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (user.userId && user.userId.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesRole = filterRole === 'all' || user.role === filterRole;
-      return matchesSearch && matchesRole;
+      const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
+      const matchesProvince = filterProvince === 'all' || user.province === filterProvince;
+      return matchesSearch && matchesRole && matchesStatus && matchesProvince;
+   }).sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+         case 'name':
+            aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+            bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+            break;
+         case 'email':
+            aValue = a.email.toLowerCase();
+            bValue = b.email.toLowerCase();
+            break;
+         case 'role':
+            aValue = a.role;
+            bValue = b.role;
+            break;
+         case 'status':
+            aValue = a.status;
+            bValue = b.status;
+            break;
+         case 'province':
+            aValue = a.province || '';
+            bValue = b.province || '';
+            break;
+         case 'createdAt':
+         default:
+            aValue = new Date(a.createdAt || 0);
+            bValue = new Date(b.createdAt || 0);
+            break;
+      }
+      
+      if (sortOrder === 'asc') {
+         return aValue > bValue ? 1 : -1;
+      } else {
+         return aValue < bValue ? 1 : -1;
+      }
    });
 
    // Handle input changes for new user
@@ -471,12 +515,13 @@ const UserManagement = ({ currentUser }) => {
             </Alert>
          )}
 
-         {/* Filters */}
+         {/* Enhanced Filters */}
          <Card className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="space-y-4">
+               {/* Search Bar */}
                <div className="flex-1">
                   <Input
-                     placeholder="Search users..."
+                     placeholder="Search users by name, email, or user ID..."
                      value={searchTerm}
                      onChange={(e) => setSearchTerm(e.target.value)}
                      leftIcon={
@@ -486,20 +531,176 @@ const UserManagement = ({ currentUser }) => {
                      }
                   />
                </div>
-               <div className="sm:w-48">
-                  <select
-                     value={filterRole}
-                     onChange={(e) => setFilterRole(e.target.value)}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                     <option value="all">All Roles</option>
-                     <option value="super_admin">Super Admin</option>
-                     <option value="psto">PSTO</option>
-                     <option value="dost_mimaropa">DOST MIMAROPA</option>
-                  </select>
+               
+               {/* Filter Row 1 */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                     <select
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     >
+                        <option value="all">All Roles</option>
+                        <option value="super_admin">Super Admin</option>
+                        <option value="psto">PSTO</option>
+                        <option value="dost_mimaropa">DOST MIMAROPA</option>
+                        <option value="proponent">Proponent</option>
+                     </select>
+                  </div>
+                  
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                     <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                     </select>
+                  </div>
+                  
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
+                     <select
+                        value={filterProvince}
+                        onChange={(e) => setFilterProvince(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     >
+                        <option value="all">All Provinces</option>
+                        <option value="Marinduque">Marinduque</option>
+                        <option value="Occidental Mindoro">Occidental Mindoro</option>
+                        <option value="Oriental Mindoro">Oriental Mindoro</option>
+                        <option value="Romblon">Romblon</option>
+                        <option value="Palawan">Palawan</option>
+                     </select>
+                  </div>
+                  
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                     <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     >
+                        <option value="createdAt">Date Created</option>
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                        <option value="role">Role</option>
+                        <option value="status">Status</option>
+                        <option value="province">Province</option>
+                     </select>
+                  </div>
+               </div>
+               
+               {/* Filter Row 2 - Sort Order and Clear Filters */}
+               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4">
+                     <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-gray-700">Order:</label>
+                        <div className="flex">
+                           <button
+                              onClick={() => setSortOrder('asc')}
+                              className={`px-3 py-1 text-sm border rounded-l-lg ${
+                                 sortOrder === 'asc' 
+                                    ? 'bg-blue-500 text-white border-blue-500' 
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              }`}
+                           >
+                              A-Z
+                           </button>
+                           <button
+                              onClick={() => setSortOrder('desc')}
+                              className={`px-3 py-1 text-sm border rounded-r-lg ${
+                                 sortOrder === 'desc' 
+                                    ? 'bg-blue-500 text-white border-blue-500' 
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              }`}
+                           >
+                              Z-A
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                     <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                           setSearchTerm('');
+                           setFilterRole('all');
+                           setFilterStatus('all');
+                           setFilterProvince('all');
+                           setSortBy('createdAt');
+                           setSortOrder('desc');
+                        }}
+                     >
+                        Clear Filters
+                     </Button>
+                     <div className="text-sm text-gray-600 flex items-center">
+                        <span className="font-medium">{filteredUsers.length}</span> of <span className="font-medium">{users.length}</span> users
+                     </div>
+                  </div>
                </div>
             </div>
          </Card>
+
+         {/* Active Filters Display */}
+         {(searchTerm || filterRole !== 'all' || filterStatus !== 'all' || filterProvince !== 'all') && (
+            <Card className="p-3 bg-blue-50 border-blue-200">
+               <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-blue-800">Active Filters:</span>
+                  {searchTerm && (
+                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Search: "{searchTerm}"
+                        <button
+                           onClick={() => setSearchTerm('')}
+                           className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                           ×
+                        </button>
+                     </span>
+                  )}
+                  {filterRole !== 'all' && (
+                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Role: {filterRole.replace('_', ' ')}
+                        <button
+                           onClick={() => setFilterRole('all')}
+                           className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                           ×
+                        </button>
+                     </span>
+                  )}
+                  {filterStatus !== 'all' && (
+                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Status: {filterStatus}
+                        <button
+                           onClick={() => setFilterStatus('all')}
+                           className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                           ×
+                        </button>
+                     </span>
+                  )}
+                  {filterProvince !== 'all' && (
+                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Province: {filterProvince}
+                        <button
+                           onClick={() => setFilterProvince('all')}
+                           className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                           ×
+                        </button>
+                     </span>
+                  )}
+               </div>
+            </Card>
+         )}
 
          {/* Users Table */}
          <Card>

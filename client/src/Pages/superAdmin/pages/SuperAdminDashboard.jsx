@@ -5,8 +5,28 @@ import { UserManagement } from '../../../Component/UserManagement';
 import { InteractiveDashboard } from '../../../Component/Interactive';
 import axios from 'axios';
 
-const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
-   const [view, setView] = useState('overview'); // 'overview', 'projects', 'tasks', 'users', 'interactive', 'psto'
+const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser, currentPath = '/dashboard' }) => {
+   // Set initial view based on currentPath
+   const getInitialView = () => {
+      if (currentPath === '/user-management') return 'users';
+      if (currentPath === '/psto-management') return 'psto';
+      if (currentPath === '/interactive') return 'interactive';
+      if (currentPath === '/projects') return 'projects';
+      if (currentPath === '/tasks') return 'tasks';
+      return 'overview';
+   };
+   
+   const [view, setView] = useState(getInitialView()); // 'overview', 'projects', 'tasks', 'users', 'interactive', 'psto'
+   
+   // Update view when currentPath changes
+   useEffect(() => {
+      const newView = getInitialView();
+      console.log('SuperAdminDashboard - currentPath changed:', currentPath, 'newView:', newView, 'current view:', view);
+      if (newView !== view) {
+         console.log('SuperAdminDashboard - switching view from', view, 'to', newView);
+         setView(newView);
+      }
+   }, [currentPath, view]);
    
    // PSTO Management State
    const [pstos, setPstos] = useState([]);
@@ -393,6 +413,18 @@ const SuperAdminDashboard = ({ projects = [], tasks = [], currentUser }) => {
          {view === 'tasks' && renderTasks()}
          {view === 'psto' && renderPSTOManagement()}
          {view === 'users' && renderUsers()}
+         
+         {/* Debug info */}
+         <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+            <strong>Debug Info:</strong> currentPath: {currentPath}, view: {view}
+            <br />
+            <button 
+               onClick={() => setView('users')} 
+               className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs"
+            >
+               Force Switch to User Management
+            </button>
+         </div>
 
          {/* Alert */}
          {alert.show && (
