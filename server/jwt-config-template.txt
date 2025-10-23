@@ -1,0 +1,20 @@
+# PMNS 2.0 JWT Configuration Template
+# Copy these variables to your .env file in the server directory
+
+# JWT Configuration - PUT YOUR JWT_SECRET HERE
+JWT_SECRET=b505bbf8f308cd37ed097ac0cc6bc0336cdece54811c9f58a97125effa9509bc
+JWT_EXPIRE=7d
+
+# Complete .env file template:
+MONGODB_URI=mongodb+srv://username:password@pmns.9rxkkng.mongodb.net/pmns?retryWrites=true&w=majority&appName=PMNS
+PORT=4000
+NODE_ENV=production
+JWT_SECRET=b505bbf8f308cd37ed097ac0cc6bc0336cdece54811c9f58a97125effa9509bc
+JWT_EXPIRE=7d
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=./uploads
+CORS_ORIGIN=http://localhost:5173

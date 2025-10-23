@@ -6,6 +6,12 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "prod": "NODE_ENV=production node src/server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop pmns-server",
+    "pm2:restart": "pm2 restart pmns-server",
+    "pm2:logs": "pm2 logs pmns-server",
+    "pm2:status": "pm2 status",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -1,3 +1,7 @@
+// PMNS 2.0 Server - ONLINE DATABASE ONLY
+// This system is configured for MongoDB Atlas (cloud database) exclusively
+// Local database connections are disabled for production deployment
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -86,18 +90,27 @@ app.use((req, res) => {
 // MongoDB connection
 const connectDB = async () => {
    try {
+      // Check for online database configuration
+      console.log('🌐 PMNS 2.0 - ONLINE DATABASE ONLY');
+      console.log('🔍 Checking MongoDB Atlas connection...');
+      
       const mongoURI = process.env.MONGODB_URI; 
       
-      // Check if using online database
+      // ONLINE DATABASE REQUIRED - NO LOCAL FALLBACK
       if (!process.env.MONGODB_URI) {
-         console.log('❌ ERROR: No MONGODB_URI found in environment variables');
-         console.log('❌ ONLINE DATABASE REQUIRED: Set MONGODB_URI in .env file');
-         console.log('❌ System configured for ONLINE DATABASE ONLY');
+         console.log('❌ CRITICAL ERROR: MongoDB Atlas connection required');
+         console.log('❌ This system is configured for ONLINE DATABASE ONLY');
+         console.log('❌ Local database connections are disabled');
+         console.log('');
+         console.log('💡 SOLUTION: Create .env file in server directory with:');
+         console.log('💡 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pmns');
+         console.log('');
+         console.log('📋 See server/ONLINE_DATABASE_SETUP_GUIDE.md for complete setup');
          process.exit(1);
       }
       
-      // Log connection type - ONLINE DATABASE ONLY
-      console.log('🌐 Connecting to ONLINE MongoDB Atlas...');
+      // ONLINE DATABASE CONNECTION
+      console.log('🌐 Connecting to MongoDB Atlas (ONLINE DATABASE ONLY)...');
       
       console.log('🔄 MongoDB URI:', mongoURI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
       
@@ -108,15 +121,18 @@ const connectDB = async () => {
          bufferCommands: false // Disable mongoose buffering
       });
       
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      console.log(`✅ MongoDB Atlas Connected: ${conn.connection.host}`);
       console.log(`📊 Database: ${conn.connection.name}`);
       console.log(`🔗 Connection State: ${conn.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
+      console.log(`🌐 ONLINE DATABASE: MongoDB Atlas Cloud`);
       
       return conn;
    } catch (error) {
-      console.error('❌ MongoDB connection error:', error.message);
-      console.error('💡 Make sure your MONGODB_URI is correct in .env file');
-      console.error('💡 For online database, use: mongodb+srv://username:password@cluster.mongodb.net/pmns');
+      console.error('❌ MongoDB Atlas connection failed:', error.message);
+      console.error('❌ ONLINE DATABASE REQUIRED - Local database disabled');
+      console.error('💡 Check your MongoDB Atlas credentials in .env file');
+      console.error('💡 Connection string format: mongodb+srv://username:password@cluster.mongodb.net/pmns');
+      console.error('📋 See server/ONLINE_DATABASE_SETUP_GUIDE.md for setup instructions');
       process.exit(1);
    }
 };
