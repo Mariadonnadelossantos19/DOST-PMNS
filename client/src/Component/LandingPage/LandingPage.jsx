@@ -5,6 +5,7 @@ import { useDarkMode } from '../Context';
 import heroImage from '../../assets/hero-img.png';
 
 const LandingPage = ({ onLoginSuccess, onNavigate }) => {
+   // State management for component functionality
    const { isDarkMode, toggleDarkMode } = useDarkMode();
    const [isScrolled, setIsScrolled] = useState(false);
    const [activeSection, setActiveSection] = useState('home');
@@ -648,12 +649,12 @@ const LandingPage = ({ onLoginSuccess, onNavigate }) => {
                         </a>
                      </div>
                      
-                     {/* Stats */}
-                     <div className={`grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8 pt-6 sm:pt-8 border-t transition-colors duration-300 ${
+                     {/* System Statistics Section - COMMENTED OUT */}
+                     {/* <div className={`grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8 pt-6 sm:pt-8 border-t transition-colors duration-300 ${
                         isDarkMode ? 'border-gray-600' : 'border-white/20'
                      }`} role="region" aria-label="System statistics">
                         <div className="text-center">
-                           <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white" aria-label="133 active projects">133+</div>
+                          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white" aria-label="133 active projects">133+</div>
                            <div className={`text-xs sm:text-sm transition-colors duration-300 ${
                               isDarkMode ? 'text-gray-300' : 'text-blue-200'
                            }`}>Active Projects</div>
@@ -670,7 +671,7 @@ const LandingPage = ({ onLoginSuccess, onNavigate }) => {
                               isDarkMode ? 'text-gray-300' : 'text-blue-200'
                            }`}>Uptime</div>
                         </div>
-                     </div>
+                     </div> */}
                   </div>
                   
                   <div className="relative mt-8 lg:mt-0">

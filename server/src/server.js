@@ -86,13 +86,37 @@ app.use((req, res) => {
 // MongoDB connection
 const connectDB = async () => {
    try {
-      const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pmns';
-      console.log('🔄 Connecting to MongoDB:', mongoURI);
-      const conn = await mongoose.connect(mongoURI);
+      const mongoURI = process.env.MONGODB_URI; 
+      
+      // Check if using online database
+      if (!process.env.MONGODB_URI) {
+         console.log('❌ ERROR: No MONGODB_URI found in environment variables');
+         console.log('❌ ONLINE DATABASE REQUIRED: Set MONGODB_URI in .env file');
+         console.log('❌ System configured for ONLINE DATABASE ONLY');
+         process.exit(1);
+      }
+      
+      // Log connection type - ONLINE DATABASE ONLY
+      console.log('🌐 Connecting to ONLINE MongoDB Atlas...');
+      
+      console.log('🔄 MongoDB URI:', mongoURI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+      
+      const conn = await mongoose.connect(mongoURI, {
+         maxPoolSize: 10, // Maintain up to 10 socket connections
+         serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+         socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+         bufferCommands: false // Disable mongoose buffering
+      });
+      
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      console.log(`📊 Database: ${conn.connection.name}`);
+      console.log(`🔗 Connection State: ${conn.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
+      
       return conn;
    } catch (error) {
       console.error('❌ MongoDB connection error:', error.message);
+      console.error('💡 Make sure your MONGODB_URI is correct in .env file');
+      console.error('💡 For online database, use: mongodb+srv://username:password@cluster.mongodb.net/pmns');
       process.exit(1);
    }
 };
