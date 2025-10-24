@@ -1,0 +1,11 @@
+# PMNS 2.0 Frontend Production Environment Template
+# Copy this to .env file in the client directory for online deployment
+
+# Production API URL - Replace with your actual server details
+VITE_API_URL=http://your-server-ip/api
+
+# If you have a domain name, use this instead:
+# VITE_API_URL=https://yourdomain.com/api
+
+# If you have SSL certificate, use HTTPS:
+# VITE_API_URL=https://yourdomain.com/api
