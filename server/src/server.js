@@ -41,6 +41,10 @@ async function ensureDbConnection() {
 }
 
 app.use(async (req, res, next) => {
+   // Let CORS preflight pass immediately without touching the database
+   if (req.method === 'OPTIONS') {
+      return next();
+   }
    try {
       await ensureDbConnection();
       console.log('✅ DB connected for request');
