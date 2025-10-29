@@ -114,7 +114,12 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
    try {
-      const { email, password, rememberMe } = req.body;
+      const { email, password, rememberMe } = req.body || {};
+      console.log('[AUTH] /login request', {
+         hasBody: !!req.body,
+         emailProvided: !!email,
+         mongooseState: require('mongoose').connection.readyState
+      });
       
       // Basic validation
       if (!email || !password) {
@@ -124,8 +129,9 @@ const login = async (req, res) => {
          });
       }
 
-      // Find user by email
-      const user = await User.findOne({ email });
+      // Find user by email (case-insensitive)
+      const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
+      console.log('[AUTH] user lookup', { found: !!user });
       if (!user) {
          return res.status(401).json({
             success: false,
@@ -137,13 +143,14 @@ const login = async (req, res) => {
       let isPasswordValid = false;
       
       // Check if password is hashed (starts with $2a$ or $2b$)
-      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+      if (user.password && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$'))) {
          // Password is hashed, use bcrypt to compare
          isPasswordValid = await bcrypt.compare(password, user.password);
       } else {
          // Password is plain text, compare directly (for backward compatibility)
          isPasswordValid = user.password === password;
       }
+      console.log('[AUTH] password valid?', isPasswordValid);
       
       if (!isPasswordValid) {
          return res.status(401).json({
@@ -174,6 +181,9 @@ const login = async (req, res) => {
 
       // Generate JWT token
       const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+      if (!process.env.JWT_SECRET) {
+         console.warn('[AUTH] JWT_SECRET not set, using default fallback');
+      }
       const token = jwt.sign(
          { 
             id: user._id,
