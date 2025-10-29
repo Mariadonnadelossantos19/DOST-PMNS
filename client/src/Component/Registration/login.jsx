@@ -59,8 +59,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
       setAlert({ show: false, type: '', message: '' });
 
       try {
-         const response = await fetch('http://localhost:4000/api/auth/login', {
-            method: 'POST',
+         const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/auth/login`, {            method: 'POST',
             headers: {
                'Content-Type': 'application/json',
             },
@@ -130,7 +129,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
       }
 
       try {
-         const response = await fetch('http://localhost:4000/api/auth/forgot-password', {
+         const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/auth/forgot-password`, {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',

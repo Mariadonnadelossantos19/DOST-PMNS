@@ -553,7 +553,8 @@ const RTECDocumentManagement = () => {
                                           size="sm"
                                           variant="outline"
                                           onClick={() => {
-                                             const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                             const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const fileUrl = `${API_URL}/uploads/${doc.filename}`;
                                              console.log('Opening file:', fileUrl);
                                              const newWindow = window.open(fileUrl, '_blank');
                                              if (!newWindow) {
@@ -573,7 +574,7 @@ const RTECDocumentManagement = () => {
                                           size="sm"
                                           variant="outline"
                                           onClick={() => {
-                                             const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                             const fileUrl = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/uploads/${doc.filename}`;
                                              const link = document.createElement('a');
                                              link.href = fileUrl;
                                              link.download = doc.originalName || doc.filename;
@@ -694,7 +695,8 @@ const RTECDocumentManagement = () => {
                                        size="sm"
                                        variant="outline"
                                        onClick={() => {
-                                          const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                          const fileUrl = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/uploads/${doc.filename}`;
+
                                           console.log('Opening file:', fileUrl);
                                           const newWindow = window.open(fileUrl, '_blank');
                                           if (!newWindow) {
@@ -714,7 +716,7 @@ const RTECDocumentManagement = () => {
                                        size="sm"
                                        variant="outline"
                                        onClick={() => {
-                                          const fileUrl = `http://localhost:4000/uploads/${doc.filename}`;
+                                          const fileUrl = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/uploads/${doc.filename}`;
                                           const link = document.createElement('a');
                                           link.href = fileUrl;
                                           link.download = doc.originalName || doc.filename;

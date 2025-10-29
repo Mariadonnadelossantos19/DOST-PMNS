@@ -18,7 +18,12 @@ const Header = ({ user, onLogout, onToggleSidebar, onToggleSidebarCollapse, side
       
       try {
          setLoadingNotifications(true);
-         const response = await fetch(`http://localhost:4000/api/notifications/proponent/${user.userId || user._id || user.id}`, {
+         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+const response = await fetch(
+  `${API_URL}/api/notifications/proponent/${user.userId || user._id || user.id}`
+);
+ {
             headers: {
                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
