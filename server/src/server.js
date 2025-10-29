@@ -34,6 +34,34 @@ app.use('/uploads', (req, res, next) => {
    next();
 }, express.static('uploads'));
 
+// Health check route
+app.get('/', (req, res) => {
+   res.json({
+      status: 'SUCCESS',
+      message: 'DOST PMNS API Server is running',
+      version: '2.0.0',
+      timestamp: new Date().toISOString()
+   });
+});
+
+app.get('/api', (req, res) => {
+   res.json({
+      status: 'SUCCESS',
+      message: 'DOST PMNS API Server',
+      version: '2.0.0',
+      endpoints: {
+         auth: '/api/auth',
+         users: '/api/users',
+         programs: '/api/programs',
+         tna: '/api/tna',
+         notifications: '/api/notifications',
+         rtecDocuments: '/api/rtec-documents',
+         fundingDocuments: '/api/funding-documents',
+         rtecMeetings: '/api/rtec-meetings'
+      }
+   });
+});
+
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -150,6 +178,7 @@ const startServer = async () => {
          await seedPSTOData();
       }
       
+   
       app.listen(PORT, () => {
          console.log(`🚀 Server running on port ${PORT}`);
          console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);

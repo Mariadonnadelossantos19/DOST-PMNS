@@ -16,17 +16,8 @@ const {
    serveFile
 } = require('../controllers/rtecDocumentsController');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-   destination: function (req, file, cb) {
-      cb(null, 'uploads/');
-   },
-   filename: function (req, file, cb) {
-      // Generate unique filename
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, 'rtecDocument-' + uniqueSuffix + path.extname(file.originalname));
-   }
-});
+// Configure multer for file uploads - use memory storage for serverless environments
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
    // Accept PDF, DOC, DOCX files and text files for text input fields
