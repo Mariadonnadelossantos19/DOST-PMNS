@@ -27,13 +27,23 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Ensure DB connection for each request (handles serverless cold starts)
+async function ensureDbConnection() {
+   const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+   if (state === 1) return; // already connected
+   if (state === 2) {
+      // wait for ongoing connection
+      await mongoose.connection.asPromise();
+      return;
+   }
+   // not connected, initiate connection
+   console.log('🔄 DB not connected for request, attempting to connect...');
+   await connectDB();
+}
+
 app.use(async (req, res, next) => {
    try {
-      if (mongoose.connection.readyState !== 1) {
-         console.log('🔄 DB not connected for request, attempting to connect...');
-         await connectDB();
-         console.log('✅ DB connected for request');
-      }
+      await ensureDbConnection();
+      console.log('✅ DB connected for request');
       next();
    } catch (err) {
       console.error('❌ Failed to connect to DB for request:', err.message);
