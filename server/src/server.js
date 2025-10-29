@@ -144,9 +144,11 @@ const startServer = async () => {
       console.log('🔄 Connecting to MongoDB...');
       await connectDB();
       
-      // Seed PSTO data
-      console.log('🌱 Seeding PSTO data...');
-      await seedPSTOData();
+      // Seed PSTO data only when running a long-lived server (not on Vercel serverless)
+      if (!process.env.VERCEL) {
+         console.log('🌱 Seeding PSTO data...');
+         await seedPSTOData();
+      }
       
       app.listen(PORT, () => {
          console.log(`🚀 Server running on port ${PORT}`);
@@ -176,7 +178,11 @@ process.on('SIGTERM', () => {
    process.exit(0);
 });
 
-// Start the server
-startServer();
-
-module.exports = app;
+// In Vercel serverless environment, export the Express app as the handler (no .listen)
+if (process.env.VERCEL) {
+   module.exports = app;
+} else {
+   // Start the server only for traditional environments
+   startServer();
+   module.exports = app;
+}
