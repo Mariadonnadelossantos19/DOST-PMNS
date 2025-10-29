@@ -4,6 +4,7 @@
 export { default as Header } from './Layouts/Header';
 export { default as Sidebar } from './Layouts/Sidebar';
 export { default as MainLayout } from './Layouts/MainLayout';
+export { default as UnifiedLayout } from './Layouts/UnifiedLayout';
 
 // Landing Page
 export * from './LandingPage';
