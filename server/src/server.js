@@ -37,7 +37,15 @@ async function ensureDbConnection() {
    }
    // not connected, initiate connection
    console.log('🔄 DB not connected for request, attempting to connect...');
-   await connectDB();
+   try {
+      await connectDB();
+   } catch (err) {
+      // Re-throw with clearer message for Vercel
+      if (err.message.includes('IP') || err.message.includes('whitelist')) {
+         throw new Error(`MongoDB Atlas IP Whitelist Error: ${err.message}. Go to MongoDB Atlas → Network Access → Add IP Address → Allow access from anywhere (0.0.0/0) or add Vercel IPs.`);
+      }
+      throw err;
+   }
 }
 
 app.use(async (req, res, next) => {
