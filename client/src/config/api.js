@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://pmns.dostmimaropa.ph/api';
 
 // Create axios instance
 const api = axios.create({
@@ -27,7 +27,7 @@ api.interceptors.request.use(
 );
 
 // Add response interceptor to handle auth errors
-api.interceptors.response.use(
+api.interceptors.response.use( 
    (response) => response,
    (error) => {
       if (error.response?.status === 401) {
