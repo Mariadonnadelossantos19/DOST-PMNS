@@ -207,8 +207,21 @@ process.on('SIGTERM', () => {
    process.exit(0);
 });
 
-// In Vercel serverless environment, export the Express app as the handler (no .listen)
+// In Vercel serverless environment, connect to DB on cold start and export the app (no .listen)
 if (process.env.VERCEL) {
+   let hasConnected = false;
+   (async () => {
+      try {
+         if (!hasConnected) {
+            console.log('🔄 [Vercel] Connecting to MongoDB on cold start...');
+            await connectDB();
+            hasConnected = true;
+            console.log('✅ [Vercel] MongoDB connected');
+         }
+      } catch (e) {
+         console.error('❌ [Vercel] MongoDB connection error:', e.message);
+      }
+   })();
    module.exports = app;
 } else {
    // Start the server only for traditional environments
