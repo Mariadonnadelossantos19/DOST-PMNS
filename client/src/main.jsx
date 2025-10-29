@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { patchFetchToApiBaseUrl } from "./config/api";
 import App from "./App.jsx";
 
 const warningStyles = [
@@ -33,6 +34,9 @@ const asciiStyles = [
   "font-weight: bold",
   "line-height: 12px",
 ].join(";");
+
+// Initialize runtime fetch redirect from localhost:4000 → configured API base URL
+patchFetchToApiBaseUrl();
 
 // Display ASCII art and warning messages
 console.log(asciiWarning, asciiStyles);

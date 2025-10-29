@@ -7,3 +7,5 @@ VITE_API_URL=http://localhost:4000/api
 # Production (replace with your server details)
 # VITE_API_URL=http://your-server-ip/api
 # VITE_API_URL=https://yourdomain.com/api
+# Vercel example:
+# VITE_API_URL=https://dost-pmns-pkjy.vercel.app/api

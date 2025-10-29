@@ -7,5 +7,8 @@ VITE_API_URL=http://your-server-ip/api
 # If you have a domain name, use this instead:
 # VITE_API_URL=https://yourdomain.com/api
 
+# If deploying backend on Vercel, use your backend domain:
+# VITE_API_URL=https://dost-pmns-pkjy.vercel.app/api
+
 # If you have SSL certificate, use HTTPS:
 # VITE_API_URL=https://yourdomain.com/api

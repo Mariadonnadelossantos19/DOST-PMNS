@@ -88,3 +88,35 @@ export const API_ENDPOINTS = {
 
 export { API_BASE_URL };
 export default api;
+
+// Runtime shim to redirect hardcoded localhost calls to the configured API base URL
+export function patchFetchToApiBaseUrl() {
+   if (typeof window === 'undefined' || typeof window.fetch !== 'function') return;
+
+   const originalFetch = window.fetch.bind(window);
+   const LOCAL_PREFIX = 'http://localhost:4000';
+   const LOCAL_API_PREFIX = 'http://localhost:4000/api';
+
+   window.fetch = (input, init) => {
+      try {
+         const stringUrl = typeof input === 'string' ? input : (input && input.url) || '';
+
+         // Replace localhost:4000/api → API_BASE_URL
+         if (stringUrl.startsWith(LOCAL_API_PREFIX)) {
+            const rest = stringUrl.slice(LOCAL_API_PREFIX.length);
+            const redirected = `${API_BASE_URL}${rest}`;
+            return originalFetch(redirected, init);
+         }
+
+         // Replace bare localhost:4000 (non-/api paths like /uploads) → base without trailing /api
+         if (stringUrl.startsWith(LOCAL_PREFIX)) {
+            const baseWithoutApi = API_BASE_URL.replace(/\/?api\/?$/, '');
+            const rest = stringUrl.slice(LOCAL_PREFIX.length);
+            const redirected = `${baseWithoutApi}${rest}`;
+            return originalFetch(redirected, init);
+         }
+      } catch (_) {}
+
+      return originalFetch(input, init);
+   };
+}
