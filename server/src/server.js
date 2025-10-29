@@ -163,6 +163,9 @@ const connectDB = async () => {
          console.log('💡 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pmns');
          console.log('');
          console.log('📋 See server/ONLINE_DATABASE_SETUP_GUIDE.md for complete setup');
+         if (process.env.VERCEL) {
+            throw new Error('Missing MONGODB_URI in environment');
+         }
          process.exit(1);
       }
       
@@ -190,6 +193,9 @@ const connectDB = async () => {
       console.error('💡 Check your MongoDB Atlas credentials in .env file');
       console.error('💡 Connection string format: mongodb+srv://username:password@cluster.mongodb.net/pmns');
       console.error('📋 See server/ONLINE_DATABASE_SETUP_GUIDE.md for setup instructions');
+      if (process.env.VERCEL) {
+         throw error;
+      }
       process.exit(1);
    }
 };
