@@ -26,6 +26,21 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Ensure DB connection for each request (handles serverless cold starts)
+app.use(async (req, res, next) => {
+   try {
+      if (mongoose.connection.readyState !== 1) {
+         console.log('🔄 DB not connected for request, attempting to connect...');
+         await connectDB();
+         console.log('✅ DB connected for request');
+      }
+      next();
+   } catch (err) {
+      console.error('❌ Failed to connect to DB for request:', err.message);
+      res.status(500).json({ status: 'ERROR', message: 'Database connection error' });
+   }
+});
+
 // Serve uploaded files with proper headers for viewing
 app.use('/uploads', (req, res, next) => {
    // Set headers to allow viewing instead of downloading
