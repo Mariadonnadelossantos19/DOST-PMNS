@@ -254,7 +254,7 @@ const ApplicationStatusTracker = ({ application, onStatusUpdate }) => {
                <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        ['psto_approved', 'psto_rejected', 'returned', 'tna_scheduled', 'tna_completed', 'dost_mimaropa_approved', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
+                        ['psto_approved', 'psto_rejected', 'returned', 'tna_scheduled', 'tna_completed', 'dost_mimaropa_approvedtna', 'dost_mimaropa_rejected', 'rtec_approved', 'rtec_rejected', 'implementation', 'completed'].includes(currentStatus)
                            ? 'bg-green-100' : 'bg-gray-100'
                      }`}>
                         <span className={`text-sm ${
