@@ -18,6 +18,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'terser'
+    // Use default esbuild minifier to avoid requiring terser in CI
+    minify: 'esbuild'
   }
 })

@@ -31,8 +31,6 @@ const StatusBadge = ({
          'completed': { color: 'green', text: 'Completed' },
          'report_uploaded': { color: 'blue', text: 'Report Uploaded' },
          'forwarded_to_dost_mimaropa': { color: 'blue', text: 'Forwarded to DOST' },
-         'dost_mimaropa_approved': { color: 'green', text: 'DOST Approved' },
-         'dost_mimaropa_rejected': { color: 'red', text: 'DOST Rejected' },
          'returned_to_psto': { color: 'orange', text: 'Returned to PSTO' },
          'signed_by_rd': { color: 'emerald', text: 'Signed by RD' },
          'cancelled': { color: 'red', text: 'Cancelled' },
