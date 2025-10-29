@@ -31,9 +31,11 @@ async function ensureDbConnection() {
    const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
    if (state === 1) return; // already connected
    if (state === 2) {
-      // wait for ongoing connection
-      await mongoose.connection.asPromise();
-      return;
+      // wait for ongoing connection promise if available
+      if (typeof connectPromise?.then === 'function') {
+         await connectPromise;
+         return;
+      }
    }
    // not connected, initiate connection
    console.log('🔄 DB not connected for request, attempting to connect...');
@@ -152,6 +154,9 @@ app.use((req, res) => {
    });
 });
 
+// Mongo connection singleton state for serverless
+let connectPromise = null;
+
 // MongoDB connection
 const connectDB = async () => {
    try {
@@ -182,12 +187,24 @@ const connectDB = async () => {
       
       console.log('🔄 MongoDB URI:', mongoURI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
       
-      const conn = await mongoose.connect(mongoURI, {
+      if (mongoose.connection.readyState === 1) {
+         return mongoose.connection;
+      }
+
+      if (connectPromise) {
+         console.log('⏳ Waiting for existing MongoDB connection attempt...');
+         const existing = await connectPromise;
+         return existing.connection || existing;
+      }
+
+      connectPromise = mongoose.connect(mongoURI, {
          maxPoolSize: 10, // Maintain up to 10 socket connections
          serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
          socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
          bufferCommands: false // Disable mongoose buffering
       });
+      const conn = await connectPromise;
+      connectPromise = null;
       
       console.log(`✅ MongoDB Atlas Connected: ${conn.connection.host}`);
       console.log(`📊 Database: ${conn.connection.name}`);
@@ -196,6 +213,7 @@ const connectDB = async () => {
       
       return conn;
    } catch (error) {
+      connectPromise = null;
       console.error('❌ MongoDB Atlas connection failed:', error.message);
       console.error('❌ ONLINE DATABASE REQUIRED - Local database disabled');
       console.error('💡 Check your MongoDB Atlas credentials in .env file');
