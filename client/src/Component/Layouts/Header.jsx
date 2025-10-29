@@ -25,7 +25,7 @@ const response = await fetch(
 );
  {
             headers: {
-               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+               'Authorization'; `Bearer ${localStorage.getItem('authToken')}`
             }
          });
 
