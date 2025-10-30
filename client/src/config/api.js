@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://pmns.dostmimaropa.ph/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://dost-pmns-pkjy.vercel.app/api';
 
 // Create axios instance
 const api = axios.create({
